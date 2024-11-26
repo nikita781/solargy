@@ -1,0 +1,37 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: 'Exo 2', serif;
+}
+
+.main {
+  &_btn {
+    padding: 18px 50px;
+    border-radius: 8px;
+    outline: none;
+    border: none;
+    background-color: #EF7F1A;
+    color: #fff;
+    font-size: 16px;
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+  &_title {
+    color: #343A40;
+    font-size: 36px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-family: 'Exo 2 Bold';
+  }
+}
+
+@font-face {
+  font-family: 'Exo 2';
+  src: url('../fonts/Exo2/Exo2-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'Exo 2 Bold';
+  src: url('../fonts/Exo2/Exo2-Bold.ttf');
+}

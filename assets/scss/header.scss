@@ -1,0 +1,125 @@
+.header {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+  &__info {
+    background-color: #EF7F1A;
+    padding: 10px 80px;
+    display: flex;
+    justify-content: space-between;
+    &_container-text {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      a {
+        color: white;
+        font-size: 20px;
+      }
+    }
+    &_container-phone {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      p {
+        color: white;
+        font-size: 18px;
+      }
+    }
+  }
+  &__main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 80px;
+    background-color: #fff;
+    &_logo {
+      height: 30px;
+    }
+    &_nav {
+      display: flex;
+      gap: 32px;
+      font-weight: 500;
+      a {
+        cursor: pointer;
+        font-family: 'Exo 2 Bold', serif;
+      }
+      &-arrow {
+        transition: 0.3s;
+      }
+    }
+    &_nav-container {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      p {
+        font-family: 'Exo 2 Bold', serif;
+      }
+    }
+    &_menu {
+      display: flex;
+      gap: 12px;
+    }
+  }
+  &__menu {
+    position: absolute;
+    top: 104px;
+    width: calc(100% - 160px);
+    background-color: #fff;
+    padding: 40px 80px;
+    display: none;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px 115px;
+    z-index: 10;
+
+    &_container {
+      display: flex;
+      gap: 20px;
+      img {
+        width: 75px;
+        height: 75px;
+        object-fit: cover;
+      }
+    }
+    &_info {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    &_name {
+      font-size: 20px;
+      font-weight: bold;
+    }
+    &_items {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    &_item {
+      line-height: 14px;
+      &-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      &-arrow {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+      }
+    }
+    &_subitem {
+      padding-left: 20px;
+      line-height: 14px;
+      cursor: pointer;
+      &-container {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  }
+}

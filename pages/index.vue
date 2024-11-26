@@ -1,0 +1,279 @@
+<script setup>
+import {ref, onMounted, onUnmounted} from 'vue';
+import { Navigation, Pagination } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/vue';
+import 'swiper/css';
+
+const swiperConfig = ref({
+  modules: [Navigation, Pagination],
+  spaceBetween: 50,
+  slidesPerView: 1,
+  navigation: {
+    nextEl: '.swiper__right',
+    prevEl: '.swiper__left',
+  },
+  pagination: {
+    el: '.swiper__pagination',
+    clickable: true
+  },
+});
+
+const slides = ref([
+  {
+    id: 1,
+    backgroundImage: '/a64845b2ddf97aa28ae693147c1cb957.jpg',
+    title: 'Светодиоды Solargy SW',
+    subtitle: 'Освещение помещений солнечным светом без окон.',
+    titlelittle: 'Световод CEO SOLARGY SW C',
+    price: 'от 50 000 р'
+  },
+  {
+    id: 2,
+    backgroundImage: '/44dbb9cc01fa843514392aeb5314b96e.jpg',
+    title: 'Световод CEO SOLARGY SW B',
+    subtitle: 'Эффективное освещение для офиса.',
+    titlelittle: 'Световод CEO SOLARGY SW B',
+    price: 'от 30 000 р'
+  },
+  {
+    id: 3,
+    backgroundImage: '/88fea1154150a63a7cce1416c1d61201.jpg',
+    title: 'Световод CEO SOLARGY SW C',
+    subtitle: 'Освещение для вашего дома.',
+    titlelittle: 'Световод CEO SOLARGY SW A',
+    price: 'от 20 000 р'
+  },
+]);
+
+const bestProduct = ref([
+  {
+    id: 1,
+    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
+    title: 'Световой колодец',
+    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
+    price: 'От 50 500 ₽'
+  },
+  {
+    id: 2,
+    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
+    title: 'Solargy SW F',
+    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
+    price: 'От 50 500 ₽'
+  },
+  {
+    id: 3,
+    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
+    title: 'Solargy WL W',
+    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
+    price: 'От 50 500 ₽'
+  },
+  {
+    id: 4,
+    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
+    title: 'Solargy SW W',
+    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
+    price: 'От 50 500 ₽'
+  },
+])
+
+const types = ref([
+  {
+    id: 1,
+    image: '/d29a2e63be9ab3cf444e9ae4a08ea36e.jpg',
+    title: 'Мансардные фонари в частном доме',
+  },
+  {
+    id: 2,
+    image: '/d29a2e63be9ab3cf444e9ae4a08ea36e.jpg',
+    title: 'Solargy SW F',
+  },
+  {
+    id: 3,
+    image: '/d29a2e63be9ab3cf444e9ae4a08ea36e.jpg',
+    title: 'Solargy WL W',
+  },
+  {
+    id: 4,
+    image: '/d29a2e63be9ab3cf444e9ae4a08ea36e.jpg',
+    title: 'Solargy SW W',
+  },
+])
+
+const currentSlideIndex = ref(0);
+
+const changeSlide = () => {
+  currentSlideIndex.value = (currentSlideIndex.value + 1) % slides.value.length;
+};
+
+const goToSlide = (index) => {
+  currentSlideIndex.value = index;
+  clearInterval(interval);
+  interval = setInterval(changeSlide, 5000);
+};
+
+let interval;
+
+onMounted(() => {
+  interval = setInterval(changeSlide, 5000);
+});
+
+onUnmounted(() => {
+  clearInterval(interval);
+});
+</script>
+
+<template>
+  <div>
+    <div class="head"
+         :style="{
+          '--background-image': `url(${slides[currentSlideIndex].backgroundImage})`,
+         }"
+    >
+      <div class="head__background"></div>
+      <div class="head__black"></div>
+      <div class="head__info">
+        <h2 class="head__info_title">{{ slides[currentSlideIndex].title }}</h2>
+        <p class="head__info_subtitle">{{ slides[currentSlideIndex].subtitle }}</p>
+        <button class="main_btn head__info_btn">Перейти в каталог</button>
+      </div>
+      <div class="head__img-container"
+           :style="{
+            'background-image': `url(${slides[currentSlideIndex].backgroundImage})`,
+           }"
+      >
+        <div class="head__img-container-black"></div>
+        <h2 class="head__info_title-little">{{ slides[currentSlideIndex].titlelittle }}</h2>
+        <p class="head__info_subtitle">{{ slides[currentSlideIndex].price }}</p>
+      </div>
+      <div class="head__pagination">
+        <div
+            v-for="(slide, index) in slides"
+            :key="slide.id"
+            class="head__pagination-item"
+            :class="{ active: currentSlideIndex === index, inactive: currentSlideIndex !== index }"
+            @click="goToSlide(index)"
+        >
+          <div class="inner"></div>
+          <div class="border"></div>
+          <span>{{ String(index + 1).padStart(2, '0') }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="head__content">
+      <div class="head__content_title-container">
+        <p class="head__content_title_slash">/</p>
+        <h2 class="head__content_title">Системы комплексного естественного освещения </h2>
+      </div>
+      <div class="head__content_info-container">
+        <h3 class="head__content_info">Компания <span>«Соларжи»</span> является единственным в России разработчиком
+          систем передачи и транспортирования света
+          в удаленные помещения — световоды</h3>
+      </div>
+    </div>
+    <div class="best-product">
+      <div class="best-product__header">
+        <h2 class="main_title">Лучшие предложения</h2>
+        <button class="main_btn">Перейти в каталог</button>
+      </div>
+      <div class="best-product__items">
+        <div
+            class="best-product__item"
+            v-for="(product, index) in bestProduct"
+            :key="index"
+        >
+          <img class="best-product__item_img" :src="product.image" alt="">
+          <div class="best-product__item_content">
+            <p class="best-product__item_title">{{ product.title }}</p>
+            <p class="best-product__item_desc">{{ product.description }}</p>
+          </div>
+          <div class="best-product__item_container">
+            <p class="best-product__item_price">{{ product.price }}</p>
+            <button class="best-product__item_btn">Заказать</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="types">
+      <h2 class="main_title">Виды систем естественного освещения</h2>
+      <div class="swiper__container">
+        <Swiper
+            class="swiper"
+            v-bind="swiperConfig"
+        >
+          <SwiperSlide
+              v-for="(type, index) in types"
+              :key="index"
+          >
+            <div
+                class="swiper__slide"
+                :style="{
+                'background-image': `url(${type.image})`,
+               }"
+            >
+              <p class="swiper__title">{{ type.title }}</p>
+            </div>
+          </SwiperSlide>
+        </Swiper>
+        <IconsBtnSlide class="swiper__right"/>
+        <IconsBtnSlide class="swiper__left"/>
+        <div class="swiper__pagination_container">
+          <div class="swiper__pagination"></div>
+        </div>
+      </div>
+    </div>
+    <div class="category-prod">
+      <h2 class="main_title">Категории товаров</h2>
+      <div class="category-prod__container">
+        <div
+            class="category-prod__item"
+            style="
+              background-image: url('/3ca6988e74abea824a3a7bca8b2c089c.jpg')
+             "
+        >
+          <div class="category-prod__content">
+            <p class="category-prod__title">Светопроводящие системы</p>
+            <button class="main_btn category-prod__btn">Открыть каталог</button>
+          </div>
+        </div>
+        <div
+            class="category-prod__item"
+            style="
+              background-image: url('/a64845b2ddf97aa28ae693147c1cb957.jpg')
+             "
+        >
+          <div class="category-prod__content">
+            <p class="category-prod__title">Солнцезащитные устройства</p>
+            <button class="main_btn category-prod__btn">Открыть каталог</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="questions">
+      <h2 class="main_title">Остались вопросы?</h2>
+      <div class="questions__container">
+        <div class="questions__info">
+          <p class="questions__info_description">Напишите нам и менеджер ответит вам в ближайшее время</p>
+          <img class="questions__info_img" src="/a2638c413d54ccc28941e175b45711e1.jpg" alt="">
+        </div>
+        <div class="questions__form">
+          <div class="questions__form_container">
+            <p class="questions__form_title">Оставьте свое обращение</p>
+            <div class="questions__form_inputs">
+              <p class="questions__form_name">Ваше имя</p>
+              <input class="questions__form_input" type="text" name="name" placeholder="Введите имя">
+              <p class="questions__form_name">Ваш e-mail</p>
+              <input class="questions__form_input" type="email" name="email" placeholder="Введите e-mail">
+              <p class="questions__form_name">Комментарий</p>
+              <textarea class="questions__form_textarea" name="comment" placeholder="Введите комментарий"></textarea>
+            </div>
+            <button class="main_btn questions__form_btn">Отправить заявку</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+
+</style>

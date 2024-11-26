@@ -1,0 +1,22 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "nuxt": "^3.14.1592",
+    "nuxt-swiper": "^2.0.0",
+    "swiper": "^11.1.15",
+    "vue": "latest",
+    "vue-router": "latest"
+  },
+  "devDependencies": {
+    "sass-embedded": "^1.81.0"
+  }
+}
