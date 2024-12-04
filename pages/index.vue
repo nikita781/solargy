@@ -1,20 +1,29 @@
 <script setup>
 import {ref, onMounted, onUnmounted} from 'vue';
-import { Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
+import { Navigation, Pagination } from 'swiper';
 
-const swiperConfig = ref({
+// Ссылки на кнопки
+const swiperRight = ref(null);
+const swiperLeft = ref(null);
+
+// Конфигурация Swiper
+const swiperConfig = reactive({
   modules: [Navigation, Pagination],
   spaceBetween: 50,
   slidesPerView: 1,
+  slidesPerGroup: 1,
+  speed: 500,
+  loop: false,
+  watchSlidesProgress: true,
   navigation: {
-    nextEl: '.swiper__right',
-    prevEl: '.swiper__left',
+    nextEl: swiperRight.value,
+    prevEl: swiperLeft.value,
   },
   pagination: {
     el: '.swiper__pagination',
-    clickable: true
+    clickable: true,
   },
 });
 
@@ -115,6 +124,10 @@ let interval;
 
 onMounted(() => {
   interval = setInterval(changeSlide, 5000);
+  swiperConfig.navigation = {
+    nextEl: swiperRight.value,
+    prevEl: swiperLeft.value,
+  };
 });
 
 onUnmounted(() => {
@@ -188,7 +201,7 @@ onUnmounted(() => {
           </div>
           <div class="best-product__item_container">
             <p class="best-product__item_price">{{ product.price }}</p>
-            <button class="best-product__item_btn">Заказать</button>
+            <NuxtLink to="/card" class="best-product__item_btn">Заказать</NuxtLink>
           </div>
         </div>
       </div>
@@ -197,25 +210,25 @@ onUnmounted(() => {
       <h2 class="main_title">Виды систем естественного освещения</h2>
       <div class="swiper__container">
         <Swiper
-            class="swiper"
             v-bind="swiperConfig"
         >
-          <SwiperSlide
-              v-for="(type, index) in types"
-              :key="index"
-          >
+          <SwiperSlide v-for="(type, index) in types" :key="index">
             <div
                 class="swiper__slide"
-                :style="{
-                'background-image': `url(${type.image})`,
-               }"
+                :style="{ 'background-image': `url(${type.image})` }"
             >
               <p class="swiper__title">{{ type.title }}</p>
             </div>
           </SwiperSlide>
         </Swiper>
-        <IconsBtnSlide class="swiper__right"/>
-        <IconsBtnSlide class="swiper__left"/>
+
+        <div ref="swiperRight" class="swiper__right">
+          <IconsBtnSlide/>
+        </div>
+        <div ref="swiperLeft" class="swiper__left">
+          <IconsBtnSlide/>
+        </div>
+
         <div class="swiper__pagination_container">
           <div class="swiper__pagination"></div>
         </div>

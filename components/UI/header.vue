@@ -1,13 +1,32 @@
 <script setup>
 import { ref } from 'vue';
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
 
 const submenuRefs = ref(new Map());
 
 const isMenuOpen = ref(false);
+const isSearch = ref(false);
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
 };
+
+const toggleMenuSearch = () => {
+  isSearch.value = !isSearch.value;
+};
+
+watch(isMenuOpen, (newValue) => {
+  const container = document.querySelector('.container');
+  if (container) {
+    if (newValue) {
+      container.classList.add('active');
+    } else {
+      container.classList.remove('active');
+    }
+  }
+});
 
 const toggleSubmenu = (blockIndex, menuIndex) => {
   const key = `${blockIndex}-${menuIndex}`;
@@ -98,31 +117,58 @@ const blocks = [
 </script>
 
 <template>
-  <div class="header">
+  <header class="header">
     <div class="header__info">
       <div class="header__info_container-text">
-        <NuxtLink>Акция</NuxtLink>
-        <NuxtLink>Где купить?</NuxtLink>
+        <NuxtLink to="/stocks" :class="{ active: route.name === 'stocks' }">Акция</NuxtLink>
+        <NuxtLink to="/order" :class="{ active: route.name === 'order' }">Где купить?</NuxtLink>
+        <NuxtLink to="/delivery" :class="{ active: route.name === 'delivery' }">Доставка</NuxtLink>
       </div>
       <a href="tel: +78002000602" class="header__info_container-phone">
         <IconsPhone/>
         <p>8 (800) 200 06 02</p>
       </a>
     </div>
-    <div class="header__main">
-      <IconsLogo class="header__main_logo"/>
+    <div class="header__main" v-if="!isSearch">
+      <NuxtLink to="/">
+        <IconsLogo class="header__main_logo"/>
+      </NuxtLink>
       <nav class="header__main_nav">
-        <div class="header__main_nav-container" @click="toggleMenu">
-          <p>КАТАЛОГ</p>
-          <IconsArrow class="header__main_nav-arrow" :style="{ transform: isMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
+        <div
+            class="header__main_nav-container"
+            :class="{ active: route.name === 'catalog' }"
+        >
+          <NuxtLink to="/catalog">КАТАЛОГ</NuxtLink>
+          <IconsArrow @click="toggleMenu" class="header__main_nav-arrow" :style="{ transform: isMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
         </div>
-        <NuxtLink>О НАС</NuxtLink>
-        <NuxtLink>КОНТАКТЫ</NuxtLink>
+        <NuxtLink
+            class="header__main_nav-item"
+            :class="{ active: route.name === 'about_us' }"
+            to="/about_us"
+        >
+          О НАС
+        </NuxtLink>
+        <NuxtLink
+            class="header__main_nav-item"
+            :class="{ active: route.name === 'contact' }"
+            to="/contact"
+        >
+          КОНТАКТЫ
+        </NuxtLink>
       </nav>
       <div class="header__main_menu">
-        <IconsSearch/>
-        <IconsBasket/>
+        <IconsSearch @click="toggleMenuSearch"/>
+        <NuxtLink to="/basket">
+          <IconsBasket :class="{ active: route.name === 'basket' }"/>
+        </NuxtLink>
       </div>
+    </div>
+    <div class="header__main-search" v-if="isSearch">
+      <div class="header__main-search_container">
+        <input class="header__main-search_input" name="search" type="text" placeholder="Искать"/>
+        <IconsSearch/>
+      </div>
+      <IconsCross class="header__main-search_close" color="#cccccc" @click="toggleMenuSearch"/>
     </div>
     <div class="header__menu" :style="{ display: isMenuOpen ? 'grid' : 'none'}">
       <div
@@ -151,7 +197,7 @@ const blocks = [
       </div>
     </div>
 
-  </div>
+  </header>
 </template>
 
 <style scoped lang="scss">

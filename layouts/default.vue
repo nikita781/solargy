@@ -5,6 +5,7 @@
   <div class="container">
     <UIHeader />
     <NuxtPage />
+    <UIFooter />
   </div>
 </template>
 

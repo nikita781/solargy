@@ -1,0 +1,72 @@
+.footer {
+  background-color: #616161;
+  padding: 30px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  &__social {
+    display: flex;
+    justify-content: space-between;
+    padding-bottom: 30px;
+    border-bottom: 1px solid #818181;
+    &_logo {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 10px;
+    }
+    &_info {
+      color: #fff;
+      font-size: 14px;
+      letter-spacing: 1px;
+      font-family: 'Exo 2 Light', serif;
+    }
+    &_content {
+      display: flex;
+      gap: 120px;
+    }
+    &_item {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      &_text {
+        text-transform: uppercase;
+        color: white;
+        font-size: 18px;
+        font-weight: 100;
+      }
+    }
+    &_container {
+      display: flex;
+      gap: 16px;
+    }
+  }
+  &__catalog {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 30px;
+    border-bottom: 1px solid #818181;
+    &_item {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    &_title {
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      color: #EF7F1A;
+      font-size: 18px;
+    }
+    &_link {
+      color: white;
+      font-size: 20px;
+    }
+    &_phone {
+      display: flex;
+      justify-content: end;
+    }
+  }
+  &__end {
+    margin-top: 6px;
+  }
+}

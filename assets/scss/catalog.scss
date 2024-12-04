@@ -1,0 +1,19 @@
+.catalog {
+  padding: 30px 80px;
+  &__tabs {
+    display: flex;
+    gap: 24px;
+  }
+  &__tab {
+    text-transform: uppercase;
+    color: #9B9B9B;
+    font-size: 18px;
+    cursor: pointer;
+    &.active {
+      color: #EF7F1A;
+    }
+  }
+  &__product {
+    margin-bottom: 60px;
+  }
+}

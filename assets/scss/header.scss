@@ -3,6 +3,7 @@
   flex-direction: column;
   width: 100%;
   position: relative;
+  z-index: 51;
   &__info {
     background-color: #EF7F1A;
     padding: 10px 80px;
@@ -15,6 +16,14 @@
       a {
         color: white;
         font-size: 20px;
+        transition: 0.1s;
+        &:hover {
+          color: #171717;
+          transition: 0.1s;
+        }
+        &.active {
+          color: #171717;
+        }
       }
     }
     &_container-phone {
@@ -34,6 +43,7 @@
     align-items: center;
     padding: 15px 80px;
     background-color: #fff;
+    border-bottom: 1px solid #CCCCCC;
     &_logo {
       height: 30px;
     }
@@ -44,9 +54,21 @@
       a {
         cursor: pointer;
         font-family: 'Exo 2 Bold', serif;
+        transition: 0.2s;
+        color: #171717;
       }
       &-arrow {
-        transition: 0.3s;
+        height: 100%;
+        transition: 0.1s;
+      }
+      &-item {
+        &.active {
+          color: #EF7F1A;
+        }
+        &:hover {
+          color: #EF7F1A;
+          transition: 0.1s;
+        }
       }
     }
     &_nav-container {
@@ -54,19 +76,95 @@
       align-items: center;
       gap: 4px;
       cursor: pointer;
-      p {
+      &:hover, &.active {
+        a {
+          color: #EF7F1A;
+          transition: 0.1s;
+        }
+        svg {
+          path {
+            fill: #EF7F1A;
+          }
+        }
+      }
+      a {
         font-family: 'Exo 2 Bold', serif;
+        transition: 0.1s;
       }
     }
     &_menu {
       display: flex;
-      gap: 12px;
+      align-items: center;
+      gap: 16px;
+      a {
+        display: flex;
+        align-items: center;
+      }
+      svg {
+        cursor: pointer;
+        transition: 0.1s;
+        &.active {
+          path {
+            fill: #EF7F1A;
+          }
+        }
+        &:hover {
+          path {
+            fill: #EF7F1A;
+            transition: 0.1s;
+          }
+        }
+      }
+    }
+    &-search {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      padding: 15px 80px;
+      background-color: #fff;
+      border-bottom: 1px solid #CCCCCC;
+      svg {
+        cursor: pointer;
+      }
+      &_close {
+        width: 16px;
+        height: 16px;
+      }
+      &_input {
+        width: 448px;
+        height: 31px;
+        outline: none;
+        border: 1px solid #cccccc;
+        border-radius: 10px;
+        padding: 0 16px;
+        color: #cccccc;
+
+        &:focus:not(:placeholder-shown) {
+          border-color: #EF7F1A;
+          color: #171717;
+          font-family: 'Exo 2 Bold', serif;
+        }
+      }
+      &_container {
+        position: relative;
+        svg {
+          position: absolute;
+          right: 18px;
+          top: 5.5px;
+          path {
+            fill: #EF7F1A;
+          }
+        }
+      }
     }
   }
   &__menu {
+    background-color: rgba(0, 0, 0, 0.54);
     position: absolute;
-    top: 104px;
-    width: calc(100% - 160px);
+    top: 108px;
+    left: calc(5%);
+    width: calc(90% - 160px);
     background-color: #fff;
     padding: 40px 80px;
     display: none;
