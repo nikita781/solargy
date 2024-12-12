@@ -1,5 +1,28 @@
 <script setup>
+import {onMounted, ref} from "vue";
+import axios from "axios";
 
+const tabs = ref([]);
+const fetchTabs = async () => {
+  try {
+    const response = await axios.get('/categories');
+    tabs.value = response.data;
+  } catch (error) {
+    console.error('Ошибка загрузки категорий:', error.response?.data || error);
+  }
+};
+
+function generateSlug(name) {
+  return name
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim();
+}
+
+onMounted(() => {
+  fetchTabs();
+});
 </script>
 
 <template>
@@ -29,22 +52,27 @@
     <div class="footer__catalog">
       <div class="footer__catalog_item">
         <p class="footer__catalog_title">Покупателям</p>
-        <NuxtLink class="footer__catalog_link">Акции</NuxtLink>
-        <NuxtLink class="footer__catalog_link">Где купить?</NuxtLink>
-        <NuxtLink class="footer__catalog_link">Доставка</NuxtLink>
+        <NuxtLink to="/stocks" class="footer__catalog_link">Акции</NuxtLink>
+        <NuxtLink to="/order" class="footer__catalog_link">Где купить?</NuxtLink>
+        <NuxtLink to="/delivery" class="footer__catalog_link">Доставка</NuxtLink>
       </div>
       <div class="footer__catalog_item">
         <p class="footer__catalog_title">Навигация</p>
         <NuxtLink to="/" class="footer__catalog_link">Главная</NuxtLink>
-        <NuxtLink class="footer__catalog_link">О нас</NuxtLink>
-        <NuxtLink class="footer__catalog_link">Каталог</NuxtLink>
-        <NuxtLink class="footer__catalog_link">Контакты</NuxtLink>
+        <NuxtLink to="/about_us" class="footer__catalog_link">О нас</NuxtLink>
+        <NuxtLink to="/catalog" class="footer__catalog_link">Каталог</NuxtLink>
+        <NuxtLink to="/contact" class="footer__catalog_link">Контакты</NuxtLink>
       </div>
       <div class="footer__catalog_item">
         <p class="footer__catalog_title">Каталог</p>
-        <NuxtLink class="footer__catalog_link">Светопроводящие системы</NuxtLink>
-        <NuxtLink class="footer__catalog_link">Солнцезащитные устройства</NuxtLink>
-        <NuxtLink class="footer__catalog_link">Дополнительные товары</NuxtLink>
+        <NuxtLink
+            v-for="tab in tabs"
+            :key="tab.id"
+            class="footer__catalog_link"
+            :to="`/catalog/${tab.id}-${generateSlug(tab.name)}/`"
+        >
+          {{ tab.name }}
+        </NuxtLink>
       </div>
       <div class="footer__catalog_phone">
         <div class="footer__catalog_item">

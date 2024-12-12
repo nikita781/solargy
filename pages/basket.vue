@@ -1,24 +1,50 @@
 <script setup>
-import {ref} from "vue";
+import {ref, computed} from "vue";
+import { useBasketStore } from "@/stores/basket";
 
-const quantity = ref(1);
-const quantityPlus = () => {
-  quantity.value++;
+const basketStore = useBasketStore();
+const basketItems = computed(() => basketStore.items);
+const nameUser = ref("");
+const phoneUser = ref("");
+
+const totalBasketPrice = computed(() =>
+    basketStore.items.reduce((total, item) => total + item.price * item.quantity, 0)
+);
+
+function removeFromBasket(itemId) {
+  basketStore.removeItem(itemId);
 }
-const quantityMinus = () => {
-  if (quantity.value === 1) {
-    return;
+
+const quantityPlus = (itemId) => {
+  const item = basketStore.items.find((i) => i.id === itemId);
+  if (item) {
+    basketStore.updateQuantity(itemId, item.quantity + 1);
   }
-  quantity.value--;
-}
+};
+const quantityMinus = (itemId) => {
+  const item = basketStore.items.find((i) => i.id === itemId);
+  if (item && item.quantity > 1) {
+    basketStore.updateQuantity(itemId, item.quantity - 1);
+  }
+};
 
 const application = ref(false);
 const toggleApplication = () => {
+  if (basketStore.items.length === 0) {
+    return;
+  }
+  basketStore.updateUserInfoPrice(totalBasketPrice.value);
   application.value = !application.value;
 }
 
 const formOpen = ref(false);
 const toggleFormOpen = () => {
+  if (!nameUser.value.trim() || !phoneUser.value.trim()) {
+    return;
+  }
+  basketStore.updateUserInfo(nameUser.value, phoneUser.value);
+  console.log(basketStore)
+  //basketStore.clearBasket();
   formOpen.value = !formOpen.value;
 }
 
@@ -59,49 +85,66 @@ const bestProduct = ref([
     <div class="basket" v-if="!formOpen">
       <h2 class="main_title">Корзина</h2>
       <div class="basket__container">
-        <div class="basket__items" v-if="!application">
-          <div class="basket__item">
+        <div class="basket__items" v-if="!application && basketItems.length > 0">
+          <div
+              class="basket__item"
+              v-for="(item, index) in basketItems"
+              :key="index"
+          >
             <div class="basket__item_content">
-              <img src="/a64845b2ddf97aa28ae693147c1cb957_1.jpg" alt="">
+              <img :src="item.photo" alt="">
               <div class="basket__item_info">
-                <p class="basket__item_title">Грунтовый Solargy SW F</p>
+                <p class="basket__item_title">{{ item.name }}</p>
                 <div class="basket__item_characteristic">
-                  <p class="basket__item_inf">Место установки световода: <span>В грунт</span></p>
-                  <p class="basket__item_inf">Диаметр световода: <span>250 мм</span></p>
-                  <p class="basket__item_inf">Цвет световода: <span>250 мм</span></p>
+                  <div v-for="(option, index) in item.options" :key="index">
+                    <p class="basket__item_inf">
+                      {{ option.name }}: <span>{{ option.value.value }}</span>
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="card__main_final-cont">
-              <div class="card__main_final-btn" @click="quantityMinus">
-                <IconsMinus :color='quantity === 1 ? "#cccccc" : "#EF7F1A"'/>
+            <div class="basket__item_cont">
+              <div class="card__main_final-cont">
+                <div
+                    class="card__main_final-btn"
+                    @click="quantityMinus(item.id)"
+                >
+                  <IconsMinus :color="item.quantity === 1 ? '#cccccc' : '#EF7F1A'"/>
+                </div>
+                <div class="card__main_final-quantity">{{ item.quantity }}</div>
+                <div
+                    class="card__main_final-btn"
+                    @click="quantityPlus(item.id)"
+                >
+                  <IconsPlus color="#EF7F1A"/>
+                </div>
               </div>
-              <div class="card__main_final-quantity">{{ quantity }}</div>
-              <div class="card__main_final-btn" @click="quantityPlus">
-                <IconsPlus color="#EF7F1A"/>
-              </div>
+              <p class="basket__item_price">{{ item.price * item.quantity }} ₽</p>
+              <IconsTrash @click="removeFromBasket(item.id)" />
             </div>
-            <p class="basket__item_price">50 800 ₽</p>
-            <IconsTrash/>
           </div>
+        </div>
+        <div class="basket__empty" v-if="!application && basketItems.length === 0">
+          <p>Ваша корзина пуста. Добавьте товары, чтобы продолжить покупки.</p>
         </div>
         <div class="basket__form-cont" v-if="application">
           <p class="basket__form_title">Покупатель</p>
           <div class="basket__form_content">
             <div class="basket__form_input-cont">
               <p class="basket__form_input-title">Ваше имя <span>*</span></p>
-              <input type="text" class="basket__form_input" placeholder="Введите ФИО">
+              <input type="text" class="basket__form_input" v-model="nameUser" placeholder="Введите ФИО">
             </div>
             <div class="basket__form_input-cont">
               <p class="basket__form_input-title">Ваш телефон <span>*</span></p>
-              <input type="text" class="basket__form_input" placeholder="Введите номер телефона">
+              <input type="text" class="basket__form_input" v-model="phoneUser" placeholder="Введите номер телефона">
             </div>
           </div>
         </div>
         <div class="basket__button-cont">
           <div class="basket__title-cont">
             <p class="basket__title">Итого</p>
-            <p class="basket__title">50 800 ₽</p>
+            <p class="basket__title">{{totalBasketPrice}} ₽</p>
           </div>
           <button v-if="!application" class="main_btn basket__button" @click="toggleApplication">Перейти к оформлению</button>
           <button v-if="application" class="main_btn basket__button" @click="toggleFormOpen">Оформить заявку</button>
@@ -118,20 +161,20 @@ const bestProduct = ref([
       <div class="card__product__header">
         <h2 class="main_title">Дополнительные услуги</h2>
       </div>
-      <div class="card__product__items">
+      <div class="best-product__items">
         <div
-            class="card__product__item"
+            class="best-product__item"
             v-for="(product, index) in bestProduct"
             :key="index"
         >
-          <img class="card__product__item_img" :src="product.image" alt="">
-          <div class="card__product__item_content">
-            <p class="card__product__item_title">{{ product.title }}</p>
-            <p class="card__product__item_desc">{{ product.description }}</p>
+          <img class="best-product__item_img" :src="product.image" alt="">
+          <div class="best-product__item_content">
+            <p class="best-product__item_title">{{ product.title }}</p>
+            <p class="best-product__item_desc">{{ product.description }}</p>
           </div>
-          <div class="card__product__item_container">
-            <p class="card__product__item_price">{{ product.price }}</p>
-            <NuxtLink to="/card" class="card__product__item_btn">Заказать</NuxtLink>
+          <div class="best-product__item_container">
+            <p class="best-product__item_price">{{ product.price }}</p>
+            <NuxtLink to="/card" class="best-product__item_btn">Заказать</NuxtLink>
           </div>
         </div>
       </div>

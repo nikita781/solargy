@@ -3,12 +3,11 @@ import {ref, onMounted, onUnmounted} from 'vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import 'swiper/css';
 import { Navigation, Pagination } from 'swiper';
+import axios from 'axios';
 
-// Ссылки на кнопки
 const swiperRight = ref(null);
 const swiperLeft = ref(null);
 
-// Конфигурация Swiper
 const swiperConfig = reactive({
   modules: [Navigation, Pagination],
   spaceBetween: 50,
@@ -27,91 +26,66 @@ const swiperConfig = reactive({
   },
 });
 
-const slides = ref([
-  {
-    id: 1,
-    backgroundImage: '/a64845b2ddf97aa28ae693147c1cb957.jpg',
-    title: 'Светодиоды Solargy SW',
-    subtitle: 'Освещение помещений солнечным светом без окон.',
-    titlelittle: 'Световод CEO SOLARGY SW C',
-    price: 'от 50 000 р'
-  },
-  {
-    id: 2,
-    backgroundImage: '/44dbb9cc01fa843514392aeb5314b96e.jpg',
-    title: 'Световод CEO SOLARGY SW B',
-    subtitle: 'Эффективное освещение для офиса.',
-    titlelittle: 'Световод CEO SOLARGY SW B',
-    price: 'от 30 000 р'
-  },
-  {
-    id: 3,
-    backgroundImage: '/88fea1154150a63a7cce1416c1d61201.jpg',
-    title: 'Световод CEO SOLARGY SW C',
-    subtitle: 'Освещение для вашего дома.',
-    titlelittle: 'Световод CEO SOLARGY SW A',
-    price: 'от 20 000 р'
-  },
-]);
+const banners = ref([]);
 
-const bestProduct = ref([
-  {
-    id: 1,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 2,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 3,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 4,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-])
+const fetchBanners = async () => {
+  try {
+    const response = await axios.get('/main-banners');
+    banners.value = response.data;
+  } catch (error) {
+    console.error('Ошибка с сервера:', error.response.data);
+    console.error('Ошибка загрузки баннеров:', error);
+  }
+};
 
-const types = ref([
-  {
-    id: 1,
-    image: '/d29a2e63be9ab3cf444e9ae4a08ea36e.jpg',
-    title: 'Мансардные фонари в частном доме',
-  },
-  {
-    id: 2,
-    image: '/d29a2e63be9ab3cf444e9ae4a08ea36e.jpg',
-    title: 'Solargy SW F',
-  },
-  {
-    id: 3,
-    image: '/d29a2e63be9ab3cf444e9ae4a08ea36e.jpg',
-    title: 'Solargy WL W',
-  },
-  {
-    id: 4,
-    image: '/d29a2e63be9ab3cf444e9ae4a08ea36e.jpg',
-    title: 'Solargy SW W',
-  },
-])
+function generateSlug(name) {
+  return name
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim();
+}
+
+const topProduct = ref([]);
+
+const fetchTopProducts = async () => {
+  try {
+    const response = await axios.get('/products?top=1');
+    topProduct.value = response.data;
+  } catch (error) {
+    console.error('Ошибка с сервера:', error.response.data);
+    console.error('Ошибка загрузки баннеров:', error);
+  }
+};
+
+const types = ref([]);
+
+const fetchTypes = async () => {
+  try {
+    const response = await axios.get('/sub-banners');
+    types.value = response.data;
+  } catch (error) {
+    console.error('Ошибка с сервера:', error.response.data);
+    console.error('Ошибка загрузки баннеров:', error);
+  }
+};
+
+const categories = ref([]);
+
+const fetchCategories = async () => {
+  try {
+    const response = await axios.get('/categories');
+    categories.value = response.data;
+  } catch (error) {
+    console.error('Ошибка с сервера:', error.response.data);
+    console.error('Ошибка загрузки баннеров:', error);
+  }
+};
 
 const currentSlideIndex = ref(0);
 
 const changeSlide = () => {
-  currentSlideIndex.value = (currentSlideIndex.value + 1) % slides.value.length;
+  currentSlideIndex.value = (currentSlideIndex.value + 1) % banners.value.length;
 };
 
 const goToSlide = (index) => {
@@ -123,6 +97,10 @@ const goToSlide = (index) => {
 let interval;
 
 onMounted(() => {
+  fetchBanners();
+  fetchTopProducts();
+  fetchTypes();
+  fetchCategories();
   interval = setInterval(changeSlide, 5000);
   swiperConfig.navigation = {
     nextEl: swiperRight.value,
@@ -139,28 +117,28 @@ onUnmounted(() => {
   <div>
     <div class="head"
          :style="{
-          '--background-image': `url(${slides[currentSlideIndex].backgroundImage})`,
+          '--background-image': `url(${banners[currentSlideIndex]?.image})`,
          }"
     >
       <div class="head__background"></div>
       <div class="head__black"></div>
       <div class="head__info">
-        <h2 class="head__info_title">{{ slides[currentSlideIndex].title }}</h2>
-        <p class="head__info_subtitle">{{ slides[currentSlideIndex].subtitle }}</p>
-        <button class="main_btn head__info_btn">Перейти в каталог</button>
+        <h2 class="head__info_title">{{ banners[currentSlideIndex]?.title }}</h2>
+        <p class="head__info_subtitle">{{ banners[currentSlideIndex]?.description }}</p>
+        <NuxtLink to="/catalog" class="main_btn head__info_btn">Перейти в каталог</NuxtLink>
       </div>
       <div class="head__img-container"
            :style="{
-            'background-image': `url(${slides[currentSlideIndex].backgroundImage})`,
+            'background-image': `url(${banners[currentSlideIndex]?.image})`,
            }"
       >
         <div class="head__img-container-black"></div>
-        <h2 class="head__info_title-little">{{ slides[currentSlideIndex].titlelittle }}</h2>
-        <p class="head__info_subtitle">{{ slides[currentSlideIndex].price }}</p>
+        <h2 class="head__info_title-little">{{ banners[currentSlideIndex]?.product.name }}</h2>
+        <p class="head__info_subtitle">от {{ banners[currentSlideIndex]?.product.price }} р</p>
       </div>
       <div class="head__pagination">
         <div
-            v-for="(slide, index) in slides"
+            v-for="(slide, index) in banners"
             :key="slide.id"
             class="head__pagination-item"
             :class="{ active: currentSlideIndex === index, inactive: currentSlideIndex !== index }"
@@ -178,7 +156,7 @@ onUnmounted(() => {
         <h2 class="head__content_title">Системы комплексного естественного освещения </h2>
       </div>
       <div class="head__content_info-container">
-        <h3 class="head__content_info">Компания <span>«Соларжи»</span> является единственным в России разработчиком
+        <h3 class="head__content_info">Компания <NuxtLink to="/about_us">«Соларжи»</NuxtLink> является единственным в России разработчиком
           систем передачи и транспортирования света
           в удаленные помещения — световоды</h3>
       </div>
@@ -186,22 +164,27 @@ onUnmounted(() => {
     <div class="best-product">
       <div class="best-product__header">
         <h2 class="main_title">Лучшие предложения</h2>
-        <button class="main_btn">Перейти в каталог</button>
+        <NuxtLink to="/catalog" class="main_btn">Перейти в каталог</NuxtLink>
       </div>
       <div class="best-product__items">
         <div
             class="best-product__item"
-            v-for="(product, index) in bestProduct"
-            :key="index"
+            v-for="product in topProduct.data"
+            :key="product.id"
         >
-          <img class="best-product__item_img" :src="product.image" alt="">
+          <img class="best-product__item_img" :src="product?.photos[0]?.photo" alt="">
           <div class="best-product__item_content">
-            <p class="best-product__item_title">{{ product.title }}</p>
-            <p class="best-product__item_desc">{{ product.description }}</p>
+            <p class="best-product__item_title">{{ product?.name }}</p>
+            <p class="best-product__item_desc">{{ product?.description }}</p>
           </div>
           <div class="best-product__item_container">
-            <p class="best-product__item_price">{{ product.price }}</p>
-            <NuxtLink to="/card" class="best-product__item_btn">Заказать</NuxtLink>
+            <p class="best-product__item_price">от {{ product?.price }} ₽</p>
+            <NuxtLink
+                class="best-product__item_btn"
+                :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+            >
+              Заказать
+            </NuxtLink>
           </div>
         </div>
       </div>
@@ -238,25 +221,19 @@ onUnmounted(() => {
       <h2 class="main_title">Категории товаров</h2>
       <div class="category-prod__container">
         <div
+            v-for="(category, index) in categories"
+            :key="index"
             class="category-prod__item"
-            style="
-              background-image: url('/3ca6988e74abea824a3a7bca8b2c089c.jpg')
-             "
+            :style="{ backgroundImage: `url(${category?.photo})` }"
         >
           <div class="category-prod__content">
-            <p class="category-prod__title">Светопроводящие системы</p>
-            <button class="main_btn category-prod__btn">Открыть каталог</button>
-          </div>
-        </div>
-        <div
-            class="category-prod__item"
-            style="
-              background-image: url('/a64845b2ddf97aa28ae693147c1cb957.jpg')
-             "
-        >
-          <div class="category-prod__content">
-            <p class="category-prod__title">Солнцезащитные устройства</p>
-            <button class="main_btn category-prod__btn">Открыть каталог</button>
+            <p class="category-prod__title">{{ category?.name }}</p>
+            <NuxtLink
+                :to="`/catalog/${category.id}-${generateSlug(category.name)}/`"
+                class="main_btn category-prod__btn"
+            >
+              Открыть каталог
+            </NuxtLink>
           </div>
         </div>
       </div>

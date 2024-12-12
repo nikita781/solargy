@@ -1,3 +1,11 @@
+$x-small: 575.98px;
+$small: 767.98px;
+$medium: 991.98px;
+$large: 1199.98px;
+$x-large: 1399.98px;
+$big: 1592.98px;
+$x-big: 1829.98px;
+
 .head {
   padding: 100px 80px;
   height: 562px;
@@ -11,14 +19,36 @@
   //background-size: cover;
   //background-position: center;
   transition: background-image 0.5s ease;
-
+  @media screen and (max-width: $medium){
+    height: 400px;
+    padding: 80px 50px;
+  }
+  @media screen and (max-width: $small){
+    height: unset;
+    grid-template-columns: 1fr;
+    gap: 30px;
+    padding: 50px;
+  }
+  @media screen and (max-width: $x-small){
+    padding: 30px;
+  }
   &__pagination {
     position: absolute;
     bottom: 100px;
     left: 80px;
     display: flex;
+    flex-wrap: wrap;
     gap: 15px;
-
+    @media screen and (max-width: $medium){
+      bottom: 80px;
+      left: 50px;
+      gap: 5px;
+    }
+    @media screen and (max-width: $small){
+      position: relative;
+      bottom: 0;
+      left: 0;
+    }
     &-item {
       width: 52px;
       height: 52px;
@@ -30,7 +60,9 @@
       overflow: hidden;
       cursor: pointer;
       z-index: 6;
-
+      @media screen and (max-width: $medium){
+        transform: scale(0.8);
+      }
       &.inactive {
         opacity: 0.3;
       }
@@ -122,15 +154,24 @@
     flex-direction: column;
     gap: 20px;
     z-index: 1;
+    @media screen and (max-width: $medium) {
+      justify-content: unset;
+    }
     &_title {
       font-size: 48px;
       color: white;
       letter-spacing: 4px;
+      @media screen and (max-width: $medium){
+        font-size: 30px;
+      }
       &-little {
         z-index: 5;
         font-size: 24px;
         color: white;
         letter-spacing: 4px;
+        @media screen and (max-width: $small){
+          font-size: 18px;
+        }
       }
     }
     &_subtitle {
@@ -139,6 +180,10 @@
       color: white;
       letter-spacing: 2px;
       line-height: 25px;
+      @media screen and (max-width: $medium){
+        font-size: 14px;
+        line-height: 16px;
+      }
     }
     &_btn {
       margin-top: 10px;
@@ -157,6 +202,12 @@
       padding: 30px;
       position: relative;
       transition: background-image 0.5s ease;
+      @media screen and (max-width: $large) {
+        margin-left: unset;
+      }
+      @media screen and (max-width: $small) {
+        height: 200px;
+      }
       &-black {
         position: absolute;
         top: 0;
@@ -171,6 +222,19 @@
     padding: 100px 80px;
     display: grid;
     grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    @media screen and (max-width: $large){
+      padding: 80px;
+    }
+    @media screen and (max-width: $medium){
+      padding: 60px 50px;
+    }
+    @media screen and (max-width: $small){
+      grid-template-columns: 1fr;
+    }
+    @media screen and (max-width: $x-small){
+      padding: 40px 30px;
+    }
     &_title {
       font-size: 22px;
       color: #EF7F1A;
@@ -179,6 +243,14 @@
       letter-spacing: 2px;
       max-width: 500px;
       width: 100%;
+      @media screen and (max-width: $large){
+        font-size: 20px;
+        line-height: 23px;
+      }
+      @media screen and (max-width: $medium){
+        font-size: 16px;
+        line-height: 18px;
+      }
       &-container {
         display: flex;
         align-items: center;
@@ -188,6 +260,10 @@
         font-size: 46px;
         color: #EF7F1A;
         line-height: 20px;
+        @media screen and (max-width: $medium){
+          font-size: 30px;
+          line-height: 18px;
+        }
       }
     }
     &_info {
@@ -195,7 +271,15 @@
       line-height: 25px;
       letter-spacing: 1px;
       font-weight: 400;
-      span {
+      @media screen and (max-width: $large){
+        font-size: 18px;
+        line-height: 20px;
+      }
+      @media screen and (max-width: $medium){
+        font-size: 14px;
+        line-height: 16px;
+      }
+      a {
         color: #EF7F1A;
         text-transform: uppercase;
         font-weight: 700;
@@ -206,16 +290,40 @@
 .best-product {
   padding: 100px 80px;
   background: #F5F5F5;
+  @media screen and (max-width: $large){
+    padding: 80px;
+  }
+  @media screen and (max-width: $medium){
+    padding: 60px 50px;
+  }
+  @media screen and (max-width: $x-small){
+    padding: 40px 30px;
+  }
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
+    @media screen and (max-width: $x-small){
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
   &__items {
     margin-top: 30px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 60px 20px;
+    @media screen and (max-width: $large){
+      grid-template-columns: 1fr 1fr;
+      gap: 40px 20px;
+    }
+    @media screen and (max-width: $small){
+      gap: 20px 10px;
+    }
+    @media screen and (max-width: $x-small){
+      grid-template-columns: 1fr;
+    }
   }
   &__item {
     padding: 20px 20px 30px 20px;
@@ -231,6 +339,9 @@
       width: 100%;
       object-fit: cover;
       border-radius: 20px;
+      @media screen and (max-width: $small){
+        height: 200px;
+      }
     }
     &_content {
       display: flex;
@@ -290,6 +401,15 @@
 }
 .types {
   padding: 50px 80px;
+  @media screen and (max-width: $large){
+    padding: 50px 80px;
+  }
+  @media screen and (max-width: $medium){
+    padding: 50px 50px;
+  }
+  @media screen and (max-width: $x-small){
+    padding: 40px 30px;
+  }
 }
 
 .swiper__right, .swiper__left {
@@ -302,15 +422,33 @@
 .swiper__right {
   right: 0;
   transform: rotate(180deg);
+  @media screen and (max-width: $medium){
+    right: 20px;
+  }
+  @media screen and (max-width: $small){
+    display: none;
+  }
 }
 .swiper__left {
   left: 0;
+  @media screen and (max-width: $medium){
+    left: 20px;
+  }
+  @media screen and (max-width: $small){
+    display: none;
+  }
 }
 .swiper {
   margin-top: 30px;
   width: calc(100% - 140px);
   height: 616px;
   position: relative;
+  @media screen and (max-width: $medium){
+    width: 100%;
+  }
+  @media screen and (max-width: $small){
+    height: 450px;
+  }
   &__container {
     position: relative;
   }
@@ -337,11 +475,18 @@
     font-weight: 700;
     letter-spacing: 4px;
     text-transform: uppercase;
+    @media screen and (max-width: $small){
+      font-size: 16px;
+      padding: 10px 35px;
+    }
   }
   &__pagination {
     margin-top: 30px;
     display: flex;
     gap: 16px;
+    @media screen and (max-width: $small){
+      margin-top: 20px;
+    }
     &_container {
       display: flex;
       justify-content: center;
@@ -362,11 +507,26 @@
 }
 .category-prod {
   padding: 50px 80px;
+  @media screen and (max-width: $large){
+    padding: 50px 80px;
+  }
+  @media screen and (max-width: $medium){
+    padding: 50px 50px;
+  }
+  @media screen and (max-width: $x-small){
+    padding: 40px 30px;
+  }
+  .types {
+    padding: 50px 80px;
+  }
   &__container {
     margin-top: 30px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+    @media screen and (max-width: $small){
+      grid-template-columns: 1fr;
+    }
   }
   &__item {
     height: 568px;
@@ -377,6 +537,16 @@
     padding: 30px;
     display: flex;
     align-items: flex-end;
+    @media screen and (max-width: $large){
+      height: 450px;
+    }
+    @media screen and (max-width: $medium){
+      height: 350px;
+      padding: 20px;
+    }
+    @media screen and (max-width: $small){
+      height: 300px;
+    }
     &::before {
       content: '';
       position: absolute;
@@ -393,6 +563,11 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    @media screen and (max-width: $medium){
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 20px;
+    }
   }
   &__title {
     color: white;
@@ -401,41 +576,84 @@
     line-height: 32px;
     letter-spacing: 3px;
     text-transform: uppercase;
+    @media screen and (max-width: $large){
+      font-size: 18px;
+      line-height: 22px;
+    }
+    @media screen and (max-width: $small){
+      font-size: 14px;
+      line-height: 16px;
+    }
   }
 }
 .questions {
   padding: 50px 80px;
   margin-bottom: 50px;
+  @media screen and (max-width: $large){
+    padding: 50px 80px;
+  }
+  @media screen and (max-width: $medium){
+    padding: 50px 50px;
+  }
+  @media screen and (max-width: $x-small){
+    padding: 40px 30px;
+  }
   &__container {
     margin-top: 30px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+    @media screen and (max-width: $large){
+      grid-template-columns: 1fr 1.5fr;
+    }
+    @media screen and (max-width: $small){
+      grid-template-columns: 1fr;
+    }
   }
   &__info {
     margin-right: 108px;
     display: flex;
     flex-direction: column;
     gap: 30px;
+    @media screen and (max-width: $large){
+      margin-right: unset;
+    }
     &_description {
       color: #171717;
       font-size: 20px;
       line-height: 25px;
       letter-spacing: 2px;
+      @media screen and (max-width: $medium){
+        font-size: 16px;
+        line-height: 18px;
+        letter-spacing: 1px;
+      }
     }
     &_img {
       width: 100%;
       height: 608px;
       object-fit: cover;
+      @media screen and (max-width: $large){
+        height: 587px;
+      }
+      @media screen and (max-width: $medium){
+        height: 519px;
+      }
+      @media screen and (max-width: $small){
+        display: none;
+      }
     }
   }
   &__form {
     background-color: #FEF4E8;
     border-radius: 10px;
-    padding: 60px 0;
+    padding: 60px 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    @media screen and (max-width: $medium){
+      padding: 30px;
+    }
     &_container {
       max-width: 454px;
       width: 100%;
@@ -451,6 +669,10 @@
       font-family: 'Exo 2 Bold', serif;
       letter-spacing: 2px;
       text-transform: uppercase;
+      @media screen and (max-width: $medium){
+        font-size: 18px;
+        line-height: 22px;
+      }
     }
     &_inputs {
       display: flex;
@@ -462,6 +684,10 @@
       line-height: 25px;
       letter-spacing: 1px;
       color: black;
+      @media screen and (max-width: $medium){
+        font-size: 16px;
+        line-height: 20px;
+      }
     }
     &_input {
       width: calc(100% - 32px);

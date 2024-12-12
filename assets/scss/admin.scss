@@ -1,0 +1,103 @@
+$x-small: 575.98px;
+$small: 767.98px;
+$medium: 991.98px;
+$large: 1199.98px;
+$x-large: 1399.98px;
+$big: 1592.98px;
+$x-big: 1829.98px;
+.admin {
+  padding: 70px 80px;
+  @media screen and (max-width: $large){
+    padding: 70px 80px;
+  }
+  @media screen and (max-width: $medium){
+    padding: 70px 50px;
+  }
+  @media screen and (max-width: $x-small){
+    padding: 50px;
+  }
+  &__auth {
+    width: 100%;
+    max-width: 700px;
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  &-panel {
+    margin-top: 50px;
+    display: grid;
+    grid-template-columns: 1fr 6fr;
+    gap: 20px;
+    &__menu {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      &_item {
+        padding: 10px 15px;
+        border: 1px solid #171717;
+        border-radius: 8px;
+        cursor: pointer;
+        &.active {
+          border: 1px solid #EF7F1A;
+          color: #EF7F1A;
+        }
+      }
+    }
+    &__content {
+      display: flex;
+      flex-direction: column;
+      gap: 50px;
+      h3 {
+        margin: 30px 0 0 0;
+      }
+      &_form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        max-width: 500px;
+        width: 100%;
+      }
+      &_info {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        &_item {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          padding: 15px;
+          border-radius: 10px;
+          border: 1px solid #EF7F1A;
+        }
+        &_content {
+          display: grid;
+          align-items: center;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 20px;
+        }
+      }
+      &_textarea {
+        padding: 10px;
+        resize: vertical;
+      }
+      &_btn {
+        background-color: unset;
+        outline: none;
+        border: 1px solid #EF7F1A;
+        border-radius: 8px;
+        transition: 0.3s;
+        padding: 10px;
+        color: #000;
+        width: 100%;
+        cursor: pointer;
+        &:hover {
+          background-color: #EF7F1A;
+          color: #FFF;
+          transition: 0.3s;
+        }
+      }
+    }
+  }
+}

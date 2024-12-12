@@ -10,8 +10,21 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@editorjs/editorjs": "^2.30.7",
+    "@editorjs/embed": "^2.7.6",
+    "@editorjs/image": "^2.10.1",
+    "@editorjs/list": "^2.0.2",
+    "@editorjs/paragraph": "^2.11.6",
+    "@editorjs/quote": "^2.7.6",
+    "@editorjs/table": "^2.4.3",
+    "@pinia/nuxt": "^0.9.0",
+    "@qirolab/nuxt-sanctum-authentication": "^0.1.15",
+    "@tinymce/tinymce-vue": "^4.0.7",
+    "axios": "^1.7.9",
+    "editorjs-style": "^3.0.3",
     "nuxt": "^3.14.1592",
     "nuxt-swiper": "^2.0.0",
+    "pinia": "^2.3.0",
     "swiper": "^7.4.1",
     "vue": "latest",
     "vue-router": "latest"

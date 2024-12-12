@@ -1,0 +1,11 @@
+<script setup>
+
+</script>
+
+<template>
+  <svg height="28px" viewBox="0 -960 960 960" width="28px" fill="#000000"><path d="M144-284v-72h672v72H144Zm0-180v-72h672v72H144Zm0-180v-72h672v72H144Z"/></svg>
+</template>
+
+<style scoped lang="scss">
+
+</style>

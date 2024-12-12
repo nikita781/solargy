@@ -1,93 +1,139 @@
 <script setup>
+import {onMounted, ref} from "vue";
+import axios from "axios";
 
+const blocks = ref([]);
+const patents = ref([]);
+const teams = ref([]);
+
+const fetchBlocks = async () => {
+  try {
+    const response = await axios.get(`/pages/2`);
+    blocks.value = response.data.sections;
+  } catch (error) {
+    console.error('Ошибка с сервера:', error.response.data);
+    console.error('Ошибка загрузки баннеров:', error);
+  }
+};
+const fetchPatents = async () => {
+  try {
+    const response = await axios.get(`/patents`);
+    patents.value = response.data.data;
+  } catch (error) {
+    console.error('Ошибка с сервера:', error.response.data);
+    console.error('Ошибка загрузки баннеров:', error);
+  }
+};
+const fetchTeams = async () => {
+  try {
+    const response = await axios.get(`/teams`);
+    teams.value = response.data.data;
+  } catch (error) {
+    console.error('Ошибка с сервера:', error.response.data);
+    console.error('Ошибка загрузки баннеров:', error);
+  }
+};
+const handleDownload = async (fileUrl, file_name) => {
+  try {
+    const fileName = fileUrl.split('/').pop();
+    const response = await axios.get(`/download/patents/${fileName}`, {
+      responseType: 'blob',
+    });
+
+    const blob = new Blob([response.data], { type: response.headers['content-type'] });
+    const downloadUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = file_name;
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error('Ошибка при скачивании:', error);
+    alert('Ошибка при скачивании');
+  }
+};
+
+onMounted(() => {
+  fetchBlocks();
+  fetchPatents();
+  fetchTeams();
+});
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}
 </script>
 
 <template>
   <div>
-    <div class="about_us__header">
+    <div v-if="blocks[0]" class="about_us__header">
       <div class="about_us__header_info">
-        <h1 class="about_us__header_title">Компания «Соларжи»</h1>
-        <p class="about_us__header_subtitle">Является единственным в России разработчиком систем передачи и транспортирования света в удаленные помещения — световоды. Разрабатываемые и предлагаемые технологии освещения не только обеспечивают увеличение яркости естественного и искусственного освещения помещений, но и является полной альтернативой окна.</p>
+        <h1 class="about_us__header_title">{{ blocks[0].title }}</h1>
+        <p class="about_us__header_subtitle" v-html="blocks[0].html"></p>
       </div>
       <div class="about_us__header_img">
-        <img src="/SWC-400-SBORKA-1 1.png" alt="">
+        <img :src="blocks[0].image" alt="Header Image" />
       </div>
     </div>
     <div class="about_us__content">
-      <div class="about_us__content_container">
-        <div class="about_us__content_info">
-          <h2 class="main_title">Наша история</h2>
-          <p class="about_us__content_text">Является единственным в России разработчиком систем передачи и транспортирования света в удаленные помещения — световоды. Разрабатываемые и предлагаемые технологии освещения не только обеспечивают увеличение яркости естественного и искусственного освещения помещений, но и является полной альтернативой окна.</p>
-          <button class="main_btn">Узнать больше</button>
+      <div
+          v-for="(block, index) in blocks.slice(1)"
+          :key="block.id"
+          class="about_us__content_container"
+      >
+        <div
+            v-if="index % 2 === 0"
+            class="about_us__content_info"
+        >
+          <h2 class="main_title">{{ block.title }}</h2>
+          <p class="about_us__content_text" v-html="block.html"></p>
+          <button v-if="index === 0" class="main_btn">Узнать больше</button>
         </div>
         <div
-            class="about_us__content_img"
-            style="
-              background-image: url('/d6e5c63f4b58b44296cd88a901f8ea67.jpg')
-             "
-        >
-        </div>
-      </div>
-      <div class="about_us__content_container">
+            :class="[
+            'about_us__content_img',
+            index % 2 === 0 ? 'order-last' : ''
+          ]"
+            :style="{ backgroundImage: `url('${block.image}')` }"
+        ></div>
         <div
-            class="about_us__content_img"
-            style="
-              background-image: url('/b2e859dbb75742e1049d0d71ffc2578d.jpg')
-             "
+            v-if="index % 2 !== 0"
+            class="about_us__content_info"
         >
-        </div>
-        <div class="about_us__content_info">
-          <h2 class="main_title">Наша история</h2>
-          <p class="about_us__content_text">Является единственным в России разработчиком систем передачи и транспортирования света в удаленные помещения — световоды. Разрабатываемые и предлагаемые технологии освещения не только обеспечивают увеличение яркости естественного и искусственного освещения помещений, но и является полной альтернативой окна.</p>
+          <h2 class="main_title">{{ block.title }}</h2>
+          <p class="about_us__content_text" v-html="block.html"></p>
         </div>
       </div>
     </div>
     <div class="about_us__patents">
       <h2 class="main_title">Наши патенты</h2>
       <div class="about_us__patents_items">
-        <div class="about_us__patents_item">
-          <IconsPatent />
-          <div class="about_us__patents_info">
-            <p class="about_us__patents_data">19 февраля 2024</p>
-            <p class="about_us__patents_name">Патент на полезную модель 223460<br>
-              «Теплоизоляционное устройство системы естественного освещения»</p>
-            <a href="#" class="about_us__patents_download">
-              <p>Скачать документ</p>
-              <IconsDownload />
-            </a>
+        <div
+            v-for="(patent, index) in patents"
+            :key="patent.id"
+            class="about_us__patents_item"
+        >
+          <div class="about_us__patents_item-svg">
+            <IconsPatent />
           </div>
-        </div>
-        <div class="about_us__patents_item">
-          <IconsPatent />
           <div class="about_us__patents_info">
-            <p class="about_us__patents_data">1 ноября 2022</p>
-            <p class="about_us__patents_name">ПАТЕНТ НА ИЗОБРЕТЕНИЕ 2768839<br>
-              «Система естественного освещения и способ ее применения»</p>
-            <a href="#" class="about_us__patents_download">
-              <p>Скачать документ</p>
-              <IconsDownload />
-            </a>
-          </div>
-        </div>
-        <div class="about_us__patents_item">
-          <IconsPatent />
-          <div class="about_us__patents_info">
-            <p class="about_us__patents_data">26 апреля 2021</p>
-            <p class="about_us__patents_name">Патент на полезную модель 135674<br>
-              «Система естественного освещения»</p>
-            <a href="#" class="about_us__patents_download">
-              <p>Скачать документ</p>
-              <IconsDownload />
-            </a>
-          </div>
-        </div>
-        <div class="about_us__patents_item">
-          <IconsPatent />
-          <div class="about_us__patents_info">
-            <p class="about_us__patents_data">26 апреля 2021</p>
-            <p class="about_us__patents_name">ПАТЕНТ НА ИЗОБРЕТЕНИЕ 2722991<br>
-              «СВЕТОВОЙ КОЛОДЕЦ»</p>
-            <a href="#" class="about_us__patents_download">
+            <p class="about_us__patents_data">{{ formatDate(patent.date) }}</p>
+            <p class="about_us__patents_name">
+              {{ patent.title }}
+            </p>
+            <a
+                class="about_us__patents_download"
+                @click.prevent="handleDownload(patent.file, patent.file_name)"
+            >
               <p>Скачать документ</p>
               <IconsDownload />
             </a>
@@ -98,72 +144,15 @@
     <div class="about_us__team">
       <h2 class="main_title">Наша команда</h2>
       <div class="about_us__team_items">
-        <div class="about_us__team_item">
+        <div v-for="team in teams" :key="team.id" class="about_us__team_item">
           <div class="about_us__team_container">
-            <img class="about_us__team_img" src="/c3449afc5ba66b82f7b4e0aefa2d5174.jpg" alt="">
-            <p class="about_us__team_name">Стерхов Алексей
-              Иванович</p>
-            <p class="about_us__team_subtitle">Генеральный директор</p>
+            <img class="about_us__team_img" :src="team.image" alt="">
+            <p class="about_us__team_name">{{ team.name }}</p>
+            <p class="about_us__team_subtitle">{{ team.description }}</p>
           </div>
           <div>
-            <a href="tel: +78002000602" class="about_us__team_phone">8(800) 200 06 02</a>
-            <p class="about_us__team_email">info@solargy.ru</p>
-          </div>
-        </div>
-        <div class="about_us__team_item">
-          <div class="about_us__team_container">
-            <img class="about_us__team_img" src="/cd812f8561d90539dc842864b1174db0.jpg" alt="">
-            <p class="about_us__team_name">Стерхова Татьяна Александровна</p>
-            <p class="about_us__team_subtitle">Оплата и закрывающие документы</p>
-          </div>
-          <div>
-            <a href="tel: +78002000602" class="about_us__team_phone">8(800) 200 06 02 (добавочный 4)</a>
-            <p class="about_us__team_email">sta@solargy.group</p>
-          </div>
-        </div>
-        <div class="about_us__team_item">
-          <div class="about_us__team_container">
-            <img class="about_us__team_img" src="/cdb2766f65e26fb9716ce39a6f86a5f6.png" alt="">
-            <p class="about_us__team_name">Шипулин Максим
-              Андреевич</p>
-            <p class="about_us__team_subtitle">Главный архитектор, эксперт</p>
-          </div>
-          <div>
-            <a href="tel: +78002000602" class="about_us__team_phone">8(800) 200 06 02 (добавочный 3)</a>
-            <p class="about_us__team_email">kad@solargy.group</p>
-          </div>
-        </div>
-        <div class="about_us__team_item">
-          <div class="about_us__team_container">
-            <img class="about_us__team_img" src="/f982d02252c1fddcedf2f3c4e6965b8a.jpg" alt="">
-            <p class="about_us__team_name">Человеко Ориентрованный Человек</p>
-            <p class="about_us__team_subtitle">Сложное простыми словами</p>
-          </div>
-          <div>
-            <a href="tel: +78002000602" class="about_us__team_phone">8(800) 200 06 02 (добавочный 2)</a>
-            <p class="about_us__team_email">info@solargy.ru</p>
-          </div>
-        </div>
-        <div class="about_us__team_item">
-          <div class="about_us__team_container">
-            <img class="about_us__team_img" src="/51446fcbc6026c66777a1e3b67768fcf.jpg" alt="">
-            <p class="about_us__team_name">Отдел продаж</p>
-            <p class="about_us__team_subtitle">Запросить копроративное преложение, узнать стоимость</p>
-          </div>
-          <div>
-            <a href="tel: +78002000602" class="about_us__team_phone">+7 (982) 122 26 02</a>
-            <p class="about_us__team_email">info@solargy.ru</p>
-          </div>
-        </div>
-        <div class="about_us__team_item">
-          <div class="about_us__team_container">
-            <img class="about_us__team_img" src="/1b43b39a758dad93bc15785dea13f9c7.jpg" alt="">
-            <p class="about_us__team_name">Технический отдел</p>
-            <p class="about_us__team_subtitle">По вопросам доставки, монтажа и услуг</p>
-          </div>
-          <div>
-            <a href="tel: +78002000602" class="about_us__team_phone">8(800) 200 06 02 (добавочный 1)</a>
-            <p class="about_us__team_email">tech@solargy.group</p>
+            <a :href="`tel:${team.phone}`" class="about_us__team_phone">{{ team.phone }}</a>
+            <p class="about_us__team_email">{{ team.email }}</p>
           </div>
         </div>
       </div>

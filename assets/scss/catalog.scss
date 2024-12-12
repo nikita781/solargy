@@ -1,19 +1,42 @@
+$x-small: 575.98px;
+$small: 767.98px;
+$medium: 991.98px;
+$large: 1199.98px;
+$x-large: 1399.98px;
+$big: 1592.98px;
+$x-big: 1829.98px;
 .catalog {
   padding: 30px 80px;
+  @media screen and (max-width: $large){
+    padding: 30px 80px;
+  }
+  @media screen and (max-width: $medium){
+    padding: 30px 50px;
+  }
+  @media screen and (max-width: $x-small){
+    padding: 30px;
+  }
   &__tabs {
     display: flex;
-    gap: 24px;
+    flex-wrap: wrap;
+    gap: 10px 24px;
   }
   &__tab {
     text-transform: uppercase;
     color: #9B9B9B;
     font-size: 18px;
     cursor: pointer;
+    @media screen and (max-width: $medium) {
+      font-size: 15px;
+    }
     &.active {
       color: #EF7F1A;
     }
   }
   &__product {
     margin-bottom: 60px;
+    @media screen and (max-width: $medium) {
+      margin-bottom: 40px;
+    }
   }
 }

@@ -1,51 +1,49 @@
 <script setup>
 import {Swiper, SwiperSlide} from "swiper/vue";
 import {Navigation, Pagination} from "swiper";
+import { useRoute, useRouter } from 'vue-router';
 import {ref, reactive, onMounted, nextTick} from "vue";
 import 'swiper/css';
+import axios from "axios";
+import { useBasketStore } from '@/stores/basket';
+
+const basketStore = useBasketStore();
+const route = useRoute();
+const router = useRouter();
+
+const productId = ref();
+const product = ref([]);
+const category = ref([]);
+const products = ref([]);
+const selectedOptions = ref({});
+
+const fetchProduct = async () => {
+  try {
+    const response = await axios.get(`/products/${productId.value}`);
+    product.value = response.data;
+  } catch (error) {
+    console.error('Ошибка загрузки продукта:', error.response?.data || error);
+  }
+};
+const fetchCategory = async () => {
+  try {
+    const response = await axios.get(`/categories/${product.value.category_id}`);
+    category.value = response.data;
+  } catch (error) {
+    console.error('Ошибка загрузки продукта:', error.response?.data || error);
+  }
+};
+const fetchProducts = async () => {
+  try {
+    const response = await axios.get(`/products`);
+    products.value = response.data.data;
+  } catch (error) {
+    console.error('Ошибка загрузки продукта:', error.response?.data || error);
+  }
+};
 
 const swiperRight = ref(null);
 const swiperLeft = ref(null);
-
-const slides = ref([
-  {id: 1, image: "/749a80e5f27431b23b4c00f2a3044ecc_1.jpg"},
-  {id: 2, image: "/b19088382893005f5bf8775f1c1c47f0.jpg"},
-  {id: 3, image: "/b55656a245bbba6b914d0bce33c061ae.jpg"},
-  {id: 4, image: "/748e7c4f244ec319b30a48a0cbb53a60.jpg"},
-  {id: 5, image: "/749a80e5f27431b23b4c00f2a3044ecc_1.jpg"},
-  {id: 6, image: "/b19088382893005f5bf8775f1c1c47f0.jpg"},
-  {id: 7, image: "/b55656a245bbba6b914d0bce33c061ae.jpg"},
-  {id: 8, image: "/748e7c4f244ec319b30a48a0cbb53a60.jpg"},
-]);
-
-const selected = ref([
-  {
-    id: 1,
-    name: "Место установки световода",
-    select: [
-      {id: 1, image: "/7186d647977c7aa42528bbf2c8d8fda4.jpg", name: "В грунт"},
-    ],
-  },
-  {
-    id: 2,
-    name: "Диаметр световода",
-    select: [
-      {id: 1, name: "250 мм"},
-      {id: 2, name: "500 мм"},
-      {id: 3, name: "750 мм"},
-      {id: 4, name: "1000 мм"},
-    ],
-  },
-  {
-    id: 3,
-    name: "Цвет световода",
-    select: [
-      {id: 1, image: "/748e7c4f244ec319b30a48a0cbb53a60.jpg", name: "Белый"},
-      {id: 2, image: "/748e7c4f244ec319b30a48a0cbb53a60.jpg", name: "Черный"},
-      {id: 3, image: "/748e7c4f244ec319b30a48a0cbb53a60.jpg", name: "Серый"},
-    ],
-  },
-]);
 
 const menuVisible = ref(false);
 const currentSelect = ref(null);
@@ -55,9 +53,9 @@ const currentSelectedId = ref(null);
 const openMenu = async (select, index) => {
   currentSelect.value = select;
   currentIndex.value = index;
-  currentSelectedId.value = select.select[0].id;
+  currentSelectedId.value = select.values[0].id;
 
-  if (select.select.length <= 1) {
+  if (select.values.length <= 1) {
     return;
   }
 
@@ -86,8 +84,12 @@ const closeMenu = () => {
 };
 
 const selectItem = (item) => {
-  selected.value[currentIndex.value].select = [item, ...selected.value[currentIndex.value].select.filter(i => i.id !== item.id)];
+  product.value.options[currentIndex.value].values = [item, ...product.value.options[currentIndex.value].values.filter(i => i.id !== item.id)];
   currentSelectedId.value = item.id;
+  selectedOptions.value[product.value.options[currentIndex.value].id] = {
+    name: product.value.options[currentIndex.value].name,
+    value: item,
+  };
   closeMenu();
 };
 
@@ -102,7 +104,7 @@ const quantityMinus = () => {
   quantity.value--;
 }
 
-const selectedSlide = ref(slides.value[0]);
+const selectedSlide = ref(null);
 
 const swiperConfig = reactive({
   modules: [Navigation, Pagination],
@@ -144,38 +146,70 @@ const sliderStyle = computed(() => {
   };
 });
 
-const bestProduct = ref([
-  {
-    id: 1,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 2,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 3,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 4,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-])
+function generateSlug(name) {
+  name = String(name);
+  return name
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim();
+}
+
+const addToBasket = () => {
+  const basketItem = {
+    id: product.value.id,
+    name: product.value.name,
+    photo: product.value.photos[0].photo,
+    price: product.value.price,
+    options: Object.values(selectedOptions.value),
+    quantity: quantity.value,
+  };
+
+  basketStore.addToBasket(basketItem);
+};
+
+watch(() => route.fullPath, async () => {
+  const productIdURL = route.params.productId;
+  if (!productIdURL) {
+    await router.push('/');
+  }
+  productId.value = productIdURL.match(/^\d+/)?.[0] || null;
+  await fetchProduct();
+  await fetchCategory();
+  await fetchProducts();
+  selectedSlide.value = product.value?.photos[0];
+  product.value.options.forEach((option) => {
+    selectedOptions.value[option.id] = {
+      name: option.name,
+      value: option.values[0],
+    };
+  });
+  await nextTick();
+  await nextTick(() => {
+    tabsRef.value = document.querySelectorAll('.card__tabs_item');
+  });
+  swiperConfig.navigation = {
+    nextEl: swiperRight.value,
+    prevEl: swiperLeft.value,
+  };
+});
 
 onMounted(async () => {
+  const productIdURL = route.params.productId;
+  if (!productIdURL) {
+    await router.push('/');
+  }
+  productId.value = productIdURL.match(/^\d+/)?.[0] || null;
+  await fetchProduct();
+  await fetchCategory();
+  await fetchProducts();
+  selectedSlide.value = product.value?.photos[0];
+  product.value.options.forEach((option) => {
+    selectedOptions.value[option.id] = {
+      name: option.name,
+      value: option.values[0],
+    };
+  });
   await nextTick();
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');
@@ -189,17 +223,42 @@ onMounted(async () => {
 const selectSlide = (slide) => {
   selectedSlide.value = slide;
 };
+
+const handleDownload = async (fileUrl) => {
+  try {
+    const fileName = fileUrl.split('/').pop();
+
+    const response = await axios.get(`/download/property/${fileName}`, {
+      responseType: 'blob',
+    });
+
+    const blob = new Blob([response.data], { type: response.headers['content-type'] });
+    const downloadUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName; // Задаем имя файла
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    console.error('Ошибка при скачивании:', error);
+    alert('Ошибка при скачивании');
+  }
+};
 </script>
 
 <template>
   <div class="card">
     <div class="card__main">
       <div class="card__main_links">
-        <NuxtLink to="#" class="card__main_link">Каталог</NuxtLink>
+        <NuxtLink to="/catalog" class="card__main_link">Каталог</NuxtLink>
         <IconsSun/>
-        <NuxtLink to="#" class="card__main_link">Светопроводящие системы</NuxtLink>
+        <NuxtLink :to="`/catalog/${category.id}-${generateSlug(category.name)}/`" class="card__main_link">{{ category.name }}</NuxtLink>
         <IconsSun color="#EF7F1A"/>
-        <NuxtLink to="#" class="card__main_link card__main_link-active">Solargy SW F</NuxtLink>
+        <NuxtLink class="card__main_link card__main_link-active">{{ product.name }}</NuxtLink>
       </div>
       <div class="card__main_content">
         <div class="card__main_gallery">
@@ -209,14 +268,14 @@ const selectSlide = (slide) => {
             </div>
             <Swiper v-bind="swiperConfig">
               <SwiperSlide
-                  v-for="(slide, index) in slides"
+                  v-for="(slide, index) in product.photos"
                   :key="slide.id"
                   :class="{ active: slide.id === selectedSlide.id }"
                   @click="selectSlide(slide)"
               >
                 <div
                     class="swiper__slide"
-                    :style="{ 'background-image': `url(${slide.image})` }"
+                    :style="{ 'background-image': `url(${slide.photo})` }"
                 ></div>
               </SwiperSlide>
             </Swiper>
@@ -225,38 +284,35 @@ const selectSlide = (slide) => {
             </div>
           </div>
           <div class="card__main_img">
-            <img :src="selectedSlide.image" alt="Selected Image"/>
+            <img :src="selectedSlide?.photo" alt="Selected Image"/>
           </div>
         </div>
         <div class="card__main_info">
           <div>
-            <h1 class="card__main_title">Грунтовый Solargy SW F</h1>
-            <p class="card__main_price">50 800 ₽</p>
+            <h1 class="card__main_title">{{product.name}}</h1>
+            <p class="card__main_price">{{product.price}} ₽</p>
           </div>
-          <p class="card__main_description">Световод SW — это полый трубчатый световод (Точечный зенитный фонарь) серии
-            SW разработанный для освещения любых типов помещения: от санузлов и коридоров до ледовых арен и складских
-            помещений. Световод равномерно освещает большие площади на высоте не менее 5 м. Светорассеиватель модели SW
-            идеально подходит для любого типа потолка.</p>
+          <p class="card__main_description">{{product.description}}</p>
           <div class="card__main_select-cont">
             <div
-                v-for="(select, index) in selected"
+                v-for="(select, index) in product.options"
                 :key="select.id"
             >
               <div class="card__main_select" @click="openMenu(select, index)">
                 <p class="card__main_select-title">{{ select.name }}</p>
                 <div class="card__main_select-item">
                   <div class="card__main_select-name">
-                    <img v-if="select.select[0].image" :src="select.select[0].image" alt="">
-                    <p>{{ select.select[0].name }}</p>
+                    <img v-if="select.values[0]?.image" :src="select.values[0]?.image" alt="">
+                    <p>{{ select.values[0]?.value }}</p>
                   </div>
                   <div class="card__main_select-btn">
                     <p
                         class="card__main_select-btn-text"
-                        :class="{ active: select.select.length > 1 }"
+                        :class="{ active: select.values.length > 1 }"
                     >
                       Другие варианты
                     </p>
-                    <IconsPlus :color="select.select.length > 1 ? '#EF7F1A' : '#cccccc'"/>
+                    <IconsPlus :color="select.values.length > 1 ? '#EF7F1A' : '#cccccc'"/>
                   </div>
                 </div>
               </div>
@@ -269,13 +325,13 @@ const selectSlide = (slide) => {
             </div>
             <ul>
               <li
-                  v-for="item in currentSelect?.select"
+                  v-for="item in currentSelect?.values"
                   :key="item.id"
                   :class="{ active: item.id === currentSelectedId }"
                   @click="selectItem(item)"
               >
                 <img v-if="item.image" :src="item.image" alt=""/>
-                <span>{{ item.name }}</span>
+                <span>{{ item.value }}</span>
               </li>
             </ul>
           </div>
@@ -285,7 +341,7 @@ const selectSlide = (slide) => {
               <div class="card__main_final-quantity">{{quantity}}</div>
               <div class="card__main_final-btn" @click="quantityPlus"><IconsPlus color="#EF7F1A"/></div>
             </div>
-            <button class="main_btn">Добавить в корзину</button>
+            <button class="main_btn" @click="addToBasket">Добавить в корзину</button>
           </div>
         </div>
       </div>
@@ -307,13 +363,28 @@ const selectSlide = (slide) => {
       </div>
 
       <div class="card__tabs_content">
-        <ul v-if="activeTab === 0" class="card__tabs_info">
-          <li>Температурный диапазон: от -65 до +50С</li>
-          <li>Поверхность купола рекомендуется протирать влажной тряпкой 2 раза в год.</li>
-          <li>Запрещается оказывать физическое воздействие на изделие.</li>
-        </ul>
-        <div v-if="activeTab === 1">
-          <p>Контент для вкладки "Требования и рекомендации к монтажу"</p>
+        <div
+            v-for="(property, index) in product.properties"
+            :key="index"
+            class="card__tabs_info"
+        >
+          <div class="card__tabs_container" v-if="activeTab === index">
+            <img
+                v-if="property.image"
+                :src="property.image"
+                :alt="`Image for ${property.title}`"
+                class="card__tabs_image"
+            />
+            <p v-html="property.html"></p>
+            <a
+                v-if="property.file"
+                @click.prevent="handleDownload(property.file)"
+                download
+                class="card__tabs_file_link main_btn"
+            >
+              {{ property.file_name }}
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -321,20 +392,25 @@ const selectSlide = (slide) => {
       <div class="card__product__header">
         <h2 class="main_title">Сопутствующие товары</h2>
       </div>
-      <div class="card__product__items">
+      <div class="best-product__items">
         <div
-            class="card__product__item"
-            v-for="(product, index) in bestProduct"
+            class="best-product__item"
+            v-for="(product, index) in products.slice(0, 4)"
             :key="index"
         >
-          <img class="card__product__item_img" :src="product.image" alt="">
-          <div class="card__product__item_content">
-            <p class="card__product__item_title">{{ product.title }}</p>
-            <p class="card__product__item_desc">{{ product.description }}</p>
+          <img class="best-product__item_img" :src="product?.photos[0].photo" alt="">
+          <div class="best-product__item_content">
+            <p class="best-product__item_title">{{ product.title }}</p>
+            <p class="best-product__item_desc">{{ product.description }}</p>
           </div>
-          <div class="card__product__item_container">
-            <p class="card__product__item_price">{{ product.price }}</p>
-            <NuxtLink to="/card" class="card__product__item_btn">Заказать</NuxtLink>
+          <div class="best-product__item_container">
+            <p class="best-product__item_price">{{ product.price }}</p>
+            <NuxtLink
+                class="best-product__item_btn"
+                :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+            >
+              Заказать
+            </NuxtLink>
           </div>
         </div>
       </div>
@@ -343,15 +419,29 @@ const selectSlide = (slide) => {
 </template>
 
 <style scoped lang="scss">
+$x-small: 575.98px;
+$small: 767.98px;
+$medium: 991.98px;
+$large: 1199.98px;
+$x-large: 1399.98px;
+$big: 1592.98px;
+$x-big: 1829.98px;
 .swiper {
   margin-top: unset;
   width: 100%;
   height: 400px;
+  @media screen and (max-width: $x-small){
+    height: 240px;
+  }
 
   &-slide {
     width: 86px;
     height: 88px;
     cursor: pointer;
+    @media screen and (max-width: $x-small){
+      width: 46px;
+      height: 48px;
+    }
 
     &.active {
       border: 1px solid #EF7F1A;
@@ -363,8 +453,9 @@ const selectSlide = (slide) => {
   position: fixed;
   top: 0;
   right: 0;
-  width: 550px;
-  height: 100%;
+  max-width: 550px;
+  width: calc(100% - 160px);
+  height: calc(100% - 80px);
   background-color: #fff;
   border-left: 1px solid #ccc;
   padding: 40px 80px;
@@ -375,6 +466,13 @@ const selectSlide = (slide) => {
   opacity: 0;
   transition: transform 0.3s ease, opacity 0.3s ease;
 
+  overflow-y: auto;
+
+  @media screen and (max-width: $x-small){
+    padding: 30px;
+    width: calc(100% - 60px);
+    height: calc(100% - 60px);
+  }
   &.visible {
     transform: translateX(0);
     opacity: 1;
@@ -387,6 +485,9 @@ const selectSlide = (slide) => {
     margin-bottom: 60px;
     padding-bottom: 20px;
     border-bottom: 1px solid #cccccc;
+    @media screen and (max-width: $small){
+      margin-bottom: 20px;
+    }
 
     h3 {
       margin: 0;
@@ -420,6 +521,9 @@ const selectSlide = (slide) => {
       transition: background-color 0.3s;
       border: 1px solid #cccccc;
       border-radius: 8px;
+      @media screen and (max-width: $small){
+        height: 30px;
+      }
 
       &:hover {
         background-color: #f5f5f5;

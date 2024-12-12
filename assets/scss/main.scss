@@ -1,3 +1,11 @@
+$x-small: 575.98px;
+$small: 767.98px;
+$medium: 991.98px;
+$large: 1199.98px;
+$x-large: 1399.98px;
+$big: 1592.98px;
+$x-big: 1829.98px;
+
 * {
   margin: 0;
   padding: 0;
@@ -35,6 +43,11 @@ a {
     letter-spacing: 1px;
     cursor: pointer;
     transition: 0.3s;
+    text-align: center;
+    @media screen and (max-width: $medium){
+      padding: 15px 35px;
+      font-size: 14px;
+    }
     &:hover {
       background-color: #fff;
       border: 2px solid #EF7F1A;
@@ -49,6 +62,12 @@ a {
     font-weight: 700;
     letter-spacing: 2px;
     font-family: 'Exo 2 Bold';
+    @media screen and (max-width: $medium){
+      font-size: 30px;
+    }
+    @media screen and (max-width: $small){
+      font-size: 24px;
+    }
   }
 }
 

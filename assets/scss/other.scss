@@ -1,22 +1,58 @@
+$x-small: 575.98px;
+$small: 767.98px;
+$medium: 991.98px;
+$large: 1199.98px;
+$x-large: 1399.98px;
+$big: 1592.98px;
+$x-big: 1829.98px;
 .stocks {
   &__main {
     padding: 30px 80px 30px 80px;
     display: flex;
     flex-direction: column;
     gap: 30px;
-
+    @media screen and (max-width: $large){
+      padding: 30px 80px;
+    }
+    @media screen and (max-width: $medium){
+      padding: 30px 50px;
+    }
+    @media screen and (max-width: $x-small){
+      padding: 20px 30px;
+    }
     &_links {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 10px;
+      @media screen and (max-width: $medium){
+        gap: 6px;
+      }
+      @media screen and (max-width: $small){
+        gap: 4px;
+      }
+      svg {
+        @media screen and (max-width: $medium){
+          width: 16px;
+          height: 16px;
+        }
+        @media screen and (max-width: $small){
+          width: 12px;
+          height: 12px;
+        }
+      }
     }
 
     &_link {
       color: #9B9B9B;
       font-size: 20px;
       letter-spacing: 1px;
-
+      @media screen and (max-width: $medium){
+        font-size: 16px;
+      }
+      @media screen and (max-width: $small){
+        font-size: 12px;
+      }
       &-active {
         color: #EF7F1A;
       }
@@ -30,16 +66,35 @@
         font-size: 20px;
         line-height: 25px;
         letter-spacing: 1px;
+        @media screen and (max-width: $small){
+          font-size: 15px;
+          line-height: 17px;
+        }
       }
     }
   }
   &__content {
     padding: 30px 80px 100px 80px;
+    @media screen and (max-width: $large){
+      padding: 30px 80px 100px 80px;
+    }
+    @media screen and (max-width: $medium){
+      padding: 30px 50px 80px 50px;
+    }
+    @media screen and (max-width: $x-small){
+      padding: 20px 30px 50px 30px;
+    }
   }
   &__container {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: 22px;
+    @media screen and (max-width: $medium){
+      grid-template-columns: 1fr 1fr;
+    }
+    @media screen and (max-width: $x-small){
+      grid-template-columns: 1fr;
+    }
   }
   &__item {
     display: flex;
@@ -58,6 +113,10 @@
       line-height: 28px;
       letter-spacing: 1px;
       font-family: 'Exo 2 Bold', serif;
+      @media screen and (max-width: $small){
+        font-size: 18px;
+        line-height: 20px;
+      }
     }
     &_text {
       color: #818181;
@@ -66,11 +125,19 @@
       letter-spacing: 1px;
       font-weight: 600;
       font-family: 'Exo 2 Light', serif;
-      max-height: 75px;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
+      //max-height: 75px;
+      //overflow: hidden;
+      //display: -webkit-box;
+      //-webkit-line-clamp: 3;
+      //-webkit-box-orient: vertical;
+      @media screen and (max-width: $large){
+        font-size: 18px;
+        line-height: 22px;
+      }
+      @media screen and (max-width: $small){
+        font-size: 14px;
+        line-height: 16px;
+      }
     }
     &_data {
       font-size: 20px;
@@ -79,6 +146,10 @@
       color: #EF7F1A;
       padding-top: 10px;
       border-top: 1px solid #cccccc;
+      @media screen and (max-width: $small){
+        font-size: 16px;
+        line-height: 20px;
+      }
     }
     &_img {
       display: flex;
@@ -88,6 +159,9 @@
         height: 267px;
         width: 100%;
         object-fit: cover;
+        @media screen and (max-width: $small){
+          height: 200px;
+        }
       }
     }
   }
@@ -168,12 +242,23 @@
   }
   &__map {
     padding: 70px 80px 100px 80px;
+    @media screen and (max-width: $large){
+      padding: 70px 80px 100px 80px;
+    }
+    @media screen and (max-width: $medium){
+      padding: 60px 50px 70px 50px;
+    }
+    @media screen and (max-width: $x-small){
+      padding: 50px 30px;
+    }
     display: flex;
     flex-direction: column;
     gap: 30px;
     &_main {
-      width: 100%;
       height: 619px;
+      @media screen and (max-width: $medium){
+        height: 450px;
+      }
     }
   }
 }

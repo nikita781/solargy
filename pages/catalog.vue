@@ -1,498 +1,76 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
+import axios from 'axios';
+import { useRoute, useRouter } from 'vue-router';
 
-const tabs = ref([
-  { id: 1, name: "Все" },
-  { id: 2, name: "Светопроводящие системы" },
-  { id: 3, name: "Солнцезащитные устройства" },
-  { id: 4, name: "Дополнительные материалы" },
-]);
+const route = useRoute();
+const router = useRouter();
+const tabs = ref([]);
+const activeTab = ref(0);
+const products = ref([]);
+const page = ref(1);
+const totalPages = ref(0);
+const itemsPerPage = 8;
 
-const activeTab = ref(1);
-
-const setActiveTab = (tabId) => {
-  activeTab.value = tabId;
+const fetchTabs = async () => {
+  try {
+    const response = await axios.get('/categories');
+    tabs.value = [{ id: 0, name: 'Все' }, ...response.data];
+  } catch (error) {
+    console.error('Ошибка загрузки категорий:', error.response?.data || error);
+  }
 };
 
-const products = ref([
-  {
-    id: 1,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 2,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 3,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 4,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 5,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 6,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 7,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 8,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 1,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 2,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 3,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 4,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 5,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 6,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 7,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 8,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 1,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 2,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 3,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 4,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 5,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 6,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 7,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 8,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 1,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 2,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 3,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 4,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 5,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 6,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 7,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 8,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 1,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 2,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 3,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 4,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 5,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 6,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 7,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 8,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 1,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 2,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 3,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 4,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 5,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 6,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 7,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 8,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 1,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 2,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 3,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 4,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 5,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 6,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 7,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 8,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 1,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 2,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 3,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 4,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 5,
-    image: '/a64845b2ddf97aa28ae693147c1cb957_1.jpg',
-    title: 'Световой колодец',
-    description: 'Это не просто конструкции для естественного освещения, это уникальные элементы дизайна.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 6,
-    image: '/749a80e5f27431b23b4c00f2a3044ecc_1.jpg',
-    title: 'Solargy SW F',
-    description: 'Грунтовый световод. Используют для освещения стилобатных помещений.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 7,
-    image: '/3a171a3c74adf79a1578478a9b2db556_1.jpg',
-    title: 'Solargy WL W',
-    description: 'Встраиваемый световод в стену. Тоннель дневного света имеет круглое и квадратное светоприемное устье.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 8,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-  {
-    id: 9,
-    image: '/840f5fbc2eadd78837bba644f8206392_1.jpg',
-    title: 'Solargy SW W',
-    description: 'Стеновой световод. Используют при необходимости установить световод на стене.',
-    price: 'От 50 500 ₽'
-  },
-])
+const fetchProducts = async () => {
+  try {
+    const categoryParam = activeTab.value !== 0 ? `&category=${activeTab.value}` : '';
+    const response = await axios.get(`/products?page=${page.value}${categoryParam}`);
+    totalPages.value = response.data.meta.last_page || 0;
+    products.value = response.data.data || [];
+  } catch (error) {
+    console.error('Ошибка загрузки продуктов:', error.response?.data || error);
+  }
+};
 
-const itemsPerPage = 8;
-const currentPage = ref(1);
-
-const totalPages = computed(() => Math.ceil(products.value.length / itemsPerPage));
-
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return products.value.slice(start, end);
+watch(() => route.fullPath, () => {
+  const categoryIdURL = route.params.catalogId;
+  if (categoryIdURL) {
+    categoryId.value = categoryIdURL.match(/^\d+/)?.[0] || null;
+  }
+  if (categoryId.value) {
+    changeTab(parseInt(categoryId.value, 10));
+  }
+  fetchTabs();
+  fetchProducts();
 });
 
-const goToPage = (page) => {
-  if (page >= 1 && page <= totalPages.value) {
-    currentPage.value = page;
+function generateSlug(name) {
+  return name
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim();
+}
+
+const changeTab = (tabId) => {
+  activeTab.value = tabId;
+  page.value = 1;
+  fetchProducts();
+};
+
+const paginatedProducts = computed(() => products.value.slice(0, itemsPerPage));
+
+const goToPage = (newPage) => {
+  if (newPage >= 1 && newPage <= totalPages.value) {
+    page.value = newPage;
+    fetchProducts();
   }
 };
 
 const pagesInRange = computed(() => {
   const range = [];
-  const start = Math.max(2, currentPage.value - 4);
-  const end = Math.min(totalPages.value - 1, currentPage.value + 4);
+  const start = Math.max(2, page.value - 4);
+  const end = Math.min(totalPages.value - 1, page.value + 4);
 
   for (let i = start; i <= end; i++) {
     range.push(i);
@@ -500,83 +78,129 @@ const pagesInRange = computed(() => {
 
   return range;
 });
+
+const categoryId = ref(null);
+
+onMounted(() => {
+  const categoryIdURL = route.params.catalogId;
+  if (categoryIdURL) {
+    categoryId.value = categoryIdURL.match(/^\d+/)?.[0] || null;
+  }
+
+  if (categoryId.value) {
+    changeTab(parseInt(categoryId.value, 10));
+  }
+  fetchTabs();
+  fetchProducts();
+});
 </script>
 
 <template>
   <div class="catalog">
-    <!-- Табы -->
     <div class="catalog__tabs">
       <p
           v-for="tab in tabs"
           :key="tab.id"
           class="catalog__tab"
           :class="{ active: tab.id === activeTab }"
-          @click="setActiveTab(tab.id)"
+          @click="changeTab(tab.id)"
       >
         {{ tab.name }}
       </p>
     </div>
 
-    <!-- Продукты -->
     <div class="catalog__product">
       <div class="best-product__items">
         <div
+            v-for="product in paginatedProducts"
+            :key="product.id"
             class="best-product__item"
-            v-for="(prod, index) in paginatedProducts"
-            :key="index"
         >
-          <img class="best-product__item_img" :src="prod.image" alt="" />
+          <img
+              class="best-product__item_img"
+              :src="product.photos[0]?.photo"
+              alt="Product Image"
+          />
           <div class="best-product__item_content">
-            <p class="best-product__item_title">{{ prod.title }}</p>
-            <p class="best-product__item_desc">{{ prod.description }}</p>
+            <p class="best-product__item_title">{{ product.name }}</p>
+            <p class="best-product__item_desc">{{ product.description }}</p>
           </div>
           <div class="best-product__item_container">
-            <p class="best-product__item_price">{{ prod.price }}</p>
-            <button class="best-product__item_btn">Заказать</button>
+            <p class="best-product__item_price">От {{ product.price }} ₽</p>
+            <NuxtLink
+                class="best-product__item_btn"
+                :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+            >
+              Заказать
+            </NuxtLink>
           </div>
         </div>
       </div>
     </div>
 
     <div class="pagination" v-if="totalPages > 1">
-      <button class="arrow-left" @click="goToPage(currentPage - 1)" :disabled="currentPage === 1"></button>
+      <button
+          class="arrow-left"
+          @click="goToPage(page - 1)"
+          :disabled="page === 1"
+      >
+      </button>
       <span
           class="pagination__number"
-          :class="{ active: currentPage === 1 }"
+          :class="{ active: page === 1 }"
           @click="goToPage(1)"
       >
-      1
+        1
       </span>
-      <span class="pagination__number" v-if="currentPage > 6">...</span>
+      <span v-if="page > 6">...</span>
       <span
-          v-for="page in pagesInRange"
-          :key="page"
+          v-for="pageNum in pagesInRange"
+          :key="pageNum"
           class="pagination__number"
-          :class="{ active: page === currentPage }"
-          @click="goToPage(page)"
+          :class="{ active: pageNum === page }"
+          @click="goToPage(pageNum)"
       >
-      {{ page }}
+        {{ pageNum }}
       </span>
-      <span class="pagination__number" v-if="currentPage < totalPages - 5">...</span>
+      <span v-if="page < totalPages - 5">...</span>
       <span
           class="pagination__number"
-          :class="{ active: currentPage === totalPages }"
+          :class="{ active: page === totalPages }"
           @click="goToPage(totalPages)"
       >
-      {{ totalPages }}
+        {{ totalPages }}
       </span>
-      <button class="arrow-right" @click="goToPage(currentPage + 1)" :disabled="currentPage === totalPages"></button>
+      <button
+          class="arrow-right"
+          @click="goToPage(page + 1)"
+          :disabled="page === totalPages"
+      >
+      </button>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
+$x-small: 575.98px;
+$small: 767.98px;
+$medium: 991.98px;
+$large: 1199.98px;
+$x-large: 1399.98px;
+$big: 1592.98px;
+$x-big: 1829.98px;
 .pagination {
   display: flex;
+  flex-wrap: wrap;
   gap: 18px;
   justify-content: center;
   align-items: center;
   margin-bottom: 70px;
+  @media screen and (max-width: $medium) {
+    margin-bottom: 40px;
+  }
+  @media screen and (max-width: $small) {
+    gap: 6px;
+  }
 
   .arrow-left {
     cursor: pointer;
@@ -589,6 +213,9 @@ const pagesInRange = computed(() => {
     transform: rotate(90deg);
     background-color: transparent;
     margin-right: 10px;
+    @media screen and (max-width: $small) {
+      transform: rotate(90deg) scale(0.8);
+    }
     &::before,
     &::after {
       content: '';
@@ -620,6 +247,9 @@ const pagesInRange = computed(() => {
     transform: rotate(-90deg);
     background-color: transparent;
     margin-left: 10px;
+    @media screen and (max-width: $small) {
+      transform: rotate(-90deg) scale(0.8);
+    }
     &::before,
     &::after {
       content: '';
@@ -645,6 +275,9 @@ const pagesInRange = computed(() => {
     margin: 0 5px;
     cursor: pointer;
     color: #9B9B9B;
+    @media screen and (max-width: $small) {
+      font-size: 16px;
+    }
 
     &.active {
       color: #EF7F1A;
