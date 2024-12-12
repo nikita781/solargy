@@ -96,6 +96,31 @@ const goToSlide = (index) => {
 
 let interval;
 
+const nameUser = ref('');
+const email = ref('');
+const comment = ref('');
+
+const addSuppurt = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('name', nameUser.value);
+    formData.append('email', email.value);
+    formData.append('comment', comment.value);
+
+    const response = await axios.post(`/support`, formData);
+    console.log(response)
+    reset();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
+const reset = () => {
+  nameUser.value = '';
+  email.value = '';
+  comment.value = '';
+};
+
 onMounted(() => {
   fetchBanners();
   fetchTopProducts();
@@ -246,18 +271,18 @@ onUnmounted(() => {
           <img class="questions__info_img" src="/a2638c413d54ccc28941e175b45711e1.jpg" alt="">
         </div>
         <div class="questions__form">
-          <div class="questions__form_container">
+          <form class="questions__form_container">
             <p class="questions__form_title">Оставьте свое обращение</p>
             <div class="questions__form_inputs">
               <p class="questions__form_name">Ваше имя</p>
-              <input class="questions__form_input" type="text" name="name" placeholder="Введите имя">
+              <input class="questions__form_input" type="text" v-model="nameUser" placeholder="Введите имя">
               <p class="questions__form_name">Ваш e-mail</p>
-              <input class="questions__form_input" type="email" name="email" placeholder="Введите e-mail">
+              <input class="questions__form_input" type="email" v-model="email" placeholder="Введите e-mail">
               <p class="questions__form_name">Комментарий</p>
-              <textarea class="questions__form_textarea" name="comment" placeholder="Введите комментарий"></textarea>
+              <textarea class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий"></textarea>
             </div>
-            <button class="main_btn questions__form_btn">Отправить заявку</button>
-          </div>
+            <button class="main_btn questions__form_btn" @click="addSuppurt">Отправить заявку</button>
+          </form>
         </div>
       </div>
     </div>

@@ -14,6 +14,16 @@ const isSearch = ref(false);
 const showSearch = ref(false);
 const searchQuery = ref('');
 const searchResult = ref([]);
+const categories = ref([])
+
+const fetchCategory = async () => {
+  try {
+    const response = await axios.get('/categories');
+    categories.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
 
 const tabs = ref([]);
 const fetchTabs = async () => {
@@ -148,6 +158,7 @@ const handleContainerClick = () => {
 };
 
 onMounted(() => {
+  fetchCategory();
   fetchTabs();
   const container = document.querySelector('.container');
   if (container) {
@@ -364,17 +375,17 @@ const blocks = [
           <div v-if="isMenuOpenPhone" class="header__menu-phone">
             <div class="header__menu header__menu-phone" :style="{ display: isMenuOpenPhone ? 'grid' : 'none'}">
               <div
-                  v-for="(block, blockIndex) in blocks"
+                  v-for="(block, blockIndex) in categories"
                   :key="blockIndex"
                   class="header__menu_container"
               >
-                <img :src="block.image" alt="" />
+                <img :src="block.photo" alt="" />
                 <div class="header__menu_info">
-                  <p class="header__menu_name">{{ block.name }}</p>
-                  <div v-for="(menuItem, menuIndex) in block.menuItems" :key="menuIndex" class="header__menu_item-container">
+                  <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{ block.name }}</NuxtLink>
+                  <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
                     <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
-                      <p class="header__menu_item">{{ menuItem.title }}</p>
-                      <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />
+                      <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">{{ menuItem.name }}</NuxtLink>
+<!--                      <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
                     </div>
                     <div
                         class="header__menu_subitem-container"
@@ -432,17 +443,17 @@ const blocks = [
     </div>
     <div class="header__menu" :style="{ display: isMenuOpen ? 'grid' : 'none'}">
       <div
-          v-for="(block, blockIndex) in blocks"
+          v-for="(block, blockIndex) in categories"
           :key="blockIndex"
           class="header__menu_container"
       >
-        <img :src="block.image" alt="" />
+        <img :src="block.photo" alt="" />
         <div class="header__menu_info">
-          <p class="header__menu_name">{{ block.name }}</p>
-          <div v-for="(menuItem, menuIndex) in block.menuItems" :key="menuIndex" class="header__menu_item-container">
+          <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{ block.name }}</NuxtLink>
+          <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
             <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
-              <p class="header__menu_item">{{ menuItem.title }}</p>
-              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />
+              <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">{{ menuItem.name }}</NuxtLink>
+<!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
             </div>
             <div
                 class="header__menu_subitem-container"

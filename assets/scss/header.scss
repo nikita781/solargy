@@ -289,7 +289,7 @@ $x-big: 1829.98px;
     display: none;
     grid-template-columns: 1fr 1fr;
     gap: 60px 115px;
-    z-index: 51;
+    z-index: 99;
     @media screen and (max-width: $large) {
       gap: 30px 70px;
     }
@@ -305,6 +305,7 @@ $x-big: 1829.98px;
       top: 72px;
     }
     &-phone {
+      z-index: 100;
       position: relative;
       top: unset;
       left: unset;
@@ -343,6 +344,7 @@ $x-big: 1829.98px;
       gap: 12px;
     }
     &_name {
+      cursor: pointer;
       font-size: 20px;
       color: #171717;
       font-weight: bold;
@@ -357,6 +359,8 @@ $x-big: 1829.98px;
     }
     &_item {
       line-height: 14px;
+      cursor: pointer;
+      color: #171717;
       &-container {
         display: flex;
         flex-direction: column;

@@ -12,6 +12,40 @@ const fetchTabs = async () => {
   }
 };
 
+const place = ref([]);
+const marketplacesPlace = ref([]);
+
+const fetchPlace = async () => {
+  try {
+    const response = await axios.get(`/purchase-place`);
+    place.value = response.data;
+    marketplacesPlace.value = place.value.filter((item) => item.type === "marketplace" && item.image !== null);
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
+const socials = ref([]);
+
+const fetchSocials = async () => {
+  try {
+    const response = await axios.get(`/socials`);
+    socials.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
+const contacts = ref([]);
+const fetchContact = async () => {
+  try {
+    const response = await axios.get(`/contacts`);
+    contacts.value = response.data[0];
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
 function generateSlug(name) {
   return name
       .toLowerCase()
@@ -21,6 +55,9 @@ function generateSlug(name) {
 }
 
 onMounted(() => {
+  fetchContact();
+  fetchSocials();
+  fetchPlace();
   fetchTabs();
 });
 </script>
@@ -36,15 +73,31 @@ onMounted(() => {
         <div class="footer__social_item">
           <p class="footer__social_item_text">Мы в соцсетях</p>
           <div class="footer__social_container">
-            <IconsVk />
-            <IconsTg />
+<!--            <IconsVk />-->
+<!--            <IconsTg />-->
+            <div
+                v-for="place in socials"
+                :key="place.id"
+            >
+              <NuxtLink :to="place.url">
+                <img :src="place.image" alt="">
+              </NuxtLink>
+            </div>
           </div>
         </div>
         <div class="footer__social_item">
           <p class="footer__social_item_text">Мы на маркетплейсах</p>
           <div class="footer__social_container">
-            <IconsOzon />
-            <IconsYa />
+<!--            <IconsOzon />-->
+<!--            <IconsYa />-->
+            <div
+                v-for="place in marketplacesPlace"
+                :key="place.id"
+            >
+              <NuxtLink :to="place.url">
+                <img :src="place.image" alt="">
+              </NuxtLink>
+            </div>
           </div>
         </div>
       </div>
@@ -77,8 +130,8 @@ onMounted(() => {
       <div class="footer__catalog_phone">
         <div class="footer__catalog_item">
           <p class="footer__catalog_title">Связаться с нами</p>
-          <NuxtLink to="tel: +78002000602" class="footer__catalog_link">8(800) 200 06 02</NuxtLink>
-          <NuxtLink class="footer__catalog_link">info@solargy.ru</NuxtLink>
+          <NuxtLink  class="footer__catalog_link">{{ contacts.phone }}</NuxtLink>
+          <NuxtLink  class="footer__catalog_link">{{ contacts.email }}</NuxtLink>
         </div>
       </div>
     </div>

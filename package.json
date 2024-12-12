@@ -12,6 +12,7 @@
   "dependencies": {
     "@editorjs/editorjs": "^2.30.7",
     "@editorjs/embed": "^2.7.6",
+    "@editorjs/header": "^2.8.8",
     "@editorjs/image": "^2.10.1",
     "@editorjs/list": "^2.0.2",
     "@editorjs/paragraph": "^2.11.6",
@@ -21,6 +22,7 @@
     "@qirolab/nuxt-sanctum-authentication": "^0.1.15",
     "@tinymce/tinymce-vue": "^4.0.7",
     "axios": "^1.7.9",
+    "editorjs-html": "^3.4.3",
     "editorjs-style": "^3.0.3",
     "nuxt": "^3.14.1592",
     "nuxt-swiper": "^2.0.0",

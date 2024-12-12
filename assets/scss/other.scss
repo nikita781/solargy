@@ -184,12 +184,20 @@ $x-big: 1829.98px;
       letter-spacing: 1px;
       font-family: 'Exo 2 Bold', serif;
       margin-bottom: 10px;
+      @media screen and (max-width: $small) {
+        line-height: 20px;
+        font-size: 16px;
+      }
     }
     &_text {
       color: #171717;
       font-size: 20px;
       line-height: 25px;
       letter-spacing: 1px;
+      @media screen and (max-width: $small) {
+        line-height: 20px;
+        font-size: 16px;
+      }
     }
   }
   &__delivery {

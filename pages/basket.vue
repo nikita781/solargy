@@ -1,6 +1,7 @@
 <script setup>
 import {ref, computed} from "vue";
 import { useBasketStore } from "@/stores/basket";
+import axios from "axios";
 
 const basketStore = useBasketStore();
 const basketItems = computed(() => basketStore.items);
@@ -43,10 +44,30 @@ const toggleFormOpen = () => {
     return;
   }
   basketStore.updateUserInfo(nameUser.value, phoneUser.value);
-  console.log(basketStore)
-  //basketStore.clearBasket();
+  addOrder();
+  console.log(basketStore.items);
+  basketStore.clearBasket();
   formOpen.value = !formOpen.value;
 }
+
+const addOrder = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('userinfo[0][name]', basketStore.userInfo.name);
+    formData.append('userinfo[0][phone]', basketStore.userInfo.phone);
+    formData.append('userinfo[0][price]', basketStore.userInfo.price);
+    formData.append('items', basketStore.items);
+
+    // for (let [key, value] of formData.entries()) {
+    //   console.log(`${key}: ${value}`);
+    // }
+
+    const response = await axios.post(`/order`, formData);
+    console.log(response)
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
 
 const bestProduct = ref([
   {

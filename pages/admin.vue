@@ -1,6 +1,7 @@
 <script setup>
 import axios from "axios";
 import {onMounted} from "vue";
+import Editor from '~/components/Editor.vue';
 
 const nameUser = ref('');
 const passwordUser = ref('');
@@ -24,6 +25,13 @@ const fetchAdmin = async () => {
     await fetchAbout_usBlock();
     await fetchPatents();
     await fetchTeams();
+    await fetchContact();
+    await fetchCompanies();
+    await fetchPromo();
+    await fetchStocks();
+    await fetchPlace();
+    await fetchDelivery();
+    await fetchSocials();
 
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
@@ -383,6 +391,7 @@ const resetOptions = () => {
   nameOptions.value = '';
 };
 
+
 const optionValue = ref('')
 const optionPrice = ref(null)
 const optionPhoto = ref(null);
@@ -491,6 +500,9 @@ const productTextPropertie = ref(null);
 const isEditingPropertie = ref(false);
 const currentPropertieId = ref(null)
 
+const handleExportHtmlPropertie = (html) => {
+  productPropertieDescription.value = html;
+};
 const createProduct = async () => {
   try {
     const topProd = ref(0);
@@ -752,6 +764,16 @@ const editProductPropertie = (propertie) => {
   }
   productPropertieDescription.value = propertie.html;
 };
+const resetProductPropertie = () => {
+  isEditingPropertie.value = false;
+  currentPropertieId.value = null;
+  productPropertieTitle.value = '';
+  productPropertieDescription.value = '';
+  productTextPropertie.value = null;
+  productPhotoPropertie.value = null;
+  productFilePropertie.value.value = '';
+  productTextFile.value.value = ''
+};
 const deleteProductPropertie = async (idPropertie) => {
   try {
     await axios.delete(`/productProperties/${idPropertie}`, {
@@ -780,6 +802,9 @@ const about_usFile = ref(null);
 const isEditingAbout_usBlock = ref(false);
 const currentAbout_usBlockId = ref(null);
 
+const handleExportHtmlAbout_usBlock = (html) => {
+  about_usDescription.value = html;
+}
 const fetchAbout_usBlock = async () => {
   try {
     const response = await axios.get(`/pages/2`, {
@@ -820,9 +845,34 @@ const createAbout_usBlock = async () => {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
+const updateAbout_usBlock = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('sections[0][id]', currentAbout_usBlockId.value);
+    formData.append('sections[0][title]', about_usTitle.value);
+    formData.append('sections[0][html]', about_usDescription.value);
+    if (about_usImage.value) {
+      formData.append('sections[0][image]', about_usImage.value);
+    }
+
+    await axios.post(`/pages/2?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchAbout_usBlock();
+    about_usTitle.value = '';
+    about_usDescription.value = '';
+    about_usImage.value = null;
+    about_usFile.value.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
 const deleteAbout_usBlock = async (idBlock) => {
   try {
-    await axios.delete(`/page/${idBlock}`, {
+    await axios.delete(`/pages/${idBlock}`, {
       headers: {
         'Authorization': `Bearer ${result.value.token}`,
       },
@@ -932,9 +982,763 @@ const fetchTeams = async () => {
         'Authorization': `Bearer ${result.value.token}`,
       },
     });
-    teams.value = response.data.data;
+    teams.value = response.data;
   } catch (error) {
     console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
+  }
+};
+const handleFileChangeTeam = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    teamImage.value = file;
+  }
+};
+const createTeams = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('name', teamName.value);
+    formData.append('description', teamDescription.value);
+    formData.append('image', teamImage.value);
+    formData.append('phone', teamPhone.value);
+    formData.append('email', teamEmail.value);
+
+    await axios.post(`/teams`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchTeams();
+    teamName.value = '';
+    teamDescription.value = '';
+    teamPhone.value = '';
+    teamEmail.value = '';
+    teamImage.value = null;
+    teamFile.value.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const updateTeams = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('name', teamName.value);
+    formData.append('description', teamDescription.value);
+    if (teamImage.value) {
+      formData.append('image', teamImage.value);
+    }
+    formData.append('phone', teamPhone.value);
+    formData.append('email', teamEmail.value);
+
+    await axios.post(`/teams/${currentTeamId.value}?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchTeams();
+    teamName.value = '';
+    teamDescription.value = '';
+    teamPhone.value = '';
+    teamEmail.value = '';
+    teamImage.value = null;
+    teamFile.value.value = ''
+    isEditingTeam.value = false;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const deleteTeam = async (idTeam) => {
+  try {
+    await axios.delete(`/teams/${idTeam}`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchTeams();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const editTeam = (team) => {
+  isEditingTeam.value = true;
+  currentTeamId.value = team.id;
+  teamName.value = team.name;
+  teamDescription.value = team.description;
+  teamPhone.value = team.phone;
+  teamEmail.value = team.email;
+};
+const resetTeam = () => {
+  isEditingTeam.value = false;
+  teamName.value = '';
+  teamDescription.value = '';
+  teamPhone.value = '';
+  teamEmail.value = '';
+  teamImage.value = null;
+  teamFile.value.value = ''
+  currentTeamId.value = null
+};
+
+//---------------------------------------------------------------------------------
+// Контакты
+
+const contacts = ref([]);
+const addressContact = ref('');
+const emailContact = ref('');
+const phoneContact = ref('');
+const mapContact = ref('');
+
+const fetchContact = async () => {
+  try {
+    const response = await axios.get(`/contacts`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    contacts.value = response.data;
+    addressContact.value = contacts.value[0].address;
+    emailContact.value = contacts.value[0].email;
+    phoneContact.value = contacts.value[0].phone;
+    mapContact.value = contacts.value[0].map;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const updateContact = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('address', addressContact.value);
+    formData.append('email', emailContact.value);
+    formData.append('phone', phoneContact.value);
+    formData.append('map', mapContact.value);
+
+    await axios.post(`/contacts/1?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchContact();
+    addressContact.value = '';
+    emailContact.value = '';
+    phoneContact.value = '';
+    mapContact.value = '';
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
+
+const companies = ref([]);
+const companyName = ref('');
+const companyMainName = ref('');
+const companyOffice = ref('');
+const companyProduction = ref('');
+const companyPhone = ref('');
+const companyEmail = ref('');
+const isEditingCompany = ref(false);
+const currentCompanyId = ref(null);
+
+const customName = ref('');
+const customValue = ref('');
+
+const fetchCompanies = async () => {
+  try {
+    const response = await axios.get(`/companies`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    companies.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const createCompany = async () => {
+  try {
+    const data = {
+      name: companyName.value,
+      details: [
+        {
+          name: companyMainName.value,
+          office: companyOffice.value,
+          production: companyProduction.value,
+          phone: companyPhone.value,
+          email: companyEmail.value,
+        },
+      ],
+    };
+
+    await axios.post(`/companies`, data, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchCompanies();
+    companyName.value = '';
+    companyMainName.value = '';
+    companyOffice.value = '';
+    companyProduction.value = '';
+    companyPhone.value = '';
+    companyEmail.value = '';
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const updateCompany = async () => {
+  try {
+    const data = {
+      name: companyName.value,
+      details: [
+        {
+          name: companyMainName.value,
+          office: companyOffice.value,
+          production: companyProduction.value,
+          phone: companyPhone.value,
+          email: companyEmail.value,
+        },
+      ],
+    };
+
+    await axios.post(`/companies/${currentCompanyId.value}?_method=patch`, data, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchCompanies();
+    resetCompany();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const deleteCompany = async (idCompany) => {
+  try {
+    await axios.delete(`/companies/${idCompany}`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchCompanies();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const editCompany = (company) => {
+  isEditingCompany.value = true;
+  currentCompanyId.value = company.id;
+  companyName.value = company.name;
+  companyMainName.value = company.details.name;
+  companyOffice.value = company.details.office;
+  companyProduction.value = company.details.production;
+  companyPhone.value = company.details.phone;
+  companyEmail.value = company.details.email;
+};
+const resetCompany = () => {
+  isEditingCompany.value = false;
+  companyName.value = '';
+  companyMainName.value = '';
+  companyOffice.value = '';
+  companyProduction.value = '';
+  companyPhone.value = '';
+  companyEmail.value = '';
+  currentCompanyId.value = null
+};
+const createCustom = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('custom-details[0][title]', customName.value);
+    formData.append('custom-details[0][value]', customValue.value);
+
+    await axios.post(`/companies/${currentCompanyId.value}?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchCompanies();
+    customName.value = '';
+    customValue.value = '';
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const deleteCustomDetails = async (idCustom) => {
+  try {
+    await axios.delete(`/custom-details/${idCustom}`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchCompanies();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
+//---------------------------------------------------------------------------------
+// Контакты
+
+const promo = ref([]);
+const isEditingPromo = ref(false);
+const promoTitle = ref('');
+const promoDescription = ref('');
+const promoImage = ref(null);
+const promoFile = ref(null);
+const currentPromosBlockId = ref(null);
+
+const fetchPromo = async () => {
+  try {
+    const response = await axios.get(`/pages/1`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    promo.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const handleFileChangePromo = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    promoImage.value = file;
+  }
+};
+const handleExportHtmlPromoBlock = (html) => {
+  promoDescription.value = html;
+}
+const createPromoBlock = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('sections[0][title]', promoTitle.value);
+    formData.append('sections[0][html]', promoDescription.value);
+    formData.append('sections[0][image]', promoImage.value);
+
+    await axios.post(`/pages/1?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchPromo();
+    promoTitle.value = '';
+    promoDescription.value = '';
+    promoImage.value = null;
+    promoFile.value.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const updatePromoBlock = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('sections[0][id]', currentPromosBlockId.value);
+    formData.append('sections[0][title]', promoTitle.value);
+    formData.append('sections[0][html]', promoDescription.value);
+    if (promoImage.value) {
+      formData.append('sections[0][image]', promoImage.value);
+    }
+
+    await axios.post(`/pages/1?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchPromo();
+    promoTitle.value = '';
+    promoDescription.value = '';
+    promoImage.value = null;
+    promoFile.value.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const deletePromoBlock = async (idBlock) => {
+  try {
+    await axios.delete(`/pages/${idBlock}`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchPromo();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const editPromoBlock = (block) => {
+  isEditingPromo.value = true;
+  currentPromosBlockId.value = block.id;
+  promoTitle.value = block.title;
+  promoDescription.value = block.html;
+};
+const resetPromoBlock = () => {
+  isEditingPromo.value = false;
+  promoTitle.value = '';
+  promoDescription.value = '';
+  promoImage.value = null;
+  promoFile.value.value = ''
+  currentPromosBlockId.value = null
+};
+
+
+const stocks = ref([]);
+const isEditingStock = ref(false);
+const stockTitle = ref('');
+const stockDescription = ref('');
+const stockImage = ref(null);
+const stockFile = ref(null);
+const stockStart = ref('');
+const stockEnd = ref('')
+const stockArchived = ref(false);
+const currentStockId = ref(null);
+
+const fetchStocks = async () => {
+  try {
+    const response = await axios.get(`/promos`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    stocks.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const handleFileChangeStock = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    stockImage.value = file;
+  }
+};
+const createStock = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('title', stockTitle.value);
+    formData.append('description', stockDescription.value);
+    formData.append('image', stockImage.value);
+    formData.append('start', stockStart.value);
+    formData.append('end', stockEnd.value);
+
+    await axios.post(`/promos`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchStocks();
+    stockTitle.value = '';
+    stockDescription.value = '';
+    stockStart.value = '';
+    stockEnd.value = '';
+    stockArchived.value = false;
+    stockImage.value = null;
+    stockFile.value.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const updateStock = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('title', stockTitle.value);
+    formData.append('description', stockDescription.value);
+    formData.append('image', stockImage.value);
+    formData.append('start', stockStart.value);
+    formData.append('end', stockEnd.value);
+
+    await axios.post(`/promos/${currentStockId.value}?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchStocks();
+    isEditingStock.value = false;
+    stockTitle.value = '';
+    stockDescription.value = '';
+    stockStart.value = '';
+    stockEnd.value = '';
+    stockArchived.value = false;
+    stockImage.value = null;
+    stockFile.value.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const deleteStock = async (idStock) => {
+  try {
+    await axios.delete(`/promos/${idStock}`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchStocks();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const editStock = (stock) => {
+  isEditingStock.value = true;
+  currentStockId.value = stock.id;
+  stockTitle.value = stock.title;
+  stockDescription.value = stock.description;
+  stockStart.value = stock.start;
+  stockEnd.value = stock.end;
+  stockArchived.value = stock.is_archived;
+};
+const resetStock = () => {
+  isEditingStock.value = false;
+  stockTitle.value = '';
+  stockDescription.value = '';
+  stockImage.value = null;
+  stockFile.value.value = ''
+  stockStart.value = '';
+  stockEnd.value = '';
+  stockArchived.value = false;
+  currentStockId.value = null
+};
+
+//---------------------------------------------------------------------------------
+// Где купить
+
+const place = ref([]);
+const marketplacesPlace = ref([]);
+const partnersPlace = ref([]);
+const retailersPlace = ref([]);
+const storesPlace = ref([]);
+const placeName = ref('');
+const placeUrl = ref('')
+const placeImg = ref(null);
+const placeFile = ref(null);
+const placeSelect = ref('');
+
+const fetchPlace = async () => {
+  try {
+    const response = await axios.get(`/purchase-place`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    place.value = response.data;
+    marketplacesPlace.value = place.value.filter((item) => item.type === "marketplace");
+    partnersPlace.value = place.value.filter((item) => item.type === "partner");
+    retailersPlace.value = place.value.filter((item) => item.type === "retailer");
+    storesPlace.value = place.value.filter((item) => item.type === "store");
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const handleFileChangePlace = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    placeImg.value = file;
+  }
+};
+const createPlace = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('name', placeName.value);
+    formData.append('type', placeSelect.value);
+    formData.append('image', placeImg.value);
+    formData.append('url', placeUrl.value);
+
+    await axios.post(`/purchase-place`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchPlace();
+    placeName.value = '';
+    placeSelect.value = '';
+    placeUrl.value = '';
+    placeImg.value = null;
+    placeFile.value.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const deletePlace = async (idPlace) => {
+  try {
+    await axios.delete(`/purchase-place/${idPlace}`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchPlace();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
+//---------------------------------------------------------------------------------
+// Доставка
+
+const delivery = ref([]);
+const isEditingDelivery = ref(false);
+const currentDeliveryId = ref(null);
+const deliveryTitle = ref('');
+const deliveryDescription = ref('');
+const deliveryImage = ref(null);
+const deliveryFile = ref(null);
+
+const fetchDelivery = async () => {
+  try {
+    const response = await axios.get(`/pages/3`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    delivery.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const handleFileChangeDelivery = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    deliveryImage.value = file;
+  }
+};
+const handleExportHtmlDelivery = (html) => {
+  deliveryDescription.value = html;
+}
+const createDelivery = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('sections[0][title]', deliveryTitle.value);
+    formData.append('sections[0][html]', deliveryDescription.value);
+    formData.append('sections[0][image]', deliveryImage.value);
+
+    await axios.post(`/pages/3?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchDelivery();
+    deliveryTitle.value = '';
+    deliveryDescription.value = '';
+    deliveryImage.value = null;
+    deliveryFile.value.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const updateDelivery = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('sections[0][id]', currentDeliveryId.value);
+    formData.append('sections[0][title]', deliveryTitle.value);
+    formData.append('sections[0][html]', deliveryDescription.value);
+    if (deliveryImage.value) {
+      formData.append('sections[0][image]', deliveryImage.value);
+    }
+
+    await axios.post(`/pages/3?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchDelivery();
+    deliveryTitle.value = '';
+    deliveryDescription.value = '';
+    deliveryImage.value = null;
+    deliveryFile.value.value = ''
+    resetDelivery();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const deleteDelivery = async (idBlock) => {
+  try {
+    await axios.delete(`/pages/${idBlock}`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchDelivery();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const editDelivery = (block) => {
+  isEditingDelivery.value = true;
+  currentDeliveryId.value = block.id;
+  deliveryTitle.value = block.title;
+  deliveryDescription.value = block.html;
+};
+const resetDelivery = () => {
+  isEditingDelivery.value = false;
+  deliveryTitle.value = '';
+  deliveryDescription.value = '';
+  deliveryImage.value = null;
+  deliveryFile.value.value = ''
+  currentDeliveryId.value = null
+};
+
+//---------------------------------------------------------------------------------
+// Соц сети
+
+const socials = ref([]);
+const socialPlatform = ref('')
+const socialUrl = ref('');
+const socialImage = ref(null);
+const socialFile = ref(null)
+
+const fetchSocials = async () => {
+  try {
+    const response = await axios.get(`/socials`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    socials.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const handleFileChangeSocial = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    socialImage.value = file;
+  }
+};
+const createSocial = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('platform', socialPlatform.value);
+    formData.append('url', socialUrl.value);
+    formData.append('image', socialImage.value);
+
+    await axios.post(`/socials`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchSocials();
+    socialPlatform.value = '';
+    socialUrl.value = '';
+    socialImage.value = null;
+    socialFile.value.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const deleteSocial = async (idSocial) => {
+  try {
+    await axios.delete(`/socials/${idSocial}`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchSocials();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
   }
 };
 
@@ -944,9 +1748,7 @@ const fetchTeams = async () => {
   <div class="admin">
     <h2 class="main_title">{{ isAuthenticated ? 'Админ панель' : 'Введите данные' }}</h2>
     <div class="admin__auth" v-if="!isAuthenticated">
-      Admin@admin.com
       <input type="email" class="basket__form_input" v-model="nameUser" placeholder="Введите логин">
-      secret-password
       <input type="password" class="basket__form_input" v-model="passwordUser" placeholder="Введите пароль">
       <button class="main_btn" @click="fetchAdmin()">Отправить</button>
     </div>
@@ -986,6 +1788,41 @@ const fetchTeams = async () => {
             @click="activeTab = 'О нас'"
         >
           О нас
+        </p>
+        <p
+            class="admin-panel__menu_item"
+            :class="{ active: activeTab === 'Контакты' }"
+            @click="activeTab = 'Контакты'"
+        >
+          Контакты
+        </p>
+        <p
+            class="admin-panel__menu_item"
+            :class="{ active: activeTab === 'Акции' }"
+            @click="activeTab = 'Акции'"
+        >
+          Акции
+        </p>
+        <p
+            class="admin-panel__menu_item"
+            :class="{ active: activeTab === 'Где купить' }"
+            @click="activeTab = 'Где купить'"
+        >
+          Где купить
+        </p>
+        <p
+            class="admin-panel__menu_item"
+            :class="{ active: activeTab === 'Доставка' }"
+            @click="activeTab = 'Доставка'"
+        >
+          Доставка
+        </p>
+        <p
+            class="admin-panel__menu_item"
+            :class="{ active: activeTab === 'Соц сети' }"
+            @click="activeTab = 'Соц сети'"
+        >
+          Соц сети
         </p>
       </div>
       <div class="admin-panel__content" v-if="activeTab === 'Главная'">
@@ -1404,7 +2241,7 @@ const fetchTeams = async () => {
               placeholder="Введите цену"
           />
           <button class="main_btn" type="submit">Изменить товар</button>
-          <button class="main_btn" type="submit" @click="resetProduct">Отмена</button>
+          <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
         <h3 v-if="isEditingProduct">Добавить картинку</h3>
         <form class="admin-panel__content_form" v-if="isEditingProduct" @submit.prevent="addProductPhoto">
@@ -1416,7 +2253,7 @@ const fetchTeams = async () => {
               accept="image/*"
           />
           <button class="main_btn" type="submit">Добавить</button>
-          <button class="main_btn" type="submit" @click="resetProduct">Отмена</button>
+          <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
         <table v-if="isEditingProduct">
           <thead>
@@ -1447,7 +2284,7 @@ const fetchTeams = async () => {
             </option>
           </select>
           <button class="main_btn" type="submit">Добавить</button>
-          <button class="main_btn" type="submit" @click="resetProduct">Отмена</button>
+          <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
         <table v-if="isEditingProduct">
           <thead>
@@ -1468,7 +2305,7 @@ const fetchTeams = async () => {
           </tbody>
         </table>
         <h3 v-if="isEditingProduct">Добавить таб (максимум 2)</h3>
-        <form class="admin-panel__content_form" v-if="isEditingProduct && !isEditingPropertie" @submit.prevent="addProductPropertie">
+        <form class="admin-panel__content_form" v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 2" @submit.prevent="addProductPropertie">
           <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option value='1'>
@@ -1478,11 +2315,7 @@ const fetchTeams = async () => {
               Рекомендации
             </option>
           </select>
-          <textarea
-              class="basket__form_input admin-panel__content_textarea"
-              v-model="productPropertieDescription"
-              placeholder="Введите описание"
-          ></textarea>
+          <Editor @export-html="handleExportHtmlPropertie" />
           <label class="admin-panel__content_label">Изображение</label>
           <input
               type="file"
@@ -1500,7 +2333,7 @@ const fetchTeams = async () => {
               accept="text/plain,.csv,.json"
           />
           <button class="main_btn" type="submit">Добавить</button>
-          <button class="main_btn" type="submit" @click="resetProduct">Отмена</button>
+          <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
         <form class="admin-panel__content_form" v-if="isEditingProduct && isEditingPropertie" @submit.prevent="updateProductPropertie">
           <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
@@ -1512,11 +2345,12 @@ const fetchTeams = async () => {
               Рекомендации
             </option>
           </select>
-          <textarea
-              class="basket__form_input admin-panel__content_textarea"
-              v-model="productPropertieDescription"
-              placeholder="Введите описание"
-          ></textarea>
+<!--          <textarea-->
+<!--              class="basket__form_input admin-panel__content_textarea"-->
+<!--              v-model="productPropertieDescription"-->
+<!--              placeholder="Введите описание"-->
+<!--          ></textarea>-->
+          <Editor :initialHtml="productPropertieDescription" @export-html="handleExportHtmlPropertie" />
           <label class="admin-panel__content_label">Изображение</label>
           <input
               type="file"
@@ -1534,7 +2368,7 @@ const fetchTeams = async () => {
               accept="text/plain,.csv,.json"
           />
           <button class="main_btn" type="submit">Изменить</button>
-          <button class="main_btn" type="submit" @click="resetProduct">Отмена</button>
+          <button class="main_btn" @click="resetProductPropertie">Отмена</button>
         </form>
         <table v-if="isEditingProduct">
           <thead>
@@ -1602,11 +2436,7 @@ const fetchTeams = async () => {
               v-model="about_usTitle"
               placeholder="Введите название"
           />
-          <textarea
-              class="basket__form_input admin-panel__content_textarea"
-              v-model="about_usDescription"
-              placeholder="Введите описание"
-          ></textarea>
+          <Editor @export-html="handleExportHtmlAbout_usBlock" />
           <input
               type="file"
               ref="fileBanners"
@@ -1623,11 +2453,7 @@ const fetchTeams = async () => {
               v-model="about_usTitle"
               placeholder="Введите название"
           />
-          <textarea
-              class="basket__form_input admin-panel__content_textarea"
-              v-model="about_usDescription"
-              placeholder="Введите описание"
-          ></textarea>
+          <Editor :initialHtml="about_usDescription" @export-html="handleExportHtmlAbout_usBlock" />
           <input
               type="file"
               ref="fileBanners"
@@ -1706,6 +2532,747 @@ const fetchTeams = async () => {
             <td>{{ patent.date }}</td>
             <td>
               <button @click="deletePatents(patent.id)" class="admin-panel__content_btn">Удалить</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <h3>Команда</h3>
+        <form class="admin-panel__content_form" v-if="!isEditingTeam" @submit.prevent="createTeams">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="teamName"
+              placeholder="Введите ФИО"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="teamDescription"
+              placeholder="Введите описание"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="teamPhone"
+              placeholder="Введите телефон"
+          />
+          <input
+              type="email"
+              class="basket__form_input admin-panel__content_input"
+              v-model="teamEmail"
+              placeholder="Введите почту"
+          />
+          <input
+              type="file"
+              ref="teamFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeTeam"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Создать</button>
+        </form>
+        <form class="admin-panel__content_form" v-if="isEditingTeam" @submit.prevent="updateTeams">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="teamName"
+              placeholder="Введите ФИО"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="teamDescription"
+              placeholder="Введите описание"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="teamPhone"
+              placeholder="Введите телефон"
+          />
+          <input
+              type="email"
+              class="basket__form_input admin-panel__content_input"
+              v-model="teamEmail"
+              placeholder="Введите почту"
+          />
+          <input
+              type="file"
+              ref="teamFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeTeam"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Изменить</button>
+          <button class="main_btn" @click="resetTeam">Отмена</button>
+        </form>
+        <table>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Фото</th>
+            <th>Телефон</th>
+            <th>Почта</th>
+            <th>Изменить</th>
+            <th>Удалить</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="patent in teams" :key="patent.id">
+            <td>{{ patent.id }}</td>
+            <td>{{ patent.name }}</td>
+            <td>{{ patent.description }}</td>
+            <td>
+              <img :src="patent.image" alt="Фото" width="50"/>
+            </td>
+            <td>{{ patent.phone }}</td>
+            <td>{{ patent.email }}</td>
+            <td>
+              <button @click="editTeam(patent)" class="admin-panel__content_btn">Изменить</button>
+            </td>
+            <td>
+              <button @click="deleteTeam(patent.id)" class="admin-panel__content_btn">Удалить</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="admin-panel__content" v-if="activeTab === 'Контакты'">
+        <h2>Управление страницей контакты</h2>
+        <h3>Данные</h3>
+        <form class="admin-panel__content_form" @submit.prevent="updateContact">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="addressContact"
+              placeholder="Введите адрес"
+          />
+          <input
+              type="email"
+              class="basket__form_input admin-panel__content_input"
+              v-model="emailContact"
+              placeholder="Введите почту"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="phoneContact"
+              placeholder="Введите телефон"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="mapContact"
+              placeholder="Введите координаты: x, y"
+          />
+          <button class="main_btn" type="submit">Изменить</button>
+        </form>
+        <table>
+          <thead>
+          <tr>
+            <th>Адрес</th>
+            <th>Почта</th>
+            <th>Телефон</th>
+            <th>Координаты</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="contact in contacts" :key="contact.id">
+            <td>{{ contact.address }}</td>
+            <td>{{ contact.email }}</td>
+            <td>{{ contact.phone }}</td>
+            <td>{{ contact.map }}</td>
+          </tr>
+          </tbody>
+        </table>
+        <h3>Компании</h3>
+        <form class="admin-panel__content_form" v-if="!isEditingCompany" @submit.prevent="createCompany">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyName"
+              placeholder="Введите название"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyMainName"
+              placeholder="Введите полное название"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyOffice"
+              placeholder="Введите адрес офиса"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyProduction"
+              placeholder="Введите производство"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyPhone"
+              placeholder="Введите телефон"
+          />
+          <input
+              type="email"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyEmail"
+              placeholder="Введите почту"
+          />
+          <button class="main_btn" type="submit">Создать блок</button>
+        </form>
+        <form class="admin-panel__content_form" v-if="isEditingCompany" @submit.prevent="updateCompany">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyName"
+              placeholder="Введите название"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyMainName"
+              placeholder="Введите полное название"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyOffice"
+              placeholder="Введите адрес офиса"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyProduction"
+              placeholder="Введите производство"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyPhone"
+              placeholder="Введите телефон"
+          />
+          <input
+              type="email"
+              class="basket__form_input admin-panel__content_input"
+              v-model="companyEmail"
+              placeholder="Введите почту"
+          />
+          <button class="main_btn" type="submit">Изменить блок</button>
+          <button class="main_btn" @click="resetCompany">Назад</button>
+        </form>
+        <h3 v-if="isEditingCompany">Кастомный параметр</h3>
+        <form class="admin-panel__content_form" v-if="isEditingCompany" @submit.prevent="createCustom">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="customName"
+              placeholder="Введите название"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="customValue"
+              placeholder="Введите значение"
+          />
+          <button class="main_btn" type="submit">Добавить блок</button>
+          <button class="main_btn" @click="resetCompany">Назад</button>
+        </form>
+        <div
+            class="admin-panel__content_info_item"
+            v-for="company in companies" :key="company.id"
+        >
+          <div class="admin-panel__content_info_content">
+            <p>ID {{ company.id }}, name {{ company.name }}</p>
+            <button @click="editCompany(company)" class="admin-panel__content_btn">Изменить</button>
+            <button @click="deleteCompany(company.id)" class="admin-panel__content_btn">Удалить</button>
+          </div>
+          <table>
+            <thead>
+            <tr>
+              <th>Название</th>
+              <th>Офис</th>
+              <th>Производство</th>
+              <th>Почта</th>
+              <th>Телефон</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td>{{ company.details.name }}</td>
+              <td>{{ company.details.office }}</td>
+              <td>{{ company.details.production }}</td>
+              <td>{{ company.details.phone }}</td>
+              <td>{{ company.details.email }}</td>
+            </tr>
+            </tbody>
+          </table>
+          <table>
+            <thead>
+            <tr>
+              <th>Название</th>
+              <th>Значение</th>
+              <th>Удалить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="value in company['custom-details']" :key="value.id">
+              <td>{{ value.title }}</td>
+              <td>{{ value.value }}</td>
+              <td>
+                <button @click="deleteCustomDetails(value.id)" class="admin-panel__content_btn">Удалить</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-panel__content" v-if="activeTab === 'Акции'">
+        <h2>Управление страницей акции</h2>
+        <h3>Блоки</h3>
+        <form class="admin-panel__content_form" v-if="!isEditingPromo" @submit.prevent="createPromoBlock">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="promoTitle"
+              placeholder="Введите название"
+          />
+          <Editor @export-html="handleExportHtmlPromoBlock" />
+          <input
+              type="file"
+              ref="promoFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangePromo"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Создать блок</button>
+        </form>
+        <form class="admin-panel__content_form" v-if="isEditingPromo" @submit.prevent="updatePromoBlock">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="promoTitle"
+              placeholder="Введите название"
+          />
+          <Editor :initialHtml="promoDescription" @export-html="handleExportHtmlPromoBlock" />
+          <input
+              type="file"
+              ref="promoFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangePromo"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Изменить блок</button>
+          <button class="main_btn" type="submit" @click="resetPromoBlock">Назад</button>
+        </form>
+        <table>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Фото</th>
+            <th>Изменить</th>
+            <th>Удалить</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="section in promo.sections" :key="section.id">
+            <td>{{ section.id }}</td>
+            <td>{{ section.title }}</td>
+            <td>{{ section.html }}</td>
+            <td>
+              <img :src="section.image" alt="Фото" width="50"/>
+            </td>
+            <td>
+              <button @click="editPromoBlock(section)" class="admin-panel__content_btn">Изменить</button>
+            </td>
+            <td>
+              <button @click="deletePromoBlock(section.id)" class="admin-panel__content_btn">Удалить</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <h3>Акции</h3>
+        <form class="admin-panel__content_form" v-if="!isEditingStock" @submit.prevent="createStock">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="stockTitle"
+              placeholder="Введите название"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="stockDescription"
+              placeholder="Введите описание"
+          />
+          <input
+              type="date"
+              class="basket__form_input admin-panel__content_input"
+              v-model="stockStart"
+              placeholder="Введите дату начала"
+          />
+          <input
+              type="date"
+              class="basket__form_input admin-panel__content_input"
+              v-model="stockEnd"
+              placeholder="Введите дату конца"
+          />
+<!--          <input-->
+<!--              type="checkbox"-->
+<!--              class="basket__form_input admin-panel__content_input"-->
+<!--              v-model="stockArchived"-->
+<!--              placeholder="Архив"-->
+<!--          />-->
+          <input
+              type="file"
+              ref="stockFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeStock"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Создать акцию</button>
+        </form>
+        <form class="admin-panel__content_form" v-if="isEditingStock" @submit.prevent="updateStock">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="stockTitle"
+              placeholder="Введите название"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="stockDescription"
+              placeholder="Введите описание"
+          />
+          <input
+              type="date"
+              class="basket__form_input admin-panel__content_input"
+              v-model="stockStart"
+              placeholder="Введите дату начала"
+          />
+          <input
+              type="date"
+              class="basket__form_input admin-panel__content_input"
+              v-model="stockEnd"
+              placeholder="Введите дату конца"
+          />
+          <input
+              type="file"
+              ref="stockFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeStock"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Изменить акцию</button>
+          <button class="main_btn" @click="resetStock">Назад</button>
+        </form>
+        <table>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Фото</th>
+            <th>Дата старта</th>
+            <th>Дата окончания</th>
+            <th>В архиве</th>
+            <th>Изменить</th>
+            <th>Удалить</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="stock in stocks" :key="stock.id">
+            <td>{{ stock.id }}</td>
+            <td>{{ stock.title }}</td>
+            <td>{{ stock.description }}</td>
+            <td>
+              <img :src="stock.image" alt="Фото" width="50"/>
+            </td>
+            <td>{{ stock.start }}</td>
+            <td>{{ stock.end }}</td>
+            <td><input type="checkbox" disabled v-model="stock.is_archived"/></td>
+            <td>
+              <button @click="editStock(stock)" class="admin-panel__content_btn">Изменить</button>
+            </td>
+            <td>
+              <button @click="deleteStock(stock.id)" class="admin-panel__content_btn">Удалить</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="admin-panel__content" v-if="activeTab === 'Где купить'">
+        <h2>Управление страницей Где купить?</h2>
+        <form class="admin-panel__content_form" @submit.prevent="createPlace">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="placeName"
+              placeholder="Введите название"
+          />
+          <select v-model="placeSelect" class="basket__form_input admin-panel__content_select">
+            <option value="" disabled>Выберите категорию</option>
+            <option value='marketplace'>
+              Маркетплейсы
+            </option>
+            <option value='partner'>
+              Дилеры и партнеры
+            </option>
+            <option value='retailer'>
+              Розничные магазины
+            </option>
+            <option value='store'>
+              Торговые сети
+            </option>
+          </select>
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="placeUrl"
+              placeholder="Введите ссылку"
+          />
+          <input
+              type="file"
+              ref="placeFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangePlace"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Создать пункт</button>
+        </form>
+        <div class="admin-panel__content_info_item">
+          Маркетплейсы
+          <table>
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Название</th>
+              <th>Ссылка</th>
+              <th>Иконка</th>
+              <th>Удалить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="place in marketplacesPlace" :key="place.id">
+              <td>{{ place.id }}</td>
+              <td>{{ place.name }}</td>
+              <td>{{ place.url }}</td>
+              <td>
+                <img :src="place.image" alt="Фото" width="50"/>
+              </td>
+              <td>
+                <button @click="deletePlace(place.id)" class="admin-panel__content_btn">Удалить</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="admin-panel__content_info_item">
+          Дилеры и партнеры
+          <table>
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Название</th>
+              <th>Ссылка</th>
+              <th>Иконка</th>
+              <th>Удалить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="place in partnersPlace" :key="place.id">
+              <td>{{ place.id }}</td>
+              <td>{{ place.name }}</td>
+              <td>{{ place.url }}</td>
+              <td>
+                <img :src="place.image" alt="Фото" width="50"/>
+              </td>
+              <td>
+                <button @click="deletePlace(place.id)" class="admin-panel__content_btn">Удалить</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="admin-panel__content_info_item">
+          Розничные магазины
+          <table>
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Название</th>
+              <th>Ссылка</th>
+              <th>Иконка</th>
+              <th>Удалить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="place in retailersPlace" :key="place.id">
+              <td>{{ place.id }}</td>
+              <td>{{ place.name }}</td>
+              <td>{{ place.url }}</td>
+              <td>
+                <img :src="place.image" alt="Фото" width="50"/>
+              </td>
+              <td>
+                <button @click="deletePlace(place.id)" class="admin-panel__content_btn">Удалить</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="admin-panel__content_info_item">
+          Торговые сети
+          <table>
+            <thead>
+            <tr>
+              <th>ID</th>
+              <th>Название</th>
+              <th>Ссылка</th>
+              <th>Иконка</th>
+              <th>Удалить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="place in storesPlace" :key="place.id">
+              <td>{{ place.id }}</td>
+              <td>{{ place.name }}</td>
+              <td>{{ place.url }}</td>
+              <td>
+                <img :src="place.image" alt="Фото" width="50"/>
+              </td>
+              <td>
+                <button @click="deletePlace(place.id)" class="admin-panel__content_btn">Удалить</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="admin-panel__content" v-if="activeTab === 'Доставка'">
+        <h2>Управление страницей доставка</h2>
+        <form class="admin-panel__content_form" v-if="!isEditingDelivery" @submit.prevent="createDelivery">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="deliveryTitle"
+              placeholder="Введите название"
+          />
+          <Editor @export-html="handleExportHtmlDelivery" />
+          <input
+              type="file"
+              ref="deliveryFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeDelivery"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Создать блок</button>
+        </form>
+        <form class="admin-panel__content_form" v-if="isEditingDelivery" @submit.prevent="updateDelivery">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="deliveryTitle"
+              placeholder="Введите название"
+          />
+          <Editor :initialHtml="deliveryDescription" @export-html="handleExportHtmlDelivery" />
+          <input
+              type="file"
+              ref="deliveryFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeDelivery"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Изменить блок</button>
+          <button class="main_btn" @click="resetDelivery">Назад</button>
+        </form>
+        <table>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Фото</th>
+            <th>Изменить</th>
+            <th>Удалить</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="section in delivery.sections" :key="section.id">
+            <td>{{ section.id }}</td>
+            <td>{{ section.title }}</td>
+            <td>{{ section.html }}</td>
+            <td>
+              <img :src="section.image" alt="Фото" width="50"/>
+            </td>
+            <td>
+              <button @click="editDelivery(section)" class="admin-panel__content_btn">Изменить</button>
+            </td>
+            <td>
+              <button @click="deleteDelivery(section.id)" class="admin-panel__content_btn">Удалить</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="admin-panel__content" v-if="activeTab === 'Соц сети'">
+        <h2>Управление страницей доставка</h2>
+        <form class="admin-panel__content_form" @submit.prevent="createSocial">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="socialPlatform"
+              placeholder="Введите название"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="socialUrl"
+              placeholder="Введите ссылку"
+          />
+          <input
+              type="file"
+              ref="socialFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeSocial"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Создать соц сеть</button>
+        </form>
+        <table>
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Название</th>
+            <th>Ссылка</th>
+            <th>Фото</th>
+            <th>Удалить</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="social in socials" :key="social.id">
+            <td>{{ social.id }}</td>
+            <td>{{ social.platform }}</td>
+            <td>{{ social.url }}</td>
+            <td>
+              <img :src="social.image" alt="Фото" width="50"/>
+            </td>
+            <td>
+              <button @click="deleteSocial(social.id)" class="admin-panel__content_btn">Удалить</button>
             </td>
           </tr>
           </tbody>

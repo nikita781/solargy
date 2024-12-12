@@ -1,7 +1,20 @@
 <script setup>
 import {nextTick, onMounted} from "vue";
+import axios from "axios";
+
+const delivery = ref([]);
+
+const fetchDelivery = async () => {
+  try {
+    const response = await axios.get(`/pages/3`);
+    delivery.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
 
 onMounted(async () => {
+  await fetchDelivery();
   const script = document.createElement('script');
   script.src = 'https://api-maps.yandex.ru/2.1/?apikey=38e8671e-3c02-48e7-8432-c204818d7056&lang=ru_RU';
   script.async = true;
@@ -74,42 +87,18 @@ onMounted(async () => {
   <div class="stocks">
     <div class="stocks__main">
       <div class="stocks__main_links">
-        <NuxtLink to="#" class="stocks__main_link">Главная</NuxtLink>
+        <NuxtLink to="/" class="stocks__main_link">Главная</NuxtLink>
         <IconsSun color="#EF7F1A"/>
-        <NuxtLink to="#" class="stocks__main_link stocks__main_link-active">Доставка</NuxtLink>
+        <NuxtLink class="stocks__main_link stocks__main_link-active">Доставка</NuxtLink>
       </div>
       <h2 class="main_title">Доставка</h2>
       <div class="stocks__delivery">
-        <div class="stocks__delivery_item">
-          <h4 class="stocks__delivery_title stocks__delivery_title-number">1. Самовывоз со склада.</h4>
-          <div class="stocks__delivery_content">
-            <p class="stocks__delivery_description">Оформленный заказ можно забрать на нашем складе по адресу:</p>
-            <ul>
-              <li>г. Ижевск, Проспект конструктора М.Т. Калашникова,7</li>
-            </ul>
-          </div>
-        </div>
-        <div class="stocks__delivery_item">
-          <h4 class="stocks__delivery_title stocks__delivery_title-number">2. Доставка по Ижевску.</h4>
-          <div class="stocks__delivery_content">
-            <ul>
-              <li>Бесплатно при заказе от 80 000 ₽ в пределах зоны доставки.</li>
-              <li>200 руб. при заказе менее 80 000 ₽</li>
-            </ul>
-            <p class="stocks__delivery_description">Время доставки: 14:00-22:00, пн-сб.</p>
-          </div>
-        </div>
-        <div class="stocks__delivery_item">
-          <h4 class="stocks__delivery_title stocks__delivery_title-number">2. Доставка в радиусе 15 км от Ижевска.</h4>
-          <div class="stocks__delivery_content">
-            <ul>
-              <li>Стоимость от 250 ₽</li>
-            </ul>
-            <p class="stocks__delivery_description">Время доставки: 14:00-22:00, пн-сб.</p>
-          </div>
-        </div>
-        <div class="stocks__delivery_item">
-          <h4 class="stocks__delivery_title">Для уточнения деталей обращайтесь к менеджерам.</h4>
+        <div
+            class="stocks__delivery_item"
+            v-for="block in delivery.sections"
+            :key="block.id"
+        >
+          <p v-html="block.html"></p>
         </div>
       </div>
     </div>

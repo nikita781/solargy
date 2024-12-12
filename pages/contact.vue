@@ -1,10 +1,48 @@
 <script setup>
 import {nextTick, onMounted, ref} from 'vue';
+import axios from "axios";
 
 const tabs = [
   { title: 'ООО «Соларжи 18»' },
   { title: 'ТОО «Торговый дом Art Group»' },
 ];
+
+const contacts = ref([])
+const companies = ref([])
+const socials = ref([]);
+
+const fetchSocials = async () => {
+  try {
+    const response = await axios.get(`/socials`);
+    socials.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
+const fetchContacts = async () => {
+  try {
+    const response = await axios.get(`/contacts`);
+    contacts.value = response.data[0];
+    if (contacts.value.map) {
+      contacts.value.map = contacts.value.map
+          .split(',')
+          .map(coord => parseFloat(coord.trim()));
+    }
+  } catch (error) {
+    console.error('Ошибка с сервера:', error.response.data);
+    console.error('Ошибка загрузки баннеров:', error);
+  }
+};
+const fetchCompanies = async () => {
+  try {
+    const response = await axios.get(`/companies`);
+    companies.value = response.data;
+  } catch (error) {
+    console.error('Ошибка с сервера:', error.response.data);
+    console.error('Ошибка загрузки баннеров:', error);
+  }
+};
 
 const activeTab = ref(0);
 
@@ -26,7 +64,36 @@ const sliderStyle = computed(() => {
   };
 });
 
+const nameUser = ref('');
+const phone = ref('');
+const comment = ref('');
+
+const addSuppurt = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('name', nameUser.value);
+    formData.append('phone', phone.value);
+    formData.append('comment', comment.value);
+
+    const response = await axios.post(`/call`, formData);
+    console.log(response)
+    reset();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
+const reset = () => {
+  nameUser.value = '';
+  phone.value = '';
+  comment.value = '';
+};
+
 onMounted(async () => {
+  await fetchSocials();
+  await fetchContacts();
+  await fetchCompanies();
+
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');
   });
@@ -37,26 +104,35 @@ onMounted(async () => {
   document.head.appendChild(script);
 
   script.onload = () => {
-    ymaps.ready(init);
+    const interval = setInterval(() => {
+      if (contacts.value.map && contacts.value.map.length === 2) {
+        clearInterval(interval);
+        ymaps.ready(init);
+      }
+    }, 100);
   };
 
   function init() {
+    if (!contacts.value.map || contacts.value.map.length !== 2) {
+      console.error('Координаты карты отсутствуют или некорректны:', contacts.value.map);
+      return;
+    }
     const myMap = new ymaps.Map("map", {
-      center: [56.858479, 53.300998],
+      center: contacts.value.map,
       zoom: 16,
       controls: []
     }, {
       suppressMapOpenBlock: true,
       yandexMapDisablePoi: true,
     });
-    const myPlacemark = new ymaps.Placemark([56.858479, 53.300998], {}, {
+
+    const myPlacemark = new ymaps.Placemark(contacts.value.map, {}, {
       iconLayout: 'default#image',
       iconImageHref: '/Point.png',
       iconImageSize: [100, 100],
       iconImageOffset: [-50, -100]
     });
 
-    // Добавление метки на карту
     myMap.geoObjects.add(myPlacemark);
   }
 });
@@ -69,14 +145,23 @@ onMounted(async () => {
         <h2 class="main_title">Как нас найти</h2>
         <div id="map" class="contact__address_map"></div>
         <div class="contact__address_info">
-          <h2 class="contact__address_title">г. Ижевск,<br>Проспект конструктора М.Т. Калашникова, 7</h2>
+          <h2 class="contact__address_title">{{ contacts.address }}</h2>
           <div class="contact__address_contact">
-            <p class="contact__address_phone">8(800) 200 06 02</p>
-            <p class="contact__address_email">info@solargy.ru</p>
+            <p class="contact__address_phone">{{ contacts.phone }}</p>
+            <p class="contact__address_email">{{ contacts.email }}</p>
           </div>
           <div class="contact__address_vk">
             <p class="contact__address_text">Официальные аккаунты Solargy в соцсетях</p>
-            <img src="/vk%201.png" alt="">
+            <div class="contact__address_container">
+              <div
+                  v-for="place in socials"
+                  :key="place.id"
+              >
+                <NuxtLink :to="place.url">
+                  <img :src="place.image" alt="">
+                </NuxtLink>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -87,13 +172,13 @@ onMounted(async () => {
             <p class="questions__form_title">Обратный звонок</p>
             <div class="questions__form_inputs">
               <p class="questions__form_name">Ваше имя</p>
-              <input class="questions__form_input" type="text" name="name" placeholder="Введите имя">
+              <input class="questions__form_input" type="text" v-model="nameUser" placeholder="Введите имя">
               <p class="questions__form_name">Ваш телефон</p>
-              <input class="questions__form_input" type="number" name="phone" placeholder="Введите телефон">
+              <input class="questions__form_input" type="number" v-model="phone" placeholder="Введите телефон">
               <p class="questions__form_name">Комментарий</p>
-              <textarea style="min-height: 152px" class="questions__form_textarea" name="comment" placeholder="Введите комментарий"></textarea>
+              <textarea style="min-height: 152px" class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий"></textarea>
             </div>
-            <button class="main_btn questions__form_btn">Заказать звонок</button>
+            <button class="main_btn questions__form_btn" @click="addSuppurt">Заказать звонок</button>
           </div>
         </div>
       </div>
@@ -101,12 +186,12 @@ onMounted(async () => {
     <div class="contact__tabs">
       <div class="card__tabs_cont">
         <p
-            v-for="(tab, index) in tabs"
+            v-for="(tab, index) in companies"
             :key="index"
             :class="['card__tabs_item', { active: activeTab === index }]"
             @click="setActiveTab(index)"
         >
-          {{ tab.title }}
+          {{ tab.name }}
         </p>
         <div
             class="slider"
@@ -115,64 +200,43 @@ onMounted(async () => {
       </div>
 
       <div class="card__tabs_content">
-        <div v-if="activeTab === 0" class="contact__tabs_info">
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">Название организации</p>
-            <p class="contact__tabs_text">Общество с органиченной ответственностью «Соларжи 18»</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">Офис</p>
-            <p class="contact__tabs_text">г. Ижевск, Проспект конструктора М.Т. Калашникова, 7</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">Производство</p>
-            <p class="contact__tabs_text">Удмуртская Республика, Завьяловский район, д. Старое Мартьяново, Центральная, 54</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">Почта</p>
-            <p class="contact__tabs_text">info@solargy.ru</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">Телефон</p>
-            <p class="contact__tabs_text">8 (800) 200 06 02</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">ОГРН</p>
-            <p class="contact__tabs_text">1141841008506</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">ИНН</p>
-            <p class="contact__tabs_text">1841046936</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">КПП</p>
-            <p class="contact__tabs_text">184101001</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">ОКПО</p>
-            <p class="contact__tabs_text">29992459</p>
-          </div>
-        </div>
-        <div v-if="activeTab === 1" class="contact__tabs_info">
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">Название организации</p>
-            <p class="contact__tabs_text">Представительство в Казахстане ТОО «Торговый дом Art Group»</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">Офис</p>
-            <p class="contact__tabs_text">г. Астана, проспект Мангилик Ел, 19/2</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">Почта</p>
-            <p class="contact__tabs_text">sales@solargy.kz</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">Телефон</p>
-            <p class="contact__tabs_text">+7 (747) 256 76 11</p>
-          </div>
-          <div class="contact__tabs_content">
-            <p class="contact__tabs_title">БИН</p>
-            <p class="contact__tabs_text">170340017533</p>
+        <div
+            v-for="(tab, index) in companies"
+            :key="index"
+        >
+          <div
+              v-if="activeTab === index"
+              class="contact__tabs_info"
+          >
+            <div class="contact__tabs_content">
+              <p class="contact__tabs_title">Название</p>
+              <p class="contact__tabs_text">{{ tab.details.name }}</p>
+            </div>
+            <div class="contact__tabs_content">
+              <p class="contact__tabs_title">Офис</p>
+              <p class="contact__tabs_text">{{ tab.details.office }}</p>
+            </div>
+            <div class="contact__tabs_content">
+              <p class="contact__tabs_title">Производство</p>
+              <p class="contact__tabs_text">{{ tab.details.production }}</p>
+            </div>
+            <div class="contact__tabs_content">
+              <p class="contact__tabs_title">Телефон</p>
+              <p class="contact__tabs_text">{{ tab.details.phone }}</p>
+            </div>
+            <div class="contact__tabs_content">
+              <p class="contact__tabs_title">Почта</p>
+              <p class="contact__tabs_text">{{ tab.details.email }}</p>
+            </div>
+            <div
+                v-for="(custom, index) in tab['custom-details']"
+                :key="index"
+            >
+              <div class="contact__tabs_content">
+                <p class="contact__tabs_title">{{ custom.title }}</p>
+                <p class="contact__tabs_text">{{ custom.value }}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

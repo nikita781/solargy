@@ -224,11 +224,11 @@ const selectSlide = (slide) => {
   selectedSlide.value = slide;
 };
 
-const handleDownload = async (fileUrl) => {
+const handleDownload = async (fileUrl, file_name) => {
   try {
     const fileName = fileUrl.split('/').pop();
 
-    const response = await axios.get(`/download/property/${fileName}`, {
+    const response = await axios.get(`/download/productPropertyFiles/${fileName}`, {
       responseType: 'blob',
     });
 
@@ -237,7 +237,7 @@ const handleDownload = async (fileUrl) => {
 
     const link = document.createElement('a');
     link.href = downloadUrl;
-    link.download = fileName; // Задаем имя файла
+    link.download = file_name;
     document.body.appendChild(link);
     link.click();
 
@@ -378,7 +378,7 @@ const handleDownload = async (fileUrl) => {
             <p v-html="property.html"></p>
             <a
                 v-if="property.file"
-                @click.prevent="handleDownload(property.file)"
+                @click.prevent="handleDownload(property.file, property.file_name)"
                 download
                 class="card__tabs_file_link main_btn"
             >

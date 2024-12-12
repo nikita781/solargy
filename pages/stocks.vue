@@ -8,23 +8,27 @@ const tabs = [
 ];
 
 const blocks = ref([]);
+const blocksNotArchive = ref([]);
 const blocksArchive = ref([]);
+
+const sections = ref([]);
 
 const fetchBlocks = async () => {
   try {
-    const response = await axios.get(`/pages/1?is_archived=false`);
-    blocks.value = response.data.sections;
-    console.log(blocks.value)
+    const response = await axios.get(`/promos`);
+    blocks.value = response.data;
+    blocksNotArchive.value = blocks.value.filter((block) => !block.is_archived);
+    blocksArchive.value = blocks.value.filter((block) => block.is_archived);
   } catch (error) {
     console.error('Ошибка с сервера:', error.response.data);
     console.error('Ошибка загрузки баннеров:', error);
   }
 };
-const fetchBlocksArchive = async () => {
+
+const fetchSection = async () => {
   try {
-    const response = await axios.get(`/pages/1?is_archived=true`);
-    blocksArchive.value = response.data.sections;
-    console.log(blocks.value)
+    const response = await axios.get(`/pages/1`);
+    sections.value = response.data.sections;
   } catch (error) {
     console.error('Ошибка с сервера:', error.response.data);
     console.error('Ошибка загрузки баннеров:', error);
@@ -35,6 +39,18 @@ const activeTab = ref(0);
 
 const setActiveTab = (index) => {
   activeTab.value = index;
+};
+
+const convertDateToText = (dateString) => {
+  const months = [
+    "января", "февраля", "марта", "апреля", "мая", "июня",
+    "июля", "августа", "сентября", "октября", "ноября", "декабря"
+  ];
+
+  const [year, month] = dateString.split('-').map(Number);
+  const monthName = months[month - 1];
+
+  return `До конца ${monthName} ${year} года`;
 };
 
 const tabsRef = ref([]);
@@ -52,8 +68,8 @@ const sliderStyle = computed(() => {
 });
 
 onMounted(async () => {
+  await fetchSection();
   await fetchBlocks();
-  await fetchBlocksArchive();
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');
   });
@@ -70,9 +86,9 @@ onMounted(async () => {
     </div>
     <h2 class="main_title">Акции</h2>
     <div class="stocks__main_info">
-      <p>В разделе «Акции» нашего сайта мы представляем специальные предложения, скидки и уникальные возможности для наших клиентов. Этот раздел создан для того, чтобы вы могли легко находить актуальные предложения и максимально выгодно использовать наши услуги.</p>
-      <p>Чтобы нe пропустить выгодные предложения, следите за обновлениями в нащих соцсетях. Мы регулярно обновляем информацию о текущих акциях и добавляем новые предложения. Убедитесь, что вы подписаны на наши уведомления, чтобы первыми узнавать о лучших предложениях.</p>
-      <p>Мы стремимся сделать ваши покупки не только выгодными, но и приятными. Не упустите возможность воспользоваться нашими акциями и сделайте свои покупки еще более выгодными!</p>
+      <div  v-for="(section, index) in sections" :key="index">
+        <p v-html="section.html"></p>
+      </div>
     </div>
   </div>
   <div class="stocks__content">
@@ -93,14 +109,14 @@ onMounted(async () => {
 
     <div class="card__tabs_content">
       <div v-if="activeTab === 0" class="card__tabs_info stocks__container">
-        <div v-for="block in blocks" :key="block.id" class="stocks__item">
+        <div v-for="block in blocksNotArchive" :key="block.id" class="stocks__item">
           <div class="stocks__item_img">
             <img :src="block.image" alt="">
             <h3 class="stocks__item_title">{{ block.title }}</h3>
           </div>
           <div class="stocks__item_content">
-            <p class="stocks__item_text">{{ block.html }}</p>
-            <p class="stocks__item_data">Срок действия уточните у менеджера</p>
+            <p class="stocks__item_text">{{ block.description }}</p>
+            <p class="stocks__item_data">{{ convertDateToText(block.end) }}</p>
           </div>
         </div>
       </div>
@@ -111,8 +127,8 @@ onMounted(async () => {
             <h3 class="stocks__item_title">{{ block.title }}</h3>
           </div>
           <div class="stocks__item_content">
-            <p class="stocks__item_text">{{ block.html }}</p>
-            <p class="stocks__item_data">Срок действия уточните у менеджера</p>
+            <p class="stocks__item_text">{{ block.description }}</p>
+            <p class="stocks__item_data">{{ convertDateToText(block.end) }}</p>
           </div>
         </div>
       </div>

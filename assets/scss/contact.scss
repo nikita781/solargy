@@ -1,9 +1,28 @@
+$x-small: 575.98px;
+$small: 767.98px;
+$medium: 991.98px;
+$large: 1199.98px;
+$x-large: 1399.98px;
+$big: 1592.98px;
+$x-big: 1829.98px;
 .contact {
   &__main {
     padding: 30px 80px;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
+    @media screen and (max-width: $large){
+      padding: 30px 80px;
+    }
+    @media screen and (max-width: $medium){
+      padding: 30px 50px;
+    }
+    @media screen and (max-width: $small){
+      grid-template-columns: 1fr;
+    }
+    @media screen and (max-width: $x-small){
+      padding: 30px;
+    }
   }
   &__address {
     display: flex;
@@ -57,6 +76,10 @@
       line-height: 20px;
       font-family: 'Exo 2 Bold', serif;
     }
+    &_container {
+      display: flex;
+      gap: 10px;
+    }
   }
   &__questions {
     display: flex;
@@ -65,6 +88,15 @@
   }
   &__tabs {
     padding: 70px 80px 100px 80px;
+    @media screen and (max-width: $large){
+      padding: 70px 80px 100px 80px;
+    }
+    @media screen and (max-width: $medium){
+      padding: 70px 50px;
+    }
+    @media screen and (max-width: $x-small){
+      padding: 30px;
+    }
     &_info {
       display: flex;
       flex-direction: column;
@@ -74,6 +106,9 @@
       display: grid;
       grid-template-columns: 1fr 2fr;
       gap: 20px;
+      @media screen and (max-width: $x-small){
+        grid-template-columns: 1fr;
+      }
     }
     &_title {
       font-size: 20px;
@@ -82,12 +117,20 @@
       letter-spacing: 1px;
       color: #818181;
       font-family: 'Exo 2 Bold', serif;
+      @media screen and (max-width: $small){
+        font-size: 16px;
+        line-height: 20px;
+      }
     }
     &_text {
       font-size: 20px;
       line-height: 25px;
       letter-spacing: 1px;
       font-family: 'Exo 2 Bold', serif;
+      @media screen and (max-width: $small){
+        font-size: 16px;
+        line-height: 20px;
+      }
     }
   }
 }

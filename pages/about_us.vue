@@ -27,7 +27,7 @@ const fetchPatents = async () => {
 const fetchTeams = async () => {
   try {
     const response = await axios.get(`/teams`);
-    teams.value = response.data.data;
+    teams.value = response.data;
   } catch (error) {
     console.error('Ошибка с сервера:', error.response.data);
     console.error('Ошибка загрузки баннеров:', error);

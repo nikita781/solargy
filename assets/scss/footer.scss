@@ -66,6 +66,14 @@ $x-big: 1829.98px;
     &_container {
       display: flex;
       gap: 16px;
+      a {
+        width: 32px;
+        height: 32px;
+      }
+      img {
+        width: 32px;
+        height: 32px;
+      }
     }
   }
   &__catalog {
