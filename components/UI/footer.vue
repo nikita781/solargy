@@ -67,7 +67,7 @@ onMounted(() => {
     <div class="footer__social">
       <div class="footer__social_logo">
         <IconsLogo color="#fff"/>
-        <p class="footer__social_info">г. Ижевск, Проспект конструктора М.Т. Калашникова,7</p>
+        <p class="footer__social_info">{{ contacts.address }}</p>
       </div>
       <div class="footer__social_content">
         <div class="footer__social_item">
