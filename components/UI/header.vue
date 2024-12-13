@@ -1,6 +1,6 @@
 <script setup>
 import {nextTick, ref} from 'vue';
-import { useRoute } from 'vue-router'
+import {useRoute} from 'vue-router'
 import axios from "axios";
 
 const route = useRoute()
@@ -20,6 +20,16 @@ const fetchCategory = async () => {
   try {
     const response = await axios.get('/categories');
     categories.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
+const contacts = ref([]);
+const fetchContact = async () => {
+  try {
+    const response = await axios.get(`/contacts`);
+    contacts.value = response.data[0];
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -164,6 +174,7 @@ const handleContainerClick = () => {
 
 onMounted(() => {
   fetchCategory();
+  fetchContact();
   fetchTabs();
   const container = document.querySelector('.container');
   if (container) {
@@ -176,139 +187,6 @@ onBeforeUnmount(() => {
     container.removeEventListener('click', handleContainerClick);
   }
 });
-
-const blocks = [
-  {
-    name: "Светопроводящие системы",
-    image: "/88fea1154150a63a7cce1416c1d61201.jpg",
-    menuItems: [
-      {
-        title: "Световод",
-        subitems: ["CEO SOLARGY SW C", "Solargy SW F", "Solargy SW W", "Solargy WL W"],
-      },
-      {
-        title: "Зенитный фонарь",
-        subitems: [],
-      },
-      {
-        title: "Шахтный фонарь",
-        subitems: [],
-      },
-      {
-        title: "Световой колодец",
-        subitems: [],
-      },
-      {
-        title: "Светоскоп",
-        subitems: [],
-      },
-    ],
-  },
-  {
-    name: "Солнцезащитные устройства",
-    image: "/44dbb9cc01fa843514392aeb5314b96e.jpg",
-    menuItems: [
-      {
-        title: "Электрокарнизы ONVIZ",
-        subitems: [],
-      },
-      {
-        title: "Козырек солнечный",
-        subitems: [],
-      },
-      {
-        title: "Солнцезащитная панель",
-        subitems: [],
-      },
-      {
-        title: "Солнцезащитная электропленка",
-        subitems: [],
-      },
-      {
-        title: "Жалюзи стеклянные",
-        subitems: [],
-      },
-    ],
-  },
-  {
-    name: "Дополнительные товары",
-    image: "/0d4f7e87c393a27afa380d0092b07450.jpg",
-    menuItems: [
-      {
-        title: "Товар 1",
-        subitems: [],
-      },
-      {
-        title: "Товар 2",
-        subitems: [],
-      },
-      {
-        title: "Товар 3",
-        subitems: [],
-      },
-      {
-        title: "Товар 4",
-        subitems: [],
-      },
-      {
-        title: "Товар 5",
-        subitems: [],
-      },
-    ],
-  },
-  {
-    name: "Дополнительные товары",
-    image: "/0d4f7e87c393a27afa380d0092b07450.jpg",
-    menuItems: [
-      {
-        title: "Товар 1",
-        subitems: [],
-      },
-      {
-        title: "Товар 2",
-        subitems: [],
-      },
-      {
-        title: "Товар 3",
-        subitems: [],
-      },
-      {
-        title: "Товар 4",
-        subitems: [],
-      },
-      {
-        title: "Товар 5",
-        subitems: [],
-      },
-    ],
-  },
-  {
-    name: "Дополнительные товары",
-    image: "/0d4f7e87c393a27afa380d0092b07450.jpg",
-    menuItems: [
-      {
-        title: "Товар 1",
-        subitems: [],
-      },
-      {
-        title: "Товар 2",
-        subitems: [],
-      },
-      {
-        title: "Товар 3",
-        subitems: [],
-      },
-      {
-        title: "Товар 4",
-        subitems: [],
-      },
-      {
-        title: "Товар 5",
-        subitems: [],
-      },
-    ],
-  },
-];
 </script>
 
 <template>
@@ -319,9 +197,9 @@ const blocks = [
         <NuxtLink to="/order" :class="{ active: route.name === 'order' }">Где купить?</NuxtLink>
         <NuxtLink to="/delivery" :class="{ active: route.name === 'delivery' }">Доставка</NuxtLink>
       </div>
-      <a href="tel: +78002000602" class="header__info_container-phone">
+      <a class="header__info_container-phone">
         <IconsPhone/>
-        <p>8 (800) 200 06 02</p>
+        <p>{{ contacts.phone }}</p>
       </a>
     </div>
     <div class="header__main" v-if="!isSearch">
@@ -335,7 +213,8 @@ const blocks = [
             @mouseenter="openMenuMain"
         >
           <NuxtLink to="/catalog">КАТАЛОГ</NuxtLink>
-          <IconsArrow class="header__main_nav-arrow" :style="{ transform: isMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
+          <IconsArrow class="header__main_nav-arrow"
+                      :style="{ transform: isMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
         </div>
         <NuxtLink
             class="header__main_nav-item"
@@ -375,7 +254,8 @@ const blocks = [
               :class="{ active: route.name === 'catalog' }"
           >
             <NuxtLink to="/catalog">КАТАЛОГ</NuxtLink>
-            <IconsArrow @click="toggleMenuPhone" class="header__main_nav-arrow" :style="{ transform: isMenuOpenPhone ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
+            <IconsArrow @click="toggleMenuPhone" class="header__main_nav-arrow"
+                        :style="{ transform: isMenuOpenPhone ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
           </div>
           <div v-if="isMenuOpenPhone" class="header__menu-phone">
             <div class="header__menu header__menu-phone" :style="{ display: isMenuOpenPhone ? 'grid' : 'none'}">
@@ -384,22 +264,27 @@ const blocks = [
                   :key="blockIndex"
                   class="header__menu_container"
               >
-                <img :src="block.photo" alt="" />
+                <img :src="block.photo" alt=""/>
                 <div class="header__menu_info">
-                  <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{ block.name }}</NuxtLink>
-                  <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
+                  <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">
+                    {{ block.name }}
+                  </NuxtLink>
+                  <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex"
+                       class="header__menu_item-container">
                     <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
-                      <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">{{ menuItem.name }}</NuxtLink>
-<!--                      <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
+                      <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">
+                        {{ menuItem.name }}
+                      </NuxtLink>
+                      <!--                      <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
                     </div>
-<!--                    <div-->
-<!--                        class="header__menu_subitem-container"-->
-<!--                        :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
-<!--                    >-->
-<!--                      <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
-<!--                        {{ subItem }}-->
-<!--                      </p>-->
-<!--                    </div>-->
+                    <!--                    <div-->
+                    <!--                        class="header__menu_subitem-container"-->
+                    <!--                        :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
+                    <!--                    >-->
+                    <!--                      <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
+                    <!--                        {{ subItem }}-->
+                    <!--                      </p>-->
+                    <!--                    </div>-->
                   </div>
                 </div>
               </div>
@@ -425,7 +310,8 @@ const blocks = [
     <div class="header__main-search" v-if="isSearch" :class="{ 'is-visible': showSearch }">
       <div class="header__main-search-cont">
         <div class="header__main-search_container">
-          <input class="header__main-search_input" v-model="searchQuery"  name="search" type="text" placeholder="Искать"/>
+          <input class="header__main-search_input" v-model="searchQuery" name="search" type="text"
+                 placeholder="Искать"/>
           <IconsSearch @click="handleSearch"/>
         </div>
         <IconsCross class="header__main-search_close" color="#cccccc" @click="closeSearch"/>
@@ -441,7 +327,7 @@ const blocks = [
             class="header__menu_container-search"
             :to="`/card/${search.id}-${generateSlug(search.name)}/`"
         >
-          <img :src="search.photos[0].photo" alt="" />
+          <img :src="search.photos[0].photo" alt=""/>
           <p class="header__menu_name">{{ search.name }}</p>
         </NuxtLink>
       </div>
@@ -452,22 +338,27 @@ const blocks = [
           :key="blockIndex"
           class="header__menu_container"
       >
-        <img :src="block.photo" alt="" />
+        <img :src="block.photo" alt=""/>
         <div class="header__menu_info">
-          <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{ block.name }}</NuxtLink>
+          <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{
+              block.name
+            }}
+          </NuxtLink>
           <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
             <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
-              <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">{{ menuItem.name }}</NuxtLink>
-<!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
+              <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">
+                {{ menuItem.name }}
+              </NuxtLink>
+              <!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
             </div>
-<!--            <div-->
-<!--                class="header__menu_subitem-container"-->
-<!--                :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
-<!--            >-->
-<!--              <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
-<!--                {{ subItem }}-->
-<!--              </p>-->
-<!--            </div>-->
+            <!--            <div-->
+            <!--                class="header__menu_subitem-container"-->
+            <!--                :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
+            <!--            >-->
+            <!--              <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
+            <!--                {{ subItem }}-->
+            <!--              </p>-->
+            <!--            </div>-->
           </div>
         </div>
       </div>
