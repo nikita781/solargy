@@ -40,12 +40,14 @@ const handleSearch = async () => {
   if (!searchQuery.value.trim()) {
     return;
   }
-  isSearchOpen.value = true;
 
   try {
     const response = await axios.get(`/search?q=${searchQuery.value}`);
     searchResult.value = response.data;
     console.log(searchResult.value)
+    if (searchResult.value.length > 0) {
+      openMenuSearch();
+    }
   } catch (error) {
     console.error('Ошибка загрузки категорий:', error.response?.data || error);
   }
@@ -55,15 +57,18 @@ const openMenuMain = () => {
   isMenuOpen.value = true;
 };
 
+const openMenuSearch = () => {
+  isSearchOpen.value = true;
+  console.log(isSearchOpen.value)
+};
+
 const toggleMenuPhone = () => {
   isMenuOpenPhone.value = !isMenuOpenPhone.value;
 };
 
 const toggleMenuSearch = () => {
   if (isSearch.value) {
-    showSearch.value = false;
-    isSearchOpen.value = false;
-    setTimeout(() => (isSearch.value = false), 300);
+    closeSearch();
   } else {
     isSearch.value = true;
     setTimeout(() => (showSearch.value = true), 10);
@@ -423,13 +428,13 @@ const blocks = [
           <input class="header__main-search_input" v-model="searchQuery"  name="search" type="text" placeholder="Искать"/>
           <IconsSearch @click="handleSearch"/>
         </div>
-        <IconsCross class="header__main-search_close" color="#cccccc" @click="toggleMenuSearch"/>
+        <IconsCross class="header__main-search_close" color="#cccccc" @click="closeSearch"/>
       </div>
     </div>
     <div class="header__menu" :style="{ display: isSearchOpen ? 'grid' : 'none'}">
       <div
-          v-for="(search, Index) in searchResult"
-          :key="Index"
+          v-for="(search, index) in searchResult"
+          :key="index"
           class="header__menu_container-search"
       >
         <NuxtLink
