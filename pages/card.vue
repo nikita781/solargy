@@ -88,7 +88,7 @@ const selectItem = (item) => {
   currentSelectedId.value = item.id;
   selectedOptions.value[product.value.options[currentIndex.value].id] = {
     name: product.value.options[currentIndex.value].name,
-    value: item,
+    values: item,
   };
   closeMenu();
 };
@@ -181,7 +181,7 @@ watch(() => route.fullPath, async () => {
   product.value.options.forEach((option) => {
     selectedOptions.value[option.id] = {
       name: option.name,
-      value: option.values[0],
+      values: option.values[0],
     };
   });
   await nextTick();
@@ -204,10 +204,11 @@ onMounted(async () => {
   await fetchCategory();
   await fetchProducts();
   selectedSlide.value = product.value?.photos[0];
+
   product.value.options.forEach((option) => {
     selectedOptions.value[option.id] = {
       name: option.name,
-      value: option.values[0],
+      values: option.values[0],
     };
   });
   await nextTick();
@@ -341,7 +342,7 @@ const handleDownload = async (fileUrl, file_name) => {
               <div class="card__main_final-quantity">{{quantity}}</div>
               <div class="card__main_final-btn" @click="quantityPlus"><IconsPlus color="#EF7F1A"/></div>
             </div>
-            <button class="main_btn" @click="addToBasket">Добавить в корзину</button>
+            <NuxtLink class="main_btn" @click="addToBasket" to="/basket">Добавить в корзину</NuxtLink>
           </div>
         </div>
       </div>

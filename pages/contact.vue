@@ -75,8 +75,7 @@ const addSuppurt = async () => {
     formData.append('phone', phone.value);
     formData.append('comment', comment.value);
 
-    const response = await axios.post(`/call`, formData);
-    console.log(response)
+    await axios.post(`/call`, formData);
     reset();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);

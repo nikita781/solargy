@@ -387,14 +387,14 @@ const blocks = [
                       <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">{{ menuItem.name }}</NuxtLink>
 <!--                      <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
                     </div>
-                    <div
-                        class="header__menu_subitem-container"
-                        :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"
-                    >
-                      <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">
-                        {{ subItem }}
-                      </p>
-                    </div>
+<!--                    <div-->
+<!--                        class="header__menu_subitem-container"-->
+<!--                        :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
+<!--                    >-->
+<!--                      <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
+<!--                        {{ subItem }}-->
+<!--                      </p>-->
+<!--                    </div>-->
                   </div>
                 </div>
               </div>
@@ -455,14 +455,14 @@ const blocks = [
               <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">{{ menuItem.name }}</NuxtLink>
 <!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
             </div>
-            <div
-                class="header__menu_subitem-container"
-                :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"
-            >
-              <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">
-                {{ subItem }}
-              </p>
-            </div>
+<!--            <div-->
+<!--                class="header__menu_subitem-container"-->
+<!--                :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
+<!--            >-->
+<!--              <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
+<!--                {{ subItem }}-->
+<!--              </p>-->
+<!--            </div>-->
           </div>
         </div>
       </div>

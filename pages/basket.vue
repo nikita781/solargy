@@ -46,24 +46,28 @@ const toggleFormOpen = () => {
   basketStore.updateUserInfo(nameUser.value, phoneUser.value);
   addOrder();
   console.log(basketStore.items);
-  basketStore.clearBasket();
+  // basketStore.clearBasket();
   formOpen.value = !formOpen.value;
 }
 
 const addOrder = async () => {
   try {
     const formData = new FormData();
-    formData.append('userinfo[0][name]', basketStore.userInfo.name);
-    formData.append('userinfo[0][phone]', basketStore.userInfo.phone);
-    formData.append('userinfo[0][price]', basketStore.userInfo.price);
-    formData.append('items', basketStore.items);
+    formData.append('userInfo[0][name]', basketStore.userInfo.name);
+    formData.append('userInfo[0][phone]', basketStore.userInfo.phone);
+    formData.append('userInfo[0][price]', basketStore.userInfo.price);
 
-    // for (let [key, value] of formData.entries()) {
-    //   console.log(`${key}: ${value}`);
-    // }
+    basketStore.items.forEach((item, index) => {
+      formData.append(`items[${index}][name]`, item.name);
+      formData.append(`items[${index}][price]`, item.price);
 
-    const response = await axios.post(`/order`, formData);
-    console.log(response)
+      item.options.forEach((option, optionIndex) => {
+        formData.append(`items[${index}][options][${optionIndex}][name]`, option.name);
+        formData.append(`items[${index}][options][${optionIndex}][values][0][value]`, option.values.value);
+      });
+    });
+
+    await axios.post(`/order`, formData);
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -119,7 +123,7 @@ const bestProduct = ref([
                 <div class="basket__item_characteristic">
                   <div v-for="(option, index) in item.options" :key="index">
                     <p class="basket__item_inf">
-                      {{ option.name }}: <span>{{ option.value.value }}</span>
+                      {{ option.name }}: <span>{{ option.values.value }}</span>
                     </p>
                   </div>
                 </div>

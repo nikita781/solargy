@@ -107,8 +107,7 @@ const addSuppurt = async () => {
     formData.append('email', email.value);
     formData.append('comment', comment.value);
 
-    const response = await axios.post(`/support`, formData);
-    console.log(response)
+    await axios.post(`/support`, formData);
     reset();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
@@ -271,7 +270,7 @@ onUnmounted(() => {
           <img class="questions__info_img" src="/a2638c413d54ccc28941e175b45711e1.jpg" alt="">
         </div>
         <div class="questions__form">
-          <form class="questions__form_container">
+          <div class="questions__form_container">
             <p class="questions__form_title">Оставьте свое обращение</p>
             <div class="questions__form_inputs">
               <p class="questions__form_name">Ваше имя</p>
@@ -282,7 +281,7 @@ onUnmounted(() => {
               <textarea class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий"></textarea>
             </div>
             <button class="main_btn questions__form_btn" @click="addSuppurt">Отправить заявку</button>
-          </form>
+          </div>
         </div>
       </div>
     </div>
