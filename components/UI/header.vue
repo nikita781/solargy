@@ -126,12 +126,13 @@ const pageData = useState('pageData', () => false);
 const openMenu = async (select, index) => {
   menuVisible.value = true;
   await nextTick();
-  pageData.value = true;
 
-  const menu = document.querySelector(".slide-out-menu");
-  if (menu) {
-    menu.classList.add("visible");
-  }
+  setTimeout(() => {
+    const menu = document.querySelector(".slide-out-menu");
+    if (menu) {
+      menu.classList.add("visible");
+    }
+  }, 10);
 };
 
 const closeMenu = () => {
@@ -139,7 +140,6 @@ const closeMenu = () => {
   if (menu) {
     menu.classList.remove("visible");
 
-    pageData.value = false;
     setTimeout(() => {
       menuVisible.value = false;
     }, 300);
@@ -190,105 +190,32 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header class="header">
-    <div class="header__info">
-      <div class="header__info_container-text">
-        <NuxtLink to="/stocks" :class="{ active: route.name === 'stocks' }">Акция</NuxtLink>
-        <NuxtLink to="/order" :class="{ active: route.name === 'order' }">Где купить?</NuxtLink>
-        <NuxtLink to="/delivery" :class="{ active: route.name === 'delivery' }">Доставка</NuxtLink>
-      </div>
-      <a class="header__info_container-phone">
-        <IconsPhone/>
-        <p>{{ contacts.phone }}</p>
-      </a>
-    </div>
-    <div class="header__main" v-if="!isSearch">
-      <NuxtLink to="/">
-        <IconsLogo class="header__main_logo"/>
-      </NuxtLink>
-      <nav class="header__main_nav">
-        <div
-            class="header__main_nav-container"
-            :class="{ active: route.name === 'catalog' }"
-            @mouseenter="openMenuMain"
-        >
-          <NuxtLink to="/catalog">КАТАЛОГ</NuxtLink>
-          <IconsArrow class="header__main_nav-arrow"
-                      :style="{ transform: isMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
-        </div>
-        <NuxtLink
-            class="header__main_nav-item"
-            :class="{ active: route.name === 'about_us' }"
-            to="/about_us"
-        >
-          О НАС
-        </NuxtLink>
-        <NuxtLink
-            class="header__main_nav-item"
-            :class="{ active: route.name === 'contact' }"
-            to="/contact"
-        >
-          КОНТАКТЫ
-        </NuxtLink>
-      </nav>
-      <div class="header__main_menu">
-        <IconsSearch @click="toggleMenuSearch"/>
-        <NuxtLink to="/basket">
-          <IconsBasket :class="{ active: route.name === 'basket' }"/>
-        </NuxtLink>
-        <IconsMenu class="header__main_menu-btn" @click="openMenu"/>
-      </div>
-      <div v-if="menuVisible" class="slide-out-menu">
-        <div class="menu-header">
-          <h3>Меню</h3>
-          <IconsCross @click="closeMenu"/>
-        </div>
-        <div class="header__info_container-text-phone">
-          <NuxtLink to="/stocks" :class="{ active: route.name === 'stocks' }">Акция</NuxtLink>
+  <div>
+    <header class="header">
+      <div class="header__info">
+        <div class="header__info_container-text">
+          <NuxtLink to="/stocks" :class="{ active: route.name === 'stocks' }">Акции</NuxtLink>
           <NuxtLink to="/order" :class="{ active: route.name === 'order' }">Где купить?</NuxtLink>
           <NuxtLink to="/delivery" :class="{ active: route.name === 'delivery' }">Доставка</NuxtLink>
         </div>
-        <nav class="header__main_nav-phone">
+        <a class="header__info_container-phone">
+          <IconsPhone/>
+          <p>{{ contacts.phone }}</p>
+        </a>
+      </div>
+      <div class="header__main" v-if="!isSearch">
+        <NuxtLink to="/">
+          <IconsLogo class="header__main_logo"/>
+        </NuxtLink>
+        <nav class="header__main_nav">
           <div
               class="header__main_nav-container"
               :class="{ active: route.name === 'catalog' }"
+              @mouseenter="openMenuMain"
           >
             <NuxtLink to="/catalog">КАТАЛОГ</NuxtLink>
-            <IconsArrow @click="toggleMenuPhone" class="header__main_nav-arrow"
-                        :style="{ transform: isMenuOpenPhone ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
-          </div>
-          <div v-if="isMenuOpenPhone" class="header__menu-phone">
-            <div class="header__menu header__menu-phone" :style="{ display: isMenuOpenPhone ? 'grid' : 'none'}">
-              <div
-                  v-for="(block, blockIndex) in categories"
-                  :key="blockIndex"
-                  class="header__menu_container"
-              >
-                <img :src="block.photo" alt=""/>
-                <div class="header__menu_info">
-                  <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">
-                    {{ block.name }}
-                  </NuxtLink>
-                  <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex"
-                       class="header__menu_item-container">
-                    <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
-                      <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">
-                        {{ menuItem.name }}
-                      </NuxtLink>
-                      <!--                      <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
-                    </div>
-                    <!--                    <div-->
-                    <!--                        class="header__menu_subitem-container"-->
-                    <!--                        :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
-                    <!--                    >-->
-                    <!--                      <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
-                    <!--                        {{ subItem }}-->
-                    <!--                      </p>-->
-                    <!--                    </div>-->
-                  </div>
-                </div>
-              </div>
-            </div>
+            <IconsArrow class="header__main_nav-arrow"
+                        :style="{ transform: isMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
           </div>
           <NuxtLink
               class="header__main_nav-item"
@@ -305,66 +232,143 @@ onBeforeUnmount(() => {
             КОНТАКТЫ
           </NuxtLink>
         </nav>
-      </div>
-    </div>
-    <div class="header__main-search" v-if="isSearch" :class="{ 'is-visible': showSearch }">
-      <div class="header__main-search-cont">
-        <div class="header__main-search_container">
-          <input class="header__main-search_input" v-model="searchQuery" name="search" type="text"
-                 placeholder="Искать"/>
-          <IconsSearch @click="handleSearch"/>
-        </div>
-        <IconsCross class="header__main-search_close" color="#cccccc" @click="closeSearch"/>
-      </div>
-    </div>
-    <div class="header__menu" :style="{ display: isSearchOpen ? 'grid' : 'none'}">
-      <div
-          v-for="(search, index) in searchResult"
-          :key="index"
-          class="header__menu_container-search"
-      >
-        <NuxtLink
-            class="header__menu_container-search"
-            :to="`/card/${search.id}-${generateSlug(search.name)}/`"
-        >
-          <img :src="search.photos[0].photo" alt=""/>
-          <p class="header__menu_name">{{ search.name }}</p>
-        </NuxtLink>
-      </div>
-    </div>
-    <div class="header__menu" :style="{ display: isMenuOpen ? 'grid' : 'none'}">
-      <div
-          v-for="(block, blockIndex) in categories"
-          :key="blockIndex"
-          class="header__menu_container"
-      >
-        <img :src="block.photo" alt=""/>
-        <div class="header__menu_info">
-          <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{
-              block.name
-            }}
+        <div class="header__main_menu">
+          <IconsSearch @click="toggleMenuSearch"/>
+          <NuxtLink to="/basket">
+            <IconsBasket :class="{ active: route.name === 'basket' }"/>
           </NuxtLink>
-          <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
-            <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
-              <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">
-                {{ menuItem.name }}
-              </NuxtLink>
-              <!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
+          <IconsMenu class="header__main_menu-btn" @click="openMenu"/>
+        </div>
+        <div v-if="menuVisible" class="slide-out-menu">
+          <div class="menu-header">
+            <h3>Меню</h3>
+            <IconsCross @click="closeMenu"/>
+          </div>
+          <div class="header__info_container-text-phone">
+            <NuxtLink to="/stocks" :class="{ active: route.name === 'stocks' }">Акция</NuxtLink>
+            <NuxtLink to="/order" :class="{ active: route.name === 'order' }">Где купить?</NuxtLink>
+            <NuxtLink to="/delivery" :class="{ active: route.name === 'delivery' }">Доставка</NuxtLink>
+          </div>
+          <nav class="header__main_nav-phone">
+            <div
+                class="header__main_nav-container"
+                :class="{ active: route.name === 'catalog' }"
+            >
+              <NuxtLink to="/catalog">КАТАЛОГ</NuxtLink>
+              <IconsArrow @click="toggleMenuPhone" class="header__main_nav-arrow"
+                          :style="{ transform: isMenuOpenPhone ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
             </div>
-            <!--            <div-->
-            <!--                class="header__menu_subitem-container"-->
-            <!--                :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
-            <!--            >-->
-            <!--              <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
-            <!--                {{ subItem }}-->
-            <!--              </p>-->
-            <!--            </div>-->
+            <div v-if="isMenuOpenPhone" class="header__menu-phone">
+              <div class="header__menu header__menu-phone" :style="{ display: isMenuOpenPhone ? 'grid' : 'none'}">
+                <div
+                    v-for="(block, blockIndex) in categories"
+                    :key="blockIndex"
+                    class="header__menu_container"
+                >
+                  <img :src="block.photo" alt=""/>
+                  <div class="header__menu_info">
+                    <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">
+                      {{ block.name }}
+                    </NuxtLink>
+                    <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex"
+                         class="header__menu_item-container">
+                      <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
+                        <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`"
+                                  class="header__menu_item">
+                          {{ menuItem.name }}
+                        </NuxtLink>
+                        <!--                      <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
+                      </div>
+                      <!--                    <div-->
+                      <!--                        class="header__menu_subitem-container"-->
+                      <!--                        :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
+                      <!--                    >-->
+                      <!--                      <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
+                      <!--                        {{ subItem }}-->
+                      <!--                      </p>-->
+                      <!--                    </div>-->
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <NuxtLink
+                class="header__main_nav-item"
+                :class="{ active: route.name === 'about_us' }"
+                to="/about_us"
+            >
+              О НАС
+            </NuxtLink>
+            <NuxtLink
+                class="header__main_nav-item"
+                :class="{ active: route.name === 'contact' }"
+                to="/contact"
+            >
+              КОНТАКТЫ
+            </NuxtLink>
+          </nav>
+        </div>
+      </div>
+      <div class="header__main-search" v-if="isSearch" :class="{ 'is-visible': showSearch }">
+        <div class="header__main-search-cont">
+          <div class="header__main-search_container">
+            <input class="header__main-search_input" v-model="searchQuery" name="search" type="text"
+                   placeholder="Искать"/>
+            <IconsSearch @click="handleSearch"/>
+          </div>
+          <IconsCross class="header__main-search_close" color="#cccccc" @click="closeSearch"/>
+        </div>
+      </div>
+      <div class="header__menu" :style="{ display: isSearchOpen ? 'grid' : 'none'}">
+        <div
+            v-for="(search, index) in searchResult"
+            :key="index"
+            class="header__menu_container-search"
+        >
+          <NuxtLink
+              class="header__menu_container-search"
+              :to="`/card/${search.id}-${generateSlug(search.name)}/`"
+          >
+            <img :src="search.photos[0].photo" alt=""/>
+            <p class="header__menu_name">{{ search.name }}</p>
+          </NuxtLink>
+        </div>
+      </div>
+      <div class="header__menu" :style="{ display: isMenuOpen ? 'grid' : 'none'}">
+        <div
+            v-for="(block, blockIndex) in categories"
+            :key="blockIndex"
+            class="header__menu_container"
+        >
+          <img :src="block.photo" alt=""/>
+          <div class="header__menu_info">
+            <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{
+                block.name
+              }}
+            </NuxtLink>
+            <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
+              <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
+                <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">
+                  {{ menuItem.name }}
+                </NuxtLink>
+                <!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
+              </div>
+              <!--            <div-->
+              <!--                class="header__menu_subitem-container"-->
+              <!--                :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
+              <!--            >-->
+              <!--              <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
+              <!--                {{ subItem }}-->
+              <!--              </p>-->
+              <!--            </div>-->
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-  </header>
+    </header>
+    <div class="header__plug"></div>
+  </div>
 </template>
 
 <style scoped lang="scss">
@@ -377,17 +381,17 @@ onBeforeUnmount(() => {
   $big: 1592.98px;
   $x-big: 1829.98px;
 
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
   width: calc(100% - 100px);
-  min-height: calc(100vh - 122px);
+  height: calc(100% - 122px);
   background-color: #fff;
   border-left: 1px solid #ccc;
   padding: 82px 50px 40px 50px;
   box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  overflow: hidden;
+  overflow-y: auto;
 
   display: flex;
   flex-direction: column;
@@ -396,7 +400,7 @@ onBeforeUnmount(() => {
   @media screen and (max-width: $x-small) {
     width: calc(100% - 60px);
     padding: 70px 30px 40px 30px;
-    min-height: calc(100vh - 110px);
+    height: calc(100% - 110px);
   }
 
   transform: translateX(100%);

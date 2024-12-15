@@ -98,7 +98,7 @@ onMounted(async () => {
             v-for="block in delivery.sections"
             :key="block.id"
         >
-          <p v-html="block.html"></p>
+          <div v-html="block.html" class="editor__content"></div>
         </div>
       </div>
     </div>

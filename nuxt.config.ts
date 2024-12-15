@@ -8,7 +8,7 @@ export default defineNuxtConfig({
   },
   app: {
     head: {
-      title: 'Solargy',
+      title: 'SOLARGY SHOP',
       meta: [
         { name: 'description', content: 'Описание вашего сайта для поисковых систем.' },
         { name: 'keywords', content: 'ключевые слова, SEO, nuxt, сайт' },
