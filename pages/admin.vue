@@ -545,6 +545,9 @@ const productFile9 = ref(null);
 const productOrder9 = ref(null);
 
 const productOption = ref(null);
+const valueByOption = ref([]);
+const idByOption = ref('');
+const productOptionValue = ref(null);
 const productPropertieTitle = ref(null);
 const productPropertieDescription = ref('');
 const productFilePropertie = ref(null);
@@ -554,6 +557,37 @@ const productTextPropertie = ref(null);
 const isEditingPropertie = ref(false);
 const currentPropertieId = ref(null)
 
+const fetchValueByOption = async (optionId) => {
+  try {
+    const response = await axios.get(`/options/${optionId}`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    idByOption.value = response.data.id;
+    valueByOption.value = response.data.values;
+  } catch (error) {
+    console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
+  }
+};
+const createProductOptionValue = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('options[0][id]', idByOption.value);
+    formData.append('options[0][values][0][id]', productOptionValue.value);
+
+    await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchProductById(currentProductId.value);
+    productOptionValue.value = '';
+    idByOption.value = '';
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
 const handleExportHtmlPropertie = (html) => {
   productPropertieDescription.value = html;
 };
@@ -846,8 +880,8 @@ const fetchOptionsById = async (optionId) => {
 };
 const deleteProductOption = async (idOption) => {
   try {
-    const valueId = await fetchOptionsById(idOption);
-    await axios.delete(`/products/${oneProd.value.id}/values/${valueId}`, {
+    // const valueId = await fetchOptionsById(idOption);
+    await axios.delete(`/products/${oneProd.value.id}/values/${idOption}`, {
       headers: {
         'Authorization': `Bearer ${result.value.token}`,
       },
@@ -2733,22 +2767,51 @@ const resetSocial = () => {
           <button class="main_btn" type="submit">Добавить</button>
           <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
-        <table v-if="isEditingProduct">
-          <thead>
-          <tr>
-            <th>Параметр</th>
-            <th>Удалить</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="option in oneProd.options" :key="option.id">
-            <td>{{ option.name }}</td>
-            <td>
-              <button @click="deleteProductOption(option.id)" class="admin-panel__content_btn">Удалить</button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+        <div
+            v-if="isEditingProduct"
+            class="admin-panel__content_info_item"
+            v-for="option in oneProd.options"
+            :key="option.id"
+        >
+          <div class="admin-panel__content_info_content">
+            <p>{{ option.name }}</p>
+          </div>
+          <table>
+            <thead>
+            <tr>
+              <th>Параметр</th>
+              <th>Цена</th>
+              <th>Фото</th>
+              <th>Отвязка</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="value in option.values" :key="value.id">
+              <td>{{ value.value }}</td>
+              <td>{{ value.price }}</td>
+              <td>
+                <img :src="value.image" alt="Фото" width="100"/>
+              </td>
+              <td>
+                <button @click="deleteProductOption(value.id)" class="admin-panel__content_btn">Отвязать</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <form class="admin-panel__content_form" @submit.prevent="createProductOptionValue">
+            <select
+                v-model="productOptionValue"
+                class="basket__form_input admin-panel__content_select"
+                @focus="fetchValueByOption(option.id)"
+            >
+              <option value="" disabled>Выберите параметр</option>
+              <option v-for="value in valueByOption" :key="value.id" :value="value.id">
+                {{ value.value }}
+              </option>
+            </select>
+            <button class="main_btn" type="submit">Привязать</button>
+          </form>
+        </div>
         <h3 v-if="isEditingProduct">Добавить таб (максимум 2)</h3>
         <form class="admin-panel__content_form"
               v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 2"
