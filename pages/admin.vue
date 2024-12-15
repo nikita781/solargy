@@ -2024,9 +2024,7 @@ const resetSocial = () => {
   <div class="admin">
     <h2 class="main_title">{{ isAuthenticated ? 'Админ панель' : 'Вход в админ панель' }}</h2>
     <div class="admin__auth" v-if="!isAuthenticated">
-      Admin@admin.com
       <input type="email" class="basket__form_input" v-model="nameUser" placeholder="Введите логин">
-      secret-password
       <input type="password" class="basket__form_input" v-model="passwordUser" placeholder="Введите пароль">
       <button class="main_btn" @click="fetchAdmin()">Войти</button>
     </div>
