@@ -1,7 +1,7 @@
 <script setup>
 import axios from "axios";
 import {onMounted} from "vue";
-import Editor from '~/components/Editor.vue';
+import Editor from '~/components/editor.vue';
 
 const nameUser = ref('');
 const passwordUser = ref('');

@@ -18,7 +18,7 @@ import axios from 'axios';
 //  user.value = data;
 //}
 
-axios.defaults.baseURL = 'http://127.0.0.1:8000/api';
+axios.defaults.baseURL = 'http://api.solargy.shop/api';
 // axios.defaults.withCredentials = true;
 </script>
 
