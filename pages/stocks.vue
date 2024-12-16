@@ -87,7 +87,7 @@ onMounted(async () => {
     <h2 class="main_title">Акции</h2>
     <div class="stocks__main_info">
       <div  v-for="(section, index) in sections" :key="index">
-        <p v-html="section.html"></p>
+        <div class="editor__content" v-html="section.html"></div>
       </div>
     </div>
   </div>

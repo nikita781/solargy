@@ -34,4 +34,5 @@ axios.defaults.baseURL = 'http://api.solargy.shop/api';
 @use "/assets/scss/other" as *;
 @use "/assets/scss/basket" as *;
 @use "/assets/scss/admin" as *;
+@use "/assets/scss/editor" as *;
 </style>

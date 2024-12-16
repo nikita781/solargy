@@ -6,6 +6,9 @@ $x-large: 1399.98px;
 $big: 1592.98px;
 $x-big: 1829.98px;
 .admin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 70px 80px;
   @media screen and (max-width: $large){
     padding: 70px 80px;
@@ -25,9 +28,10 @@ $x-big: 1829.98px;
     gap: 30px;
   }
   &-panel {
+    width: 100%;
     margin-top: 50px;
     display: grid;
-    grid-template-columns: 1fr 6fr;
+    grid-template-columns: 200px 1fr;
     gap: 20px;
     &__menu {
       width: 100%;

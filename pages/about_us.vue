@@ -78,7 +78,7 @@ function formatDate(dateString) {
     <div v-if="blocks[0]" class="about_us__header">
       <div class="about_us__header_info">
         <h1 class="about_us__header_title">{{ blocks[0].title }}</h1>
-        <p class="about_us__header_subtitle" v-html="blocks[0].html"></p>
+        <p class="about_us__header_subtitle editor__content" v-html="blocks[0].html"></p>
       </div>
       <div class="about_us__header_img">
         <img :src="blocks[0].image" alt="Header Image" />
@@ -95,7 +95,7 @@ function formatDate(dateString) {
             class="about_us__content_info"
         >
           <h2 class="main_title">{{ block.title }}</h2>
-          <p class="about_us__content_text" v-html="block.html"></p>
+          <p class="about_us__content_text editor__content" v-html="block.html"></p>
           <button v-if="index === 0" class="main_btn">Узнать больше</button>
         </div>
         <div
@@ -110,7 +110,7 @@ function formatDate(dateString) {
             class="about_us__content_info"
         >
           <h2 class="main_title">{{ block.title }}</h2>
-          <p class="about_us__content_text" v-html="block.html"></p>
+          <p class="about_us__content_text editor__content" v-html="block.html"></p>
         </div>
       </div>
     </div>

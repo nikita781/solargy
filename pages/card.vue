@@ -376,7 +376,7 @@ const handleDownload = async (fileUrl, file_name) => {
                 :alt="`Image for ${property.title}`"
                 class="card__tabs_image"
             />
-            <p v-html="property.html"></p>
+            <div class="editor__content" v-html="property.html"></div>
             <a
                 v-if="property.file"
                 @click.prevent="handleDownload(property.file, property.file_name)"

@@ -42,11 +42,9 @@ onMounted(async () => {
       onReady: () => {
         if (props.initialHtml) {
           try {
-            // Попытка парсинга initialHtml как JSON
             const initialData = JSON.parse(props.initialHtml);
             editorInstance.blocks.render(initialData);
           } catch {
-            // Если JSON некорректен, пытаемся загрузить как HTML
             editorInstance.blocks.renderFromHTML(props.initialHtml);
           }
         }

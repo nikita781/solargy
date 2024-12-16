@@ -10,7 +10,20 @@ $x-big: 1829.98px;
   display: flex;
   flex-direction: column;
   width: 100%;
-  position: relative;
+  position: fixed;
+  z-index: 1000;
+  &__plug {
+    height: 108px;
+    @media screen and (max-width: $medium) {
+      height: 98px;
+    }
+    @media screen and (max-width: $small) {
+      height: 96px;
+    }
+    @media screen and (max-width: $x-small) {
+      height: 72px;
+    }
+  }
   &.hidden {
     overflow: hidden;
   }

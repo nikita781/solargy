@@ -38,12 +38,21 @@ const fetchAdmin = async () => {
   }
 };
 
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяцы начинаются с 0
+  const year = date.getFullYear();
+  return `${day}.${month}.${year}`;
+};
+
 //---------------------------------------------------------------------------------
 // Главная
 
 const mainBanners = ref([]);
 const titleBanner = ref('');
 const descriptionBanner = ref('');
+const numberBanner = ref('');
 const photoBanners = ref(null);
 const fileBanners = ref(null);
 const productBanners = ref([]);
@@ -74,6 +83,9 @@ const createMainBanners = async () => {
     const formData = new FormData();
     formData.append('title', titleBanner.value);
     formData.append('description', descriptionBanner.value);
+    if (numberBanner.value) {
+      formData.append('order', numberBanner.value);
+    }
     formData.append('image', photoBanners.value);
     formData.append('product_id', productBanners.value);
 
@@ -94,6 +106,9 @@ const updateMainBanners = async () => {
     const formData = new FormData();
     formData.append('title', titleBanner.value);
     formData.append('description', descriptionBanner.value);
+    if (numberBanner.value) {
+      formData.append('order', numberBanner.value);
+    }
     formData.append('product_id', productBanners.value);
     if (photoBanners.value) {
       formData.append('image', photoBanners.value);
@@ -145,12 +160,14 @@ const resetMainBanners = () => {
   descriptionBanner.value = '';
   photoBanners.value = null;
   productBanners.value = null;
+  numberBanner.value = '';
   fileBanners.value.value = ''
 };
 
 
 const subBanners = ref([]);
 const titleSlider = ref('');
+const numberSlider = ref('');
 const photoSlider = ref(null);
 const fileSlider = ref(null);
 const isEditingSlider = ref(false);
@@ -167,6 +184,9 @@ const createSubBanner = async () => {
     const formData = new FormData();
     formData.append('title', titleSlider.value);
     formData.append('image', photoSlider.value);
+    if (numberSlider.value) {
+      formData.append('order', numberSlider.value);
+    }
 
     await axios.post(`/sub-banners`, formData, {
       headers: {
@@ -184,6 +204,9 @@ const updateSubBanners = async () => {
   try {
     const formData = new FormData();
     formData.append('title', titleSlider.value);
+    if (numberSlider.value) {
+      formData.append('order', numberSlider.value);
+    }
     if (photoSlider.value) {
       formData.append('image', photoSlider.value);
     }
@@ -230,6 +253,7 @@ const resetSubBanners = () => {
   currentSliderId.value = null;
   titleSlider.value = '';
   photoSlider.value = null;
+  numberSlider.value = '';
   fileSlider.value.value = ''
 };
 
@@ -488,9 +512,42 @@ const productTop = ref(false)
 const isEditingProduct = ref(false);
 const currentProductId = ref(null);
 const oneProd = ref([]);
+
 const productPhoto = ref(null);
-const productFile = ref(null)
+const productFile = ref(null);
+const productOrder = ref(null);
+const productPhoto1 = ref(null);
+const productFile1 = ref(null);
+const productOrder1 = ref(null);
+const productPhoto2 = ref(null);
+const productFile2 = ref(null);
+const productOrder2 = ref(null);
+const productPhoto3 = ref(null);
+const productFile3 = ref(null);
+const productOrder3 = ref(null);
+const productPhoto4 = ref(null);
+const productFile4 = ref(null);
+const productOrder4 = ref(null);
+const productPhoto5 = ref(null);
+const productFile5 = ref(null);
+const productOrder5 = ref(null);
+const productPhoto6 = ref(null);
+const productFile6 = ref(null);
+const productOrder6 = ref(null);
+const productPhoto7 = ref(null);
+const productFile7 = ref(null);
+const productOrder7 = ref(null);
+const productPhoto8 = ref(null);
+const productFile8 = ref(null);
+const productOrder8 = ref(null);
+const productPhoto9 = ref(null);
+const productFile9 = ref(null);
+const productOrder9 = ref(null);
+
 const productOption = ref(null);
+const valueByOption = ref([]);
+const idByOption = ref('');
+const productOptionValue = ref(null);
 const productPropertieTitle = ref(null);
 const productPropertieDescription = ref('');
 const productFilePropertie = ref(null);
@@ -500,6 +557,37 @@ const productTextPropertie = ref(null);
 const isEditingPropertie = ref(false);
 const currentPropertieId = ref(null)
 
+const fetchValueByOption = async (optionId) => {
+  try {
+    const response = await axios.get(`/options/${optionId}`, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    idByOption.value = response.data.id;
+    valueByOption.value = response.data.values;
+  } catch (error) {
+    console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
+  }
+};
+const createProductOptionValue = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('options[0][id]', idByOption.value);
+    formData.append('options[0][values][0][id]', productOptionValue.value);
+
+    await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+      },
+    });
+    await fetchProductById(currentProductId.value);
+    productOptionValue.value = '';
+    idByOption.value = '';
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
 const handleExportHtmlPropertie = (html) => {
   productPropertieDescription.value = html;
 };
@@ -594,16 +682,129 @@ const deleteProductPhoto = async (idValue) => {
     console.error('Ошибка:', error.response?.data || error);
   }
 };
+
 const handleFileChangeProductPhoto = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto.value = file;
   }
 };
+const handleFileChangeProductPhoto1 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    productPhoto1.value = file;
+  }
+};
+const handleFileChangeProductPhoto2 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    productPhoto2.value = file;
+  }
+};
+const handleFileChangeProductPhoto3 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    productPhoto3.value = file;
+  }
+};
+const handleFileChangeProductPhoto4 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    productPhoto4.value = file;
+  }
+};
+const handleFileChangeProductPhoto5 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    productPhoto5.value = file;
+  }
+};
+const handleFileChangeProductPhoto6 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    productPhoto6.value = file;
+  }
+};
+const handleFileChangeProductPhoto7 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    productPhoto7.value = file;
+  }
+};
+const handleFileChangeProductPhoto8 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    productPhoto8.value = file;
+  }
+};
+const handleFileChangeProductPhoto9 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    productPhoto9.value = file;
+  }
+};
+
 const addProductPhoto = async () => {
   try {
     const formData = new FormData();
     formData.append('photos[0][photo]', productPhoto.value);
+    if (productOrder.value) {
+      formData.append('photos[0][order]', productOrder.value);
+    }
+    if (productPhoto1.value) {
+      formData.append('photos[1][photo]', productPhoto1.value);
+      if (productOrder1.value) {
+        formData.append('photos[1][order]', productOrder1.value);
+      }
+    }
+    if (productPhoto2.value) {
+      formData.append('photos[2][photo]', productPhoto2.value);
+      if (productOrder2.value) {
+        formData.append('photos[2][order]', productOrder2.value);
+      }
+    }
+    if (productPhoto3.value) {
+      formData.append('photos[3][photo]', productPhoto3.value);
+      if (productOrder3.value) {
+        formData.append('photos[3][order]', productOrder3.value);
+      }
+    }
+    if (productPhoto4.value) {
+      formData.append('photos[4][photo]', productPhoto4.value);
+      if (productOrder4.value) {
+        formData.append('photos[4][order]', productOrder4.value);
+      }
+    }
+    if (productPhoto5.value) {
+      formData.append('photos[5][photo]', productPhoto5.value);
+      if (productOrder5.value) {
+        formData.append('photos[5][order]', productOrder5.value);
+      }
+    }
+    if (productPhoto6.value) {
+      formData.append('photos[6][photo]', productPhoto6.value);
+      if (productOrder6.value) {
+        formData.append('photos[6][order]', productOrder6.value);
+      }
+    }
+    if (productPhoto7.value) {
+      formData.append('photos[7][photo]', productPhoto7.value);
+      if (productOrder7.value) {
+        formData.append('photos[7][order]', productOrder7.value);
+      }
+    }
+    if (productPhoto8.value) {
+      formData.append('photos[8][photo]', productPhoto8.value);
+      if (productOrder8.value) {
+        formData.append('photos[8][order]', productOrder8.value);
+      }
+    }
+    if (productPhoto9.value) {
+      formData.append('photos[9][photo]', productPhoto9.value);
+      if (productOrder9.value) {
+        formData.append('photos[9][order]', productOrder9.value);
+      }
+    }
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
@@ -614,6 +815,34 @@ const addProductPhoto = async () => {
     await fetchProductById(currentProductId.value);
     productPhoto.value = null;
     productFile.value.value = ''
+    productOrder.value = '';
+    productPhoto1.value = null;
+    productFile1.value.value = ''
+    productOrder1.value = '';
+    productPhoto2.value = null;
+    productFile2.value.value = ''
+    productOrder2.value = '';
+    productPhoto3.value = null;
+    productFile3.value.value = ''
+    productOrder3.value = '';
+    productPhoto4.value = null;
+    productFile4.value.value = ''
+    productOrder4.value = '';
+    productPhoto5.value = null;
+    productFile5.value.value = ''
+    productOrder5.value = '';
+    productPhoto6.value = null;
+    productFile6.value.value = ''
+    productOrder6.value = '';
+    productPhoto7.value = null;
+    productFile7.value.value = ''
+    productOrder7.value = '';
+    productPhoto8.value = null;
+    productFile8.value.value = ''
+    productOrder8.value = '';
+    productPhoto9.value = null;
+    productFile9.value.value = ''
+    productOrder9.value = '';
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -651,8 +880,8 @@ const fetchOptionsById = async (optionId) => {
 };
 const deleteProductOption = async (idOption) => {
   try {
-    const valueId = await fetchOptionsById(idOption);
-    await axios.delete(`/products/${oneProd.value.id}/values/${valueId}`, {
+    // const valueId = await fetchOptionsById(idOption);
+    await axios.delete(`/products/${oneProd.value.id}/values/${idOption}`, {
       headers: {
         'Authorization': `Bearer ${result.value.token}`,
       },
@@ -1118,10 +1347,6 @@ const updateContact = async () => {
       },
     });
     await fetchContact();
-    addressContact.value = '';
-    emailContact.value = '';
-    phoneContact.value = '';
-    mapContact.value = '';
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -1140,6 +1365,9 @@ const currentCompanyId = ref(null);
 
 const customName = ref('');
 const customValue = ref('');
+const customEditing = ref(false);
+const currentCustomId = ref(null);
+const currentCompanyCustomId = ref(null);
 
 const fetchCompanies = async () => {
   try {
@@ -1225,6 +1453,8 @@ const deleteCompany = async (idCompany) => {
   }
 };
 const editCompany = (company) => {
+  resetCustom();
+  customEditing.value = false;
   isEditingCompany.value = true;
   currentCompanyId.value = company.id;
   companyName.value = company.name;
@@ -1263,6 +1493,41 @@ const createCustom = async () => {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
+const updateCustom = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('custom-details[0][id]', currentCustomId.value);
+    formData.append('custom-details[0][title]', customName.value);
+    formData.append('custom-details[0][value]', customValue.value);
+
+    await axios.post(`/companies/${currentCompanyCustomId.value}?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchCompanies();
+    resetCustom();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const editCustom = (custom, company) => {
+  resetCompany();
+  isEditingCompany.value = false;
+  customEditing.value = true;
+  customValue.value = custom.value;
+  customName.value = custom.title;
+  currentCustomId.value = custom.id;
+  currentCompanyCustomId.value = company;
+};
+const resetCustom = () => {
+  customEditing.value = false;
+  customValue.value = '';
+  customName.value = '';
+  currentCustomId.value = '';
+  currentCompanyCustomId.value = '';
+};
 const deleteCustomDetails = async (idCustom) => {
   try {
     await axios.delete(`/custom-details/${idCustom}`, {
@@ -1413,6 +1678,12 @@ const handleFileChangeStock = (event) => {
   }
 };
 const createStock = async () => {
+  // const isArchive = ref('');
+  // if (stockArchived.value) {
+  //   isArchive.value = 'true';
+  // } else {
+  //   isArchive.value = 'false';
+  // }
   try {
     const formData = new FormData();
     formData.append('title', stockTitle.value);
@@ -1420,6 +1691,7 @@ const createStock = async () => {
     formData.append('image', stockImage.value);
     formData.append('start', stockStart.value);
     formData.append('end', stockEnd.value);
+    formData.append('is_archived', stockArchived.value);
 
     await axios.post(`/promos`, formData, {
       headers: {
@@ -1447,6 +1719,7 @@ const updateStock = async () => {
     formData.append('image', stockImage.value);
     formData.append('start', stockStart.value);
     formData.append('end', stockEnd.value);
+    formData.append('is_archived', stockArchived.value);
 
     await axios.post(`/promos/${currentStockId.value}?_method=patch`, formData, {
       headers: {
@@ -1688,6 +1961,8 @@ const socialPlatform = ref('')
 const socialUrl = ref('');
 const socialImage = ref(null);
 const socialFile = ref(null)
+const isEditingSocial = ref(false);
+const currentSocialId = ref(null);
 
 const fetchSocials = async () => {
   try {
@@ -1729,6 +2004,27 @@ const createSocial = async () => {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
+const updateSocial = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('platform', socialPlatform.value);
+    formData.append('url', socialUrl.value);
+    if (socialImage.value) {
+      formData.append('image', socialImage.value);
+    }
+
+    await axios.post(`/socials/${currentSocialId.value}?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchSocials();
+    resetSocial();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
 const deleteSocial = async (idSocial) => {
   try {
     await axios.delete(`/socials/${idSocial}`, {
@@ -1741,16 +2037,30 @@ const deleteSocial = async (idSocial) => {
     console.error('Ошибка:', error.response?.data || error);
   }
 };
+const editSocial = (block) => {
+  isEditingSocial.value = true;
+  currentSocialId.value = block.id;
+  socialPlatform.value = block.platform;
+  socialUrl.value = block.url;
+};
+const resetSocial = () => {
+  isEditingSocial.value = false;
+  socialPlatform.value = '';
+  socialUrl.value = '';
+  socialImage.value = null;
+  socialFile.value.value = ''
+  currentSocialId.value = null
+};
 
 </script>
 
 <template>
   <div class="admin">
-    <h2 class="main_title">{{ isAuthenticated ? 'Админ панель' : 'Введите данные' }}</h2>
+    <h2 class="main_title">{{ isAuthenticated ? 'Админ панель' : 'Вход в админ панель' }}</h2>
     <div class="admin__auth" v-if="!isAuthenticated">
       <input type="email" class="basket__form_input" v-model="nameUser" placeholder="Введите логин">
       <input type="password" class="basket__form_input" v-model="passwordUser" placeholder="Введите пароль">
-      <button class="main_btn" @click="fetchAdmin()">Отправить</button>
+      <button class="main_btn" @click="fetchAdmin()">Войти</button>
     </div>
     <div class="admin-panel" v-else>
       <div class="admin-panel__menu">
@@ -1835,6 +2145,12 @@ const deleteSocial = async (idSocial) => {
               v-model="titleBanner"
               placeholder="Введите название"
           />
+          <input
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="numberBanner"
+              placeholder="Введите порядок"
+          />
           <textarea
               class="basket__form_input admin-panel__content_textarea"
               v-model="descriptionBanner"
@@ -1863,6 +2179,12 @@ const deleteSocial = async (idSocial) => {
               v-model="titleBanner"
               placeholder="Введите название"
           />
+          <input
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="numberBanner"
+              placeholder="Введите порядок"
+          />
           <textarea
               class="basket__form_input admin-panel__content_textarea"
               v-model="descriptionBanner"
@@ -1888,8 +2210,8 @@ const deleteSocial = async (idSocial) => {
         <table>
           <thead>
           <tr>
-            <th>ID</th>
             <th>Название</th>
+            <th>Порядок</th>
             <th>Описание</th>
             <th>Фото</th>
             <th>Продукт</th>
@@ -1899,8 +2221,8 @@ const deleteSocial = async (idSocial) => {
           </thead>
           <tbody>
           <tr v-for="banner in mainBanners" :key="banner.id">
-            <td>{{ banner.id }}</td>
             <td>{{ banner.title }}</td>
+            <td>{{ banner.order }}</td>
             <td>{{ banner.description }}</td>
             <td>
               <img :src="banner.image" alt="Фото" width="50"/>
@@ -1924,6 +2246,12 @@ const deleteSocial = async (idSocial) => {
               placeholder="Введите название"
           />
           <input
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="numberSlider"
+              placeholder="Введите порядок"
+          />
+          <input
               type="file"
               ref="fileSlider"
               class="basket__form_input admin-panel__content_input"
@@ -1940,6 +2268,12 @@ const deleteSocial = async (idSocial) => {
               placeholder="Введите название"
           />
           <input
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="numberSlider"
+              placeholder="Введите порядок"
+          />
+          <input
               type="file"
               ref="fileBanners"
               class="basket__form_input admin-panel__content_input"
@@ -1952,8 +2286,8 @@ const deleteSocial = async (idSocial) => {
         <table>
           <thead>
           <tr>
-            <th>ID</th>
             <th>Название</th>
+            <th>Порядок</th>
             <th>Фото</th>
             <th>Изменить</th>
             <th>Удалить</th>
@@ -1961,8 +2295,8 @@ const deleteSocial = async (idSocial) => {
           </thead>
           <tbody>
           <tr v-for="banner in subBanners" :key="banner.id">
-            <td>{{ banner.id }}</td>
             <td>{{ banner.title }}</td>
+            <td>{{ banner.order }}</td>
             <td>
               <img :src="banner.image" alt="Фото" width="50"/>
             </td>
@@ -2014,7 +2348,6 @@ const deleteSocial = async (idSocial) => {
         <table>
           <thead>
           <tr>
-            <th>ID</th>
             <th>Название</th>
             <th>Уровень</th>
             <th>Фото</th>
@@ -2025,7 +2358,6 @@ const deleteSocial = async (idSocial) => {
           </thead>
           <tbody>
           <tr v-for="category in categories" :key="category.id">
-            <td>{{ category.id }}</td>
             <td>{{ category.name }}</td>
             <td>{{ category.level }}</td>
             <td>
@@ -2136,14 +2468,13 @@ const deleteSocial = async (idSocial) => {
               v-for="option in options" :key="option.id"
           >
             <div class="admin-panel__content_info_content">
-              <p>ID {{ option.id }}, name {{ option.name }}</p>
+              <p>{{ option.name }}</p>
               <button @click="editOptions(option)" class="admin-panel__content_btn">Изменить</button>
               <button @click="deleteOptions(option.id)" class="admin-panel__content_btn">Удалить</button>
             </div>
             <table>
               <thead>
               <tr>
-                <th>ID</th>
                 <th>Название</th>
                 <th>Цена</th>
                 <th>Фото</th>
@@ -2153,7 +2484,6 @@ const deleteSocial = async (idSocial) => {
               </thead>
               <tbody>
               <tr v-for="value in option.values" :key="value.id">
-                <td>{{ value.id }}</td>
                 <td>{{ value.value }}</td>
                 <td>{{ value.price }}</td>
                 <td>
@@ -2163,7 +2493,8 @@ const deleteSocial = async (idSocial) => {
                   <button @click="editOptionValue(option.id, value)" class="admin-panel__content_btn">Изменить</button>
                 </td>
                 <td>
-                  <button @click="deleteOptionValue(option.id, value.id)" class="admin-panel__content_btn">Удалить</button>
+                  <button @click="deleteOptionValue(option.id, value.id)" class="admin-panel__content_btn">Удалить
+                  </button>
                 </td>
               </tr>
               </tbody>
@@ -2252,23 +2583,173 @@ const deleteSocial = async (idSocial) => {
               @change="handleFileChangeProductPhoto"
               accept="image/*"
           />
+          <input
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder"
+              placeholder="Введите порядок фото"
+          />
+
+          <input
+              v-if="productPhoto"
+              type="file"
+              ref="productFile1"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeProductPhoto1"
+              accept="image/*"
+          />
+          <input
+              v-if="productPhoto"
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder1"
+              placeholder="Введите порядок фото"
+          />
+
+          <input
+              v-if="productPhoto1"
+              type="file"
+              ref="productFile2"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeProductPhoto2"
+              accept="image/*"
+          />
+          <input
+              v-if="productPhoto1"
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder2"
+              placeholder="Введите порядок фото"
+          />
+
+          <input
+              v-if="productPhoto2"
+              type="file"
+              ref="productFile3"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeProductPhoto3"
+              accept="image/*"
+          />
+          <input
+              v-if="productPhoto2"
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder3"
+              placeholder="Введите порядок фото"
+          />
+
+          <input
+              v-if="productPhoto3"
+              type="file"
+              ref="productFile4"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeProductPhoto4"
+              accept="image/*"
+          />
+          <input
+              v-if="productPhoto3"
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder4"
+              placeholder="Введите порядок фото"
+          />
+
+          <input
+              v-if="productPhoto4"
+              type="file"
+              ref="productFile5"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeProductPhoto5"
+              accept="image/*"
+          />
+          <input
+              v-if="productPhoto4"
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder5"
+              placeholder="Введите порядок фото"
+          />
+
+          <input
+              v-if="productPhoto5"
+              type="file"
+              ref="productFile6"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeProductPhoto6"
+              accept="image/*"
+          />
+          <input
+              v-if="productPhoto5"
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder6"
+              placeholder="Введите порядок фото"
+          />
+
+          <input
+              v-if="productPhoto6"
+              type="file"
+              ref="productFile7"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeProductPhoto7"
+              accept="image/*"
+          />
+          <input
+              v-if="productPhoto6"
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder7"
+              placeholder="Введите порядок фото"
+          />
+
+          <input
+              v-if="productPhoto7"
+              type="file"
+              ref="productFile8"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeProductPhoto8"
+              accept="image/*"
+          />
+          <input
+              v-if="productPhoto7"
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder8"
+              placeholder="Введите порядок фото"
+          />
+
+          <input
+              v-if="productPhoto8"
+              type="file"
+              ref="productFile9"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeProductPhoto9"
+              accept="image/*"
+          />
+          <input
+              v-if="productPhoto8"
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder9"
+              placeholder="Введите порядок фото"
+          />
           <button class="main_btn" type="submit">Добавить</button>
           <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
         <table v-if="isEditingProduct">
           <thead>
           <tr>
-            <th>ID</th>
             <th>Фото</th>
+            <th>Порядок</th>
             <th>Удалить</th>
           </tr>
           </thead>
           <tbody>
           <tr v-for="product in oneProd.photos" :key="product.id">
-            <td>{{ product.id }}</td>
             <td>
               <img :src="product.photo" alt="Фото" width="100"/>
             </td>
+            <td>{{product.order}}</td>
             <td>
               <button @click="deleteProductPhoto(product.id)" class="admin-panel__content_btn">Удалить</button>
             </td>
@@ -2286,26 +2767,55 @@ const deleteSocial = async (idSocial) => {
           <button class="main_btn" type="submit">Добавить</button>
           <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
-        <table v-if="isEditingProduct">
-          <thead>
-          <tr>
-            <th>ID</th>
-            <th>Параметр</th>
-            <th>Удалить</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="option in oneProd.options" :key="option.id">
-            <td>{{ option.id }}</td>
-            <td>{{ option.name }}</td>
-            <td>
-              <button @click="deleteProductOption(option.id)" class="admin-panel__content_btn">Удалить</button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+        <div
+            v-if="isEditingProduct"
+            class="admin-panel__content_info_item"
+            v-for="option in oneProd.options"
+            :key="option.id"
+        >
+          <div class="admin-panel__content_info_content">
+            <p>{{ option.name }}</p>
+          </div>
+          <table>
+            <thead>
+            <tr>
+              <th>Параметр</th>
+              <th>Цена</th>
+              <th>Фото</th>
+              <th>Отвязка</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="value in option.values" :key="value.id">
+              <td>{{ value.value }}</td>
+              <td>{{ value.price }}</td>
+              <td>
+                <img :src="value.image" alt="Фото" width="100"/>
+              </td>
+              <td>
+                <button @click="deleteProductOption(value.id)" class="admin-panel__content_btn">Отвязать</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+          <form class="admin-panel__content_form" @submit.prevent="createProductOptionValue">
+            <select
+                v-model="productOptionValue"
+                class="basket__form_input admin-panel__content_select"
+                @focus="fetchValueByOption(option.id)"
+            >
+              <option value="" disabled>Выберите параметр</option>
+              <option v-for="value in valueByOption" :key="value.id" :value="value.id">
+                {{ value.value }}
+              </option>
+            </select>
+            <button class="main_btn" type="submit">Привязать</button>
+          </form>
+        </div>
         <h3 v-if="isEditingProduct">Добавить таб (максимум 2)</h3>
-        <form class="admin-panel__content_form" v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 2" @submit.prevent="addProductPropertie">
+        <form class="admin-panel__content_form"
+              v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 2"
+              @submit.prevent="addProductPropertie">
           <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option value='1'>
@@ -2315,7 +2825,7 @@ const deleteSocial = async (idSocial) => {
               Рекомендации
             </option>
           </select>
-          <Editor @export-html="handleExportHtmlPropertie" />
+          <Editor @export-html="handleExportHtmlPropertie"/>
           <label class="admin-panel__content_label">Изображение</label>
           <input
               type="file"
@@ -2335,7 +2845,8 @@ const deleteSocial = async (idSocial) => {
           <button class="main_btn" type="submit">Добавить</button>
           <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
-        <form class="admin-panel__content_form" v-if="isEditingProduct && isEditingPropertie" @submit.prevent="updateProductPropertie">
+        <form class="admin-panel__content_form" v-if="isEditingProduct && isEditingPropertie"
+              @submit.prevent="updateProductPropertie">
           <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option value='1'>
@@ -2345,12 +2856,12 @@ const deleteSocial = async (idSocial) => {
               Рекомендации
             </option>
           </select>
-<!--          <textarea-->
-<!--              class="basket__form_input admin-panel__content_textarea"-->
-<!--              v-model="productPropertieDescription"-->
-<!--              placeholder="Введите описание"-->
-<!--          ></textarea>-->
-          <Editor :initialHtml="productPropertieDescription" @export-html="handleExportHtmlPropertie" />
+          <!--          <textarea-->
+          <!--              class="basket__form_input admin-panel__content_textarea"-->
+          <!--              v-model="productPropertieDescription"-->
+          <!--              placeholder="Введите описание"-->
+          <!--          ></textarea>-->
+          <Editor :initialHtml="productPropertieDescription" @export-html="handleExportHtmlPropertie"/>
           <label class="admin-panel__content_label">Изображение</label>
           <input
               type="file"
@@ -2373,7 +2884,6 @@ const deleteSocial = async (idSocial) => {
         <table v-if="isEditingProduct">
           <thead>
           <tr>
-            <th>ID</th>
             <th>Название</th>
             <th>Контент</th>
             <th>Изменить</th>
@@ -2382,7 +2892,6 @@ const deleteSocial = async (idSocial) => {
           </thead>
           <tbody>
           <tr v-for="propertie in oneProd.properties" :key="propertie.id">
-            <td>{{ propertie.id }}</td>
             <td>{{ propertie.title }}</td>
             <td>{{ propertie.html }}</td>
             <td>
@@ -2397,7 +2906,6 @@ const deleteSocial = async (idSocial) => {
         <table>
           <thead>
           <tr>
-            <th>ID</th>
             <th>Название</th>
             <th>Категория</th>
             <th>Описание</th>
@@ -2409,7 +2917,6 @@ const deleteSocial = async (idSocial) => {
           </thead>
           <tbody>
           <tr v-for="product in allProducts" :key="product.id">
-            <td>{{ product.id }}</td>
             <td>{{ product.name }}</td>
             <td>{{ product.category_id.name }}</td>
             <td>{{ product.description }}</td>
@@ -2436,7 +2943,7 @@ const deleteSocial = async (idSocial) => {
               v-model="about_usTitle"
               placeholder="Введите название"
           />
-          <Editor @export-html="handleExportHtmlAbout_usBlock" />
+          <Editor @export-html="handleExportHtmlAbout_usBlock"/>
           <input
               type="file"
               ref="fileBanners"
@@ -2453,7 +2960,7 @@ const deleteSocial = async (idSocial) => {
               v-model="about_usTitle"
               placeholder="Введите название"
           />
-          <Editor :initialHtml="about_usDescription" @export-html="handleExportHtmlAbout_usBlock" />
+          <Editor :initialHtml="about_usDescription" @export-html="handleExportHtmlAbout_usBlock"/>
           <input
               type="file"
               ref="fileBanners"
@@ -2467,7 +2974,6 @@ const deleteSocial = async (idSocial) => {
         <table>
           <thead>
           <tr>
-            <th>ID</th>
             <th>Название</th>
             <th>Описание</th>
             <th>Фото</th>
@@ -2477,7 +2983,6 @@ const deleteSocial = async (idSocial) => {
           </thead>
           <tbody>
           <tr v-for="section in about_usBlock.sections" :key="section.id">
-            <td>{{ section.id }}</td>
             <td>{{ section.title }}</td>
             <td>{{ section.html }}</td>
             <td>
@@ -2529,7 +3034,7 @@ const deleteSocial = async (idSocial) => {
           <tr v-for="patent in patents" :key="patent.id">
             <td>{{ patent.id }}</td>
             <td>{{ patent.title }}</td>
-            <td>{{ patent.date }}</td>
+            <td>{{ formatDate(patent.date) }}</td>
             <td>
               <button @click="deletePatents(patent.id)" class="admin-panel__content_btn">Удалить</button>
             </td>
@@ -2726,7 +3231,7 @@ const deleteSocial = async (idSocial) => {
               v-model="companyEmail"
               placeholder="Введите почту"
           />
-          <button class="main_btn" type="submit">Создать блок</button>
+          <button class="main_btn" type="submit">Создать компанию</button>
         </form>
         <form class="admin-panel__content_form" v-if="isEditingCompany" @submit.prevent="updateCompany">
           <input
@@ -2765,7 +3270,7 @@ const deleteSocial = async (idSocial) => {
               v-model="companyEmail"
               placeholder="Введите почту"
           />
-          <button class="main_btn" type="submit">Изменить блок</button>
+          <button class="main_btn" type="submit">Изменить компанию</button>
           <button class="main_btn" @click="resetCompany">Назад</button>
         </form>
         <h3 v-if="isEditingCompany">Кастомный параметр</h3>
@@ -2782,15 +3287,31 @@ const deleteSocial = async (idSocial) => {
               v-model="customValue"
               placeholder="Введите значение"
           />
-          <button class="main_btn" type="submit">Добавить блок</button>
+          <button class="main_btn" type="submit">Добавить параметр</button>
           <button class="main_btn" @click="resetCompany">Назад</button>
+        </form>
+        <form class="admin-panel__content_form" v-if="customEditing" @submit.prevent="updateCustom">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="customName"
+              placeholder="Введите название"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="customValue"
+              placeholder="Введите значение"
+          />
+          <button class="main_btn" type="submit">Изменить параметр</button>
+          <button class="main_btn" @click="resetCustom">Назад</button>
         </form>
         <div
             class="admin-panel__content_info_item"
             v-for="company in companies" :key="company.id"
         >
           <div class="admin-panel__content_info_content">
-            <p>ID {{ company.id }}, name {{ company.name }}</p>
+            <p>{{ company.name }}</p>
             <button @click="editCompany(company)" class="admin-panel__content_btn">Изменить</button>
             <button @click="deleteCompany(company.id)" class="admin-panel__content_btn">Удалить</button>
           </div>
@@ -2800,8 +3321,8 @@ const deleteSocial = async (idSocial) => {
               <th>Название</th>
               <th>Офис</th>
               <th>Производство</th>
-              <th>Почта</th>
               <th>Телефон</th>
+              <th>Почта</th>
             </tr>
             </thead>
             <tbody>
@@ -2819,6 +3340,7 @@ const deleteSocial = async (idSocial) => {
             <tr>
               <th>Название</th>
               <th>Значение</th>
+              <th>Изменить</th>
               <th>Удалить</th>
             </tr>
             </thead>
@@ -2826,6 +3348,9 @@ const deleteSocial = async (idSocial) => {
             <tr v-for="value in company['custom-details']" :key="value.id">
               <td>{{ value.title }}</td>
               <td>{{ value.value }}</td>
+              <td>
+                <button @click="editCustom(value, company.id)" class="admin-panel__content_btn">Изменить</button>
+              </td>
               <td>
                 <button @click="deleteCustomDetails(value.id)" class="admin-panel__content_btn">Удалить</button>
               </td>
@@ -2845,7 +3370,7 @@ const deleteSocial = async (idSocial) => {
               v-model="promoTitle"
               placeholder="Введите название"
           />
-          <Editor @export-html="handleExportHtmlPromoBlock" />
+          <Editor @export-html="handleExportHtmlPromoBlock"/>
           <input
               type="file"
               ref="promoFile"
@@ -2862,7 +3387,7 @@ const deleteSocial = async (idSocial) => {
               v-model="promoTitle"
               placeholder="Введите название"
           />
-          <Editor :initialHtml="promoDescription" @export-html="handleExportHtmlPromoBlock" />
+          <Editor :initialHtml="promoDescription" @export-html="handleExportHtmlPromoBlock"/>
           <input
               type="file"
               ref="promoFile"
@@ -2876,7 +3401,6 @@ const deleteSocial = async (idSocial) => {
         <table>
           <thead>
           <tr>
-            <th>ID</th>
             <th>Название</th>
             <th>Описание</th>
             <th>Фото</th>
@@ -2886,7 +3410,6 @@ const deleteSocial = async (idSocial) => {
           </thead>
           <tbody>
           <tr v-for="section in promo.sections" :key="section.id">
-            <td>{{ section.id }}</td>
             <td>{{ section.title }}</td>
             <td>{{ section.html }}</td>
             <td>
@@ -2927,12 +3450,13 @@ const deleteSocial = async (idSocial) => {
               v-model="stockEnd"
               placeholder="Введите дату конца"
           />
-<!--          <input-->
-<!--              type="checkbox"-->
-<!--              class="basket__form_input admin-panel__content_input"-->
-<!--              v-model="stockArchived"-->
-<!--              placeholder="Архив"-->
-<!--          />-->
+          В архив
+          <input
+              type="checkbox"
+              class="basket__form_input admin-panel__content_input"
+              v-model="stockArchived"
+              placeholder="Архив"
+          />
           <input
               type="file"
               ref="stockFile"
@@ -2967,6 +3491,13 @@ const deleteSocial = async (idSocial) => {
               v-model="stockEnd"
               placeholder="Введите дату конца"
           />
+          В архив
+          <input
+              type="checkbox"
+              class="basket__form_input admin-panel__content_input"
+              v-model="stockArchived"
+              placeholder="Архив"
+          />
           <input
               type="file"
               ref="stockFile"
@@ -2980,7 +3511,6 @@ const deleteSocial = async (idSocial) => {
         <table>
           <thead>
           <tr>
-            <th>ID</th>
             <th>Название</th>
             <th>Описание</th>
             <th>Фото</th>
@@ -2993,14 +3523,13 @@ const deleteSocial = async (idSocial) => {
           </thead>
           <tbody>
           <tr v-for="stock in stocks" :key="stock.id">
-            <td>{{ stock.id }}</td>
             <td>{{ stock.title }}</td>
             <td>{{ stock.description }}</td>
             <td>
               <img :src="stock.image" alt="Фото" width="50"/>
             </td>
-            <td>{{ stock.start }}</td>
-            <td>{{ stock.end }}</td>
+            <td>{{ formatDate(stock.start) }}</td>
+            <td>{{ formatDate(stock.end) }}</td>
             <td><input type="checkbox" disabled v-model="stock.is_archived"/></td>
             <td>
               <button @click="editStock(stock)" class="admin-panel__content_btn">Изменить</button>
@@ -3057,7 +3586,6 @@ const deleteSocial = async (idSocial) => {
           <table>
             <thead>
             <tr>
-              <th>ID</th>
               <th>Название</th>
               <th>Ссылка</th>
               <th>Иконка</th>
@@ -3066,7 +3594,6 @@ const deleteSocial = async (idSocial) => {
             </thead>
             <tbody>
             <tr v-for="place in marketplacesPlace" :key="place.id">
-              <td>{{ place.id }}</td>
               <td>{{ place.name }}</td>
               <td>{{ place.url }}</td>
               <td>
@@ -3084,7 +3611,6 @@ const deleteSocial = async (idSocial) => {
           <table>
             <thead>
             <tr>
-              <th>ID</th>
               <th>Название</th>
               <th>Ссылка</th>
               <th>Иконка</th>
@@ -3093,7 +3619,6 @@ const deleteSocial = async (idSocial) => {
             </thead>
             <tbody>
             <tr v-for="place in partnersPlace" :key="place.id">
-              <td>{{ place.id }}</td>
               <td>{{ place.name }}</td>
               <td>{{ place.url }}</td>
               <td>
@@ -3111,7 +3636,6 @@ const deleteSocial = async (idSocial) => {
           <table>
             <thead>
             <tr>
-              <th>ID</th>
               <th>Название</th>
               <th>Ссылка</th>
               <th>Иконка</th>
@@ -3120,7 +3644,6 @@ const deleteSocial = async (idSocial) => {
             </thead>
             <tbody>
             <tr v-for="place in retailersPlace" :key="place.id">
-              <td>{{ place.id }}</td>
               <td>{{ place.name }}</td>
               <td>{{ place.url }}</td>
               <td>
@@ -3138,7 +3661,6 @@ const deleteSocial = async (idSocial) => {
           <table>
             <thead>
             <tr>
-              <th>ID</th>
               <th>Название</th>
               <th>Ссылка</th>
               <th>Иконка</th>
@@ -3147,7 +3669,6 @@ const deleteSocial = async (idSocial) => {
             </thead>
             <tbody>
             <tr v-for="place in storesPlace" :key="place.id">
-              <td>{{ place.id }}</td>
               <td>{{ place.name }}</td>
               <td>{{ place.url }}</td>
               <td>
@@ -3171,7 +3692,7 @@ const deleteSocial = async (idSocial) => {
               v-model="deliveryTitle"
               placeholder="Введите название"
           />
-          <Editor @export-html="handleExportHtmlDelivery" />
+          <Editor @export-html="handleExportHtmlDelivery"/>
           <input
               type="file"
               ref="deliveryFile"
@@ -3188,7 +3709,7 @@ const deleteSocial = async (idSocial) => {
               v-model="deliveryTitle"
               placeholder="Введите название"
           />
-          <Editor :initialHtml="deliveryDescription" @export-html="handleExportHtmlDelivery" />
+          <Editor :initialHtml="deliveryDescription" @export-html="handleExportHtmlDelivery"/>
           <input
               type="file"
               ref="deliveryFile"
@@ -3202,7 +3723,6 @@ const deleteSocial = async (idSocial) => {
         <table>
           <thead>
           <tr>
-            <th>ID</th>
             <th>Название</th>
             <th>Описание</th>
             <th>Фото</th>
@@ -3212,7 +3732,6 @@ const deleteSocial = async (idSocial) => {
           </thead>
           <tbody>
           <tr v-for="section in delivery.sections" :key="section.id">
-            <td>{{ section.id }}</td>
             <td>{{ section.title }}</td>
             <td>{{ section.html }}</td>
             <td>
@@ -3231,7 +3750,7 @@ const deleteSocial = async (idSocial) => {
 
       <div class="admin-panel__content" v-if="activeTab === 'Соц сети'">
         <h2>Управление страницей доставка</h2>
-        <form class="admin-panel__content_form" @submit.prevent="createSocial">
+        <form class="admin-panel__content_form" v-if="!isEditingSocial" @submit.prevent="createSocial">
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
@@ -3253,23 +3772,48 @@ const deleteSocial = async (idSocial) => {
           />
           <button class="main_btn" type="submit">Создать соц сеть</button>
         </form>
+        <form class="admin-panel__content_form" v-if="isEditingSocial" @submit.prevent="updateSocial">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="socialPlatform"
+              placeholder="Введите название"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="socialUrl"
+              placeholder="Введите ссылку"
+          />
+          <input
+              type="file"
+              ref="socialFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeSocial"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Изменить соц сеть</button>
+          <button class="main_btn" @click="resetSocial">Назад</button>
+        </form>
         <table>
           <thead>
           <tr>
-            <th>ID</th>
             <th>Название</th>
             <th>Ссылка</th>
             <th>Фото</th>
+            <th>Изменить</th>
             <th>Удалить</th>
           </tr>
           </thead>
           <tbody>
           <tr v-for="social in socials" :key="social.id">
-            <td>{{ social.id }}</td>
             <td>{{ social.platform }}</td>
             <td>{{ social.url }}</td>
             <td>
               <img :src="social.image" alt="Фото" width="50"/>
+            </td>
+            <td>
+              <button @click="editSocial(social)" class="admin-panel__content_btn">Изменить</button>
             </td>
             <td>
               <button @click="deleteSocial(social.id)" class="admin-panel__content_btn">Удалить</button>
