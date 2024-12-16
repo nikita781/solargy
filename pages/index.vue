@@ -1,8 +1,8 @@
 <script setup>
 import {ref, onMounted, onUnmounted} from 'vue';
-import { Swiper, SwiperSlide } from 'swiper/vue';
+import {Swiper, SwiperSlide} from 'swiper/vue';
 import 'swiper/css';
-import { Navigation, Pagination } from 'swiper';
+import {Navigation, Pagination} from 'swiper';
 import axios from 'axios';
 
 const swiperRight = ref(null);
@@ -39,7 +39,21 @@ const fetchBanners = async () => {
 };
 
 function generateSlug(name) {
-  return name
+  const cyrillicToLatinMap = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
+    и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+    с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch',
+    ы: 'y', э: 'e', ю: 'yu', я: 'ya', ъ: '', ь: ''
+  };
+
+  const transliterate = (str) => {
+    return str
+        .split('')
+        .map(char => cyrillicToLatinMap[char] || char)
+        .join('');
+  };
+
+  return transliterate(name)
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
@@ -180,9 +194,12 @@ onUnmounted(() => {
         <h2 class="head__content_title">Системы комплексного естественного освещения </h2>
       </div>
       <div class="head__content_info-container">
-        <h3 class="head__content_info">Компания <NuxtLink to="/about_us">«Соларжи»</NuxtLink> является единственным в России разработчиком
+        <h3 class="head__content_info">Компания
+          <NuxtLink to="/about_us">«Соларжи»</NuxtLink>
+          является единственным в России разработчиком
           систем передачи и транспортирования света
-          в удаленные помещения — световоды</h3>
+          в удаленные помещения — световоды
+        </h3>
       </div>
     </div>
     <div class="best-product">

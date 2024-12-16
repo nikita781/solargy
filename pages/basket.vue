@@ -45,8 +45,7 @@ const toggleFormOpen = () => {
   }
   basketStore.updateUserInfo(nameUser.value, phoneUser.value);
   addOrder();
-  console.log(basketStore.items);
-  // basketStore.clearBasket();
+  basketStore.clearBasket();
   formOpen.value = !formOpen.value;
 }
 
@@ -60,7 +59,7 @@ const addOrder = async () => {
     basketStore.items.forEach((item, index) => {
       formData.append(`items[${index}][name]`, item.name);
       formData.append(`items[${index}][price]`, item.price);
-
+      formData.append(`items[${index}][quantity]`, item.quantity);
       item.options.forEach((option, optionIndex) => {
         formData.append(`items[${index}][options][${optionIndex}][name]`, option.name);
         formData.append(`items[${index}][options][${optionIndex}][values][0][value]`, option.values.value);

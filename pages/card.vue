@@ -1,11 +1,11 @@
 <script setup>
 import {Swiper, SwiperSlide} from "swiper/vue";
 import {Navigation, Pagination} from "swiper";
-import { useRoute, useRouter } from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
 import {ref, reactive, onMounted, nextTick} from "vue";
 import 'swiper/css';
 import axios from "axios";
-import { useBasketStore } from '@/stores/basket';
+import {useBasketStore} from '@/stores/basket';
 
 const basketStore = useBasketStore();
 const route = useRoute();
@@ -84,12 +84,23 @@ const closeMenu = () => {
 };
 
 const selectItem = (item) => {
-  product.value.options[currentIndex.value].values = [item, ...product.value.options[currentIndex.value].values.filter(i => i.id !== item.id)];
-  currentSelectedId.value = item.id;
+  // Обновляем выбранную опцию для конкретного товара
+  const optionIndex = product.value.options.findIndex(option => option.id === currentSelect.value.id);
+
+  if (optionIndex >= 0) {
+    // Обновляем values для конкретной опции товара
+    product.value.options[optionIndex].values = [item, ...product.value.options[optionIndex].values.filter(i => i.id !== item.id)];
+  }
+
+  // Обновляем selectedOptions
   selectedOptions.value[product.value.options[currentIndex.value].id] = {
     name: product.value.options[currentIndex.value].name,
     values: item,
   };
+
+  // Обновляем текущий выбранный элемент
+  currentSelectedId.value = item.id;
+
   closeMenu();
 };
 
@@ -116,14 +127,14 @@ const swiperConfig = reactive({
   watchSlidesProgress: true,
   direction: "vertical",
   navigation: {
-    nextEl: swiperRight.value,
-    prevEl: swiperLeft.value,
+    nextEl: '.card__main_swiper-bottom',
+    prevEl: '.card__main_swiper-top',
   },
 });
 
 const tabs = [
-  { title: 'Характеристики' },
-  { title: 'Требования и рекомендации к монтажу' },
+  {title: 'Характеристики'},
+  {title: 'Требования и рекомендации к монтажу'},
 ];
 
 const activeTab = ref(0);
@@ -178,6 +189,7 @@ watch(() => route.fullPath, async () => {
   await fetchCategory();
   await fetchProducts();
   selectedSlide.value = product.value?.photos[0];
+  selectedOptions.value = {};
   product.value.options.forEach((option) => {
     selectedOptions.value[option.id] = {
       name: option.name,
@@ -188,10 +200,6 @@ watch(() => route.fullPath, async () => {
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');
   });
-  swiperConfig.navigation = {
-    nextEl: swiperRight.value,
-    prevEl: swiperLeft.value,
-  };
 });
 
 onMounted(async () => {
@@ -204,7 +212,7 @@ onMounted(async () => {
   await fetchCategory();
   await fetchProducts();
   selectedSlide.value = product.value?.photos[0];
-
+  selectedOptions.value = {};
   product.value.options.forEach((option) => {
     selectedOptions.value[option.id] = {
       name: option.name,
@@ -215,10 +223,6 @@ onMounted(async () => {
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');
   });
-  swiperConfig.navigation = {
-    nextEl: swiperRight.value,
-    prevEl: swiperLeft.value,
-  };
 });
 
 const selectSlide = (slide) => {
@@ -233,7 +237,7 @@ const handleDownload = async (fileUrl, file_name) => {
       responseType: 'blob',
     });
 
-    const blob = new Blob([response.data], { type: response.headers['content-type'] });
+    const blob = new Blob([response.data], {type: response.headers['content-type']});
     const downloadUrl = window.URL.createObjectURL(blob);
 
     const link = document.createElement('a');
@@ -257,7 +261,9 @@ const handleDownload = async (fileUrl, file_name) => {
       <div class="card__main_links">
         <NuxtLink to="/catalog" class="card__main_link">Каталог</NuxtLink>
         <IconsSun/>
-        <NuxtLink :to="`/catalog/${category.id}-${generateSlug(category.name)}/`" class="card__main_link">{{ category.name }}</NuxtLink>
+        <NuxtLink :to="`/catalog/${category.id}-${generateSlug(category.name)}/`" class="card__main_link">
+          {{ category.name }}
+        </NuxtLink>
         <IconsSun color="#EF7F1A"/>
         <NuxtLink class="card__main_link card__main_link-active">{{ product.name }}</NuxtLink>
       </div>
@@ -267,19 +273,21 @@ const handleDownload = async (fileUrl, file_name) => {
             <div ref="swiperLeft">
               <IconsArrow class="card__main_swiper-top" color="#EF7F1A"/>
             </div>
-            <Swiper v-bind="swiperConfig">
-              <SwiperSlide
-                  v-for="(slide, index) in product.photos"
-                  :key="slide.id"
-                  :class="{ active: slide.id === selectedSlide.id }"
-                  @click="selectSlide(slide)"
-              >
-                <div
-                    class="swiper__slide"
-                    :style="{ 'background-image': `url(${slide.photo})` }"
-                ></div>
-              </SwiperSlide>
-            </Swiper>
+            <client-only>
+              <Swiper v-bind="swiperConfig">
+                <SwiperSlide
+                    v-for="(slide, index) in product.photos"
+                    :key="index"
+                >
+                    <div
+                        class="swiper__slide"
+                        :style="{ 'background-image': `url(${slide.photo})` }"
+                        @click="selectSlide(slide)"
+
+                    ></div>
+                </SwiperSlide>
+              </Swiper>
+            </client-only>
             <div ref="swiperRight">
               <IconsArrow class="card__main_swiper-bottom" color="#EF7F1A"/>
             </div>
@@ -290,10 +298,10 @@ const handleDownload = async (fileUrl, file_name) => {
         </div>
         <div class="card__main_info">
           <div>
-            <h1 class="card__main_title">{{product.name}}</h1>
-            <p class="card__main_price">{{product.price}} ₽</p>
+            <h1 class="card__main_title">{{ product.name }}</h1>
+            <p class="card__main_price">{{ product.price }} ₽</p>
           </div>
-          <p class="card__main_description">{{product.description}}</p>
+          <p class="card__main_description">{{ product.description }}</p>
           <div class="card__main_select-cont">
             <div
                 v-for="(select, index) in product.options"
@@ -338,11 +346,15 @@ const handleDownload = async (fileUrl, file_name) => {
           </div>
           <div class="card__main_final">
             <div class="card__main_final-cont">
-              <div class="card__main_final-btn" @click="quantityMinus"><IconsMinus :color='quantity === 1 ? "#cccccc" : "#EF7F1A"' /></div>
-              <div class="card__main_final-quantity">{{quantity}}</div>
-              <div class="card__main_final-btn" @click="quantityPlus"><IconsPlus color="#EF7F1A"/></div>
+              <div class="card__main_final-btn" @click="quantityMinus">
+                <IconsMinus :color='quantity === 1 ? "#cccccc" : "#EF7F1A"'/>
+              </div>
+              <div class="card__main_final-quantity">{{ quantity }}</div>
+              <div class="card__main_final-btn" @click="quantityPlus">
+                <IconsPlus color="#EF7F1A"/>
+              </div>
             </div>
-            <NuxtLink class="main_btn" @click="addToBasket" to="/basket">Добавить в корзину</NuxtLink>
+            <NuxtLink class="main_btn" @click="addToBasket">Добавить в корзину</NuxtLink>
           </div>
         </div>
       </div>
@@ -431,7 +443,7 @@ $x-big: 1829.98px;
   margin-top: unset;
   width: 100%;
   height: 400px;
-  @media screen and (max-width: $x-small){
+  @media screen and (max-width: $x-small) {
     height: 240px;
   }
 
@@ -439,11 +451,14 @@ $x-big: 1829.98px;
     width: 86px;
     height: 88px;
     cursor: pointer;
-    @media screen and (max-width: $x-small){
+    @media screen and (max-width: $x-small) {
       width: 46px;
       height: 48px;
     }
-
+  }
+  &__slide {
+    height: calc(100% - 2px);
+    width: calc(100% - 2px);
     &.active {
       border: 1px solid #EF7F1A;
     }
@@ -469,11 +484,12 @@ $x-big: 1829.98px;
 
   overflow-y: auto;
 
-  @media screen and (max-width: $x-small){
+  @media screen and (max-width: $x-small) {
     padding: 30px;
     width: calc(100% - 60px);
     height: calc(100% - 60px);
   }
+
   &.visible {
     transform: translateX(0);
     opacity: 1;
@@ -486,7 +502,7 @@ $x-big: 1829.98px;
     margin-bottom: 60px;
     padding-bottom: 20px;
     border-bottom: 1px solid #cccccc;
-    @media screen and (max-width: $small){
+    @media screen and (max-width: $small) {
       margin-bottom: 20px;
     }
 
@@ -522,7 +538,7 @@ $x-big: 1829.98px;
       transition: background-color 0.3s;
       border: 1px solid #cccccc;
       border-radius: 8px;
-      @media screen and (max-width: $small){
+      @media screen and (max-width: $small) {
         height: 30px;
       }
 

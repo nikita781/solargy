@@ -47,7 +47,21 @@ const fetchContact = async () => {
 };
 
 function generateSlug(name) {
-  return name
+  const cyrillicToLatinMap = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
+    и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+    с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch',
+    ы: 'y', э: 'e', ю: 'yu', я: 'ya', ъ: '', ь: ''
+  };
+
+  const transliterate = (str) => {
+    return str
+        .split('')
+        .map(char => cyrillicToLatinMap[char] || char)
+        .join('');
+  };
+
+  return transliterate(name)
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
@@ -80,7 +94,7 @@ onMounted(() => {
                 :key="place.id"
             >
               <NuxtLink :to="place.url">
-                <img :src="place.image" alt="">
+                <img :src="place.image_footer" alt="">
               </NuxtLink>
             </div>
           </div>
@@ -130,13 +144,23 @@ onMounted(() => {
       <div class="footer__catalog_phone">
         <div class="footer__catalog_item">
           <p class="footer__catalog_title">Связаться с нами</p>
-          <NuxtLink  class="footer__catalog_link">{{ contacts.phone }}</NuxtLink>
-          <NuxtLink  class="footer__catalog_link">{{ contacts.email }}</NuxtLink>
+          <NuxtLink :to="`tel:${contacts.phone}`" class="footer__catalog_link">{{ contacts.phone }}</NuxtLink>
+          <NuxtLink class="footer__catalog_link">{{ contacts.email }}</NuxtLink>
         </div>
       </div>
     </div>
-    <p class="footer__end footer__social_info">Производитель световодов, мансардных фонарей, зенитных фонарей SOLARGY ООО «Соларжи 18», 2024. Все права защищены.
-    </p>
+    <div class="footer__end">
+      <p class="footer__social_info">Производитель световодов, мансардных фонарей, зенитных фонарей SOLARGY ООО «Соларжи 18», 2024. Все права защищены.
+      </p>
+      <div class="footer__end_info">
+        <div class="footer__end_pict">
+          <IconsFond/>
+          <IconsMybusiness/>
+        </div>
+        <p class="footer__social_info">Сайт разработан в рамках национального проекта «Малое и среднее предпринимательство» при поддержке Центра «МОЙ БИЗНЕС»
+        </p>
+      </div>
+    </div>
   </footer>
 </template>
 

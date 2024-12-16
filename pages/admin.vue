@@ -261,6 +261,9 @@ const resetSubBanners = () => {
 // Категории
 
 const categories = ref([])
+const categoriesLevel = ref([])
+const allCategories = ref([]);
+const parentCategory = ref(null);
 const nameCategory = ref('');
 const photoCategory = ref(null);
 const fileCategory = ref(null);
@@ -278,6 +281,9 @@ const createCategory = async () => {
     const formData = new FormData();
     formData.append('name', nameCategory.value);
     formData.append('photo', photoCategory.value);
+    if (parentCategory.value) {
+      formData.append('parent_id', parentCategory.value);
+    }
 
     await axios.post(`/categories`, formData, {
       headers: {
@@ -291,10 +297,33 @@ const createCategory = async () => {
     console.error('Ошибка:', error.response?.data || error);
   }
 };
+const flattenCategories = (categories) => {
+  const result = [];
+  const traverse = (categoryList, parentId = null) => {
+    categoryList.forEach((category) => {
+      result.push({
+        id: category.id,
+        name: category.name,
+        level: category.level,
+        parent_id: category.parent_id,
+        parentId, // Добавляем информацию о родительской категории
+      });
+
+      if (category.children && category.children.length > 0) {
+        traverse(category.children, category.id); // Обрабатываем дочерние категории
+      }
+    });
+  };
+
+  traverse(categories);
+  return result;
+};
 const fetchCategory = async () => {
   try {
     const response = await axios.get('/categories');
     categories.value = response.data;
+    allCategories.value = flattenCategories(categories.value);
+    categoriesLevel.value = categories.value.filter(category => category.level === 0);
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -305,6 +334,9 @@ const updateCategory = async () => {
     formData.append('name', nameCategory.value);
     if (photoCategory.value) {
       formData.append('photo', photoCategory.value);
+    }
+    if (parentCategory.value) {
+      formData.append('parent_id', parentCategory.value);
     }
     await axios.post(`/categories/${currentCategoryId.value}?_method=PATCH`, formData, {
       headers: {
@@ -322,6 +354,7 @@ const editCategory = (category) => {
   isEditingCat.value = true;
   currentCategoryId.value = category.id;
   nameCategory.value = category.name;
+  parentCategory.value = category.parent_id;
   photoCategory.value = null;
 };
 const resetCategory = () => {
@@ -330,6 +363,7 @@ const resetCategory = () => {
   nameCategory.value = '';
   photoCategory.value = null;
   fileCategory.value.value = ''
+  parentCategory.value = null;
 };
 const deleteCategory = async (idCategory) => {
   try {
@@ -556,6 +590,8 @@ const productTextFile = ref(null);
 const productTextPropertie = ref(null);
 const isEditingPropertie = ref(false);
 const currentPropertieId = ref(null)
+const isEditingProductPhoto = ref(false)
+const currentProductPhotoId = ref(null)
 
 const fetchValueByOption = async (optionId) => {
   try {
@@ -847,6 +883,41 @@ const addProductPhoto = async () => {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
+const updateProductPhoto = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('photos[0][id]', currentProductPhotoId.value);
+    formData.append('photos[0][order]', productOrder.value);
+    if (productPhoto.value) {
+      formData.append('photos[0][photo]', productPhoto.value);
+    }
+
+    await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchProductById(currentProductId.value);
+    productPhoto.value = null;
+    productFile.value.value = ''
+    productOrder.value = '';
+    await resetProductPhoto();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const resetProductPhoto = async () => {
+  isEditingProductPhoto.value = false;
+  productPhoto.value = null;
+  productFile.value = null;
+  productOrder.value = null;
+}
+const editProductPhoto = async (photo) => {
+  currentProductPhotoId.value = photo.id;
+  isEditingProductPhoto.value = true;
+  productOrder.value = photo.order;
+}
 const addProductOption = async () => {
   try {
     const valueId = await fetchOptionsById(productOption.value);
@@ -1091,10 +1162,7 @@ const updateAbout_usBlock = async () => {
       },
     });
     await fetchAbout_usBlock();
-    about_usTitle.value = '';
-    about_usDescription.value = '';
-    about_usImage.value = null;
-    about_usFile.value.value = ''
+    resetAbout_usBlock();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -1612,10 +1680,7 @@ const updatePromoBlock = async () => {
       },
     });
     await fetchPromo();
-    promoTitle.value = '';
-    promoDescription.value = '';
-    promoImage.value = null;
-    promoFile.value.value = ''
+    resetPromoBlock();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -1716,7 +1781,9 @@ const updateStock = async () => {
     const formData = new FormData();
     formData.append('title', stockTitle.value);
     formData.append('description', stockDescription.value);
-    formData.append('image', stockImage.value);
+    if (stockImage.value) {
+      formData.append('image', stockImage.value);
+    }
     formData.append('start', stockStart.value);
     formData.append('end', stockEnd.value);
     formData.append('is_archived', stockArchived.value);
@@ -1786,6 +1853,8 @@ const placeUrl = ref('')
 const placeImg = ref(null);
 const placeFile = ref(null);
 const placeSelect = ref('');
+const isEditingPlace = ref(false);
+const currentPlaceId = ref(false);
 
 const fetchPlace = async () => {
   try {
@@ -1815,7 +1884,9 @@ const createPlace = async () => {
     formData.append('name', placeName.value);
     formData.append('type', placeSelect.value);
     formData.append('image', placeImg.value);
-    formData.append('url', placeUrl.value);
+    if (placeUrl.value) {
+      formData.append('url', placeUrl.value);
+    }
 
     await axios.post(`/purchase-place`, formData, {
       headers: {
@@ -1833,6 +1904,30 @@ const createPlace = async () => {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
+const updatePlace = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('name', placeName.value);
+    formData.append('type', placeSelect.value);
+    if (placeImg.value) {
+      formData.append('image', placeImg.value);
+    }
+    if (placeUrl.value) {
+      formData.append('url', placeUrl.value);
+    }
+
+    await axios.post(`/purchase-place/${currentPlaceId.value}?_method=patch`, formData, {
+      headers: {
+        'Authorization': `Bearer ${result.value.token}`,
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchPlace();
+    resetPlace();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
 const deletePlace = async (idPlace) => {
   try {
     await axios.delete(`/purchase-place/${idPlace}`, {
@@ -1844,6 +1939,22 @@ const deletePlace = async (idPlace) => {
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
+};
+const editPlace = (place) => {
+  isEditingPlace.value = true;
+  currentPlaceId.value = place.id;
+  placeName.value = place.name;
+  placeUrl.value = place.url;
+  placeSelect.value = place.type;
+};
+const resetPlace = () => {
+  isEditingPlace.value = false;
+  placeName.value = '';
+  placeUrl.value = '';
+  placeImg.value = null;
+  placeFile.value.value = ''
+  placeSelect.value = ''
+  currentPlaceId.value = null
 };
 
 //---------------------------------------------------------------------------------
@@ -1961,6 +2072,8 @@ const socialPlatform = ref('')
 const socialUrl = ref('');
 const socialImage = ref(null);
 const socialFile = ref(null)
+const socialImageFooter = ref(null);
+const socialFileFooter = ref(null)
 const isEditingSocial = ref(false);
 const currentSocialId = ref(null);
 
@@ -1982,12 +2095,19 @@ const handleFileChangeSocial = (event) => {
     socialImage.value = file;
   }
 };
+const handleFileChangeSocialFooter = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    socialImageFooter.value = file;
+  }
+};
 const createSocial = async () => {
   try {
     const formData = new FormData();
     formData.append('platform', socialPlatform.value);
     formData.append('url', socialUrl.value);
     formData.append('image', socialImage.value);
+    formData.append('image_footer', socialImageFooter.value);
 
     await axios.post(`/socials`, formData, {
       headers: {
@@ -1996,10 +2116,7 @@ const createSocial = async () => {
       },
     });
     await fetchSocials();
-    socialPlatform.value = '';
-    socialUrl.value = '';
-    socialImage.value = null;
-    socialFile.value.value = ''
+    resetSocial();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -2011,6 +2128,9 @@ const updateSocial = async () => {
     formData.append('url', socialUrl.value);
     if (socialImage.value) {
       formData.append('image', socialImage.value);
+    }
+    if (socialImageFooter.value) {
+      formData.append('image_footer', socialImageFooter.value);
     }
 
     await axios.post(`/socials/${currentSocialId.value}?_method=patch`, formData, {
@@ -2049,6 +2169,8 @@ const resetSocial = () => {
   socialUrl.value = '';
   socialImage.value = null;
   socialFile.value.value = ''
+  socialImageFooter.value = null;
+  socialFileFooter.value.value = ''
   currentSocialId.value = null
 };
 
@@ -2057,7 +2179,7 @@ const resetSocial = () => {
 <template>
   <div class="admin">
     <h2 class="main_title">{{ isAuthenticated ? 'Админ панель' : 'Вход в админ панель' }}</h2>
-    <div class="admin__auth" v-if="!isAuthenticated">
+    <div class="admin__auth" v-if="!isAuthenticated" @keydown.enter="fetchAdmin">
       <input type="email" class="basket__form_input" v-model="nameUser" placeholder="Введите логин">
       <input type="password" class="basket__form_input" v-model="passwordUser" placeholder="Введите пароль">
       <button class="main_btn" @click="fetchAdmin()">Войти</button>
@@ -2320,6 +2442,12 @@ const resetSocial = () => {
               v-model="nameCategory"
               placeholder="Введите имя категории"
           />
+          <select v-model="parentCategory" class="basket__form_input admin-panel__content_select">
+            <option value="" disabled>Выберите родительскую категорию</option>
+            <option v-for="cat in categoriesLevel" :key="cat.id" :value="cat.id">
+              {{ cat.name }}
+            </option>
+          </select>
           <input
               type="file"
               ref="fileCategory"
@@ -2336,6 +2464,12 @@ const resetSocial = () => {
               v-model="nameCategory"
               placeholder="Введите новое имя категории"
           />
+          <select v-model="parentCategory" class="basket__form_input admin-panel__content_select">
+            <option value="" disabled>Выберите родительскую категорию</option>
+            <option v-for="cat in categoriesLevel" :key="cat.id" :value="cat.id">
+              {{ cat.name }}
+            </option>
+          </select>
           <input
               type="file"
               class="basket__form_input admin-panel__content_input"
@@ -2345,7 +2479,7 @@ const resetSocial = () => {
           <button class="main_btn" type="submit">Сохранить изменения</button>
           <button class="main_btn" type="button" @click="resetCategory">Отмена</button>
         </form>
-        <table>
+        <table v-for="category in categories" :key="category.id">
           <thead>
           <tr>
             <th>Название</th>
@@ -2357,7 +2491,7 @@ const resetSocial = () => {
           </tr>
           </thead>
           <tbody>
-          <tr v-for="category in categories" :key="category.id">
+          <tr>
             <td>{{ category.name }}</td>
             <td>{{ category.level }}</td>
             <td>
@@ -2374,6 +2508,26 @@ const resetSocial = () => {
             </td>
             <td>
               <button @click="deleteCategory(category.id)" class="admin-panel__content_btn">Удалить</button>
+            </td>
+          </tr>
+          <tr v-for="cat in category.children" :key="cat.id">
+            <td>{{ cat.name }}</td>
+            <td>{{ cat.level }}</td>
+            <td>
+              <img :src="cat.photo" alt="Фото" width="50"/>
+            </td>
+            <td>
+<!--              <span v-if="cat.children.length > 0">-->
+<!--                {{ cat.children.length }} дочерних элемента(ов)-->
+<!--              </span>-->
+<!--              <span v-else>Нет</span>-->
+              Дочерняя
+            </td>
+            <td>
+              <button @click="editCategory(cat)" class="admin-panel__content_btn">Изменить</button>
+            </td>
+            <td>
+              <button @click="deleteCategory(cat.id)" class="admin-panel__content_btn">Удалить</button>
             </td>
           </tr>
           </tbody>
@@ -2520,7 +2674,7 @@ const resetSocial = () => {
           Категория
           <select v-model="productCategory" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
-            <option v-for="category in categories" :key="category.id" :value="category.id">
+            <option v-for="category in allCategories" :key="category.id" :value="category.id">
               {{ category.name }}
             </option>
           </select>
@@ -2575,7 +2729,7 @@ const resetSocial = () => {
           <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
         <h3 v-if="isEditingProduct">Добавить картинку</h3>
-        <form class="admin-panel__content_form" v-if="isEditingProduct" @submit.prevent="addProductPhoto">
+        <form class="admin-panel__content_form" v-if="isEditingProduct && !isEditingProductPhoto" @submit.prevent="addProductPhoto">
           <input
               type="file"
               ref="productFile"
@@ -2736,11 +2890,29 @@ const resetSocial = () => {
           <button class="main_btn" type="submit">Добавить</button>
           <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
+        <form class="admin-panel__content_form" v-if="isEditingProduct && isEditingProductPhoto" @submit.prevent="updateProductPhoto">
+          <input
+              type="file"
+              ref="productFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeProductPhoto"
+              accept="image/*"
+          />
+          <input
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productOrder"
+              placeholder="Введите порядок фото"
+          />
+          <button class="main_btn" type="submit">Изменить</button>
+          <button class="main_btn" @click="resetProductPhoto">Отмена</button>
+        </form>
         <table v-if="isEditingProduct">
           <thead>
           <tr>
             <th>Фото</th>
             <th>Порядок</th>
+            <th>Изменить</th>
             <th>Удалить</th>
           </tr>
           </thead>
@@ -2750,6 +2922,9 @@ const resetSocial = () => {
               <img :src="product.photo" alt="Фото" width="100"/>
             </td>
             <td>{{product.order}}</td>
+            <td>
+              <button @click="editProductPhoto(product)" class="admin-panel__content_btn">Изменить</button>
+            </td>
             <td>
               <button @click="deleteProductPhoto(product.id)" class="admin-panel__content_btn">Удалить</button>
             </td>
@@ -2969,7 +3144,7 @@ const resetSocial = () => {
               accept="image/*"
           />
           <button class="main_btn" type="submit">Изменить блок</button>
-          <button class="main_btn" type="submit" @click="resetAbout_usBlock">Назад</button>
+          <button class="main_btn" type="submit" @click="resetAbout_usBlock">Отмена</button>
         </form>
         <table>
           <thead>
@@ -3271,7 +3446,7 @@ const resetSocial = () => {
               placeholder="Введите почту"
           />
           <button class="main_btn" type="submit">Изменить компанию</button>
-          <button class="main_btn" @click="resetCompany">Назад</button>
+          <button class="main_btn" @click="resetCompany">Отмена</button>
         </form>
         <h3 v-if="isEditingCompany">Кастомный параметр</h3>
         <form class="admin-panel__content_form" v-if="isEditingCompany" @submit.prevent="createCustom">
@@ -3288,7 +3463,7 @@ const resetSocial = () => {
               placeholder="Введите значение"
           />
           <button class="main_btn" type="submit">Добавить параметр</button>
-          <button class="main_btn" @click="resetCompany">Назад</button>
+          <button class="main_btn" @click="resetCompany">Отмена</button>
         </form>
         <form class="admin-panel__content_form" v-if="customEditing" @submit.prevent="updateCustom">
           <input
@@ -3304,7 +3479,7 @@ const resetSocial = () => {
               placeholder="Введите значение"
           />
           <button class="main_btn" type="submit">Изменить параметр</button>
-          <button class="main_btn" @click="resetCustom">Назад</button>
+          <button class="main_btn" @click="resetCustom">Отмена</button>
         </form>
         <div
             class="admin-panel__content_info_item"
@@ -3396,7 +3571,7 @@ const resetSocial = () => {
               accept="image/*"
           />
           <button class="main_btn" type="submit">Изменить блок</button>
-          <button class="main_btn" type="submit" @click="resetPromoBlock">Назад</button>
+          <button class="main_btn" type="submit" @click="resetPromoBlock">Отмена</button>
         </form>
         <table>
           <thead>
@@ -3506,7 +3681,7 @@ const resetSocial = () => {
               accept="image/*"
           />
           <button class="main_btn" type="submit">Изменить акцию</button>
-          <button class="main_btn" @click="resetStock">Назад</button>
+          <button class="main_btn" @click="resetStock">Отмена</button>
         </form>
         <table>
           <thead>
@@ -3544,7 +3719,7 @@ const resetSocial = () => {
 
       <div class="admin-panel__content" v-if="activeTab === 'Где купить'">
         <h2>Управление страницей Где купить?</h2>
-        <form class="admin-panel__content_form" @submit.prevent="createPlace">
+        <form class="admin-panel__content_form" v-if="!isEditingPlace" @submit.prevent="createPlace">
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
@@ -3581,6 +3756,44 @@ const resetSocial = () => {
           />
           <button class="main_btn" type="submit">Создать пункт</button>
         </form>
+        <form class="admin-panel__content_form" v-if="isEditingPlace" @submit.prevent="updatePlace">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="placeName"
+              placeholder="Введите название"
+          />
+          <select v-model="placeSelect" class="basket__form_input admin-panel__content_select">
+            <option value="" disabled>Выберите категорию</option>
+            <option value='marketplace'>
+              Маркетплейсы
+            </option>
+            <option value='partner'>
+              Дилеры и партнеры
+            </option>
+            <option value='retailer'>
+              Розничные магазины
+            </option>
+            <option value='store'>
+              Торговые сети
+            </option>
+          </select>
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="placeUrl"
+              placeholder="Введите ссылку"
+          />
+          <input
+              type="file"
+              ref="placeFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangePlace"
+              accept="image/*"
+          />
+          <button class="main_btn" type="submit">Изменить пункт</button>
+          <button class="main_btn" @click="resetPlace">Отмена</button>
+        </form>
         <div class="admin-panel__content_info_item">
           Маркетплейсы
           <table>
@@ -3589,6 +3802,7 @@ const resetSocial = () => {
               <th>Название</th>
               <th>Ссылка</th>
               <th>Иконка</th>
+              <th>Изменить</th>
               <th>Удалить</th>
             </tr>
             </thead>
@@ -3598,6 +3812,9 @@ const resetSocial = () => {
               <td>{{ place.url }}</td>
               <td>
                 <img :src="place.image" alt="Фото" width="50"/>
+              </td>
+              <td>
+                <button @click="editPlace(place)" class="admin-panel__content_btn">Изменить</button>
               </td>
               <td>
                 <button @click="deletePlace(place.id)" class="admin-panel__content_btn">Удалить</button>
@@ -3614,6 +3831,7 @@ const resetSocial = () => {
               <th>Название</th>
               <th>Ссылка</th>
               <th>Иконка</th>
+              <th>Изменить</th>
               <th>Удалить</th>
             </tr>
             </thead>
@@ -3623,6 +3841,9 @@ const resetSocial = () => {
               <td>{{ place.url }}</td>
               <td>
                 <img :src="place.image" alt="Фото" width="50"/>
+              </td>
+              <td>
+                <button @click="editPlace(place)" class="admin-panel__content_btn">Изменить</button>
               </td>
               <td>
                 <button @click="deletePlace(place.id)" class="admin-panel__content_btn">Удалить</button>
@@ -3639,6 +3860,7 @@ const resetSocial = () => {
               <th>Название</th>
               <th>Ссылка</th>
               <th>Иконка</th>
+              <th>Изменить</th>
               <th>Удалить</th>
             </tr>
             </thead>
@@ -3648,6 +3870,9 @@ const resetSocial = () => {
               <td>{{ place.url }}</td>
               <td>
                 <img :src="place.image" alt="Фото" width="50"/>
+              </td>
+              <td>
+                <button @click="editPlace(place)" class="admin-panel__content_btn">Изменить</button>
               </td>
               <td>
                 <button @click="deletePlace(place.id)" class="admin-panel__content_btn">Удалить</button>
@@ -3664,6 +3889,7 @@ const resetSocial = () => {
               <th>Название</th>
               <th>Ссылка</th>
               <th>Иконка</th>
+              <th>Изменить</th>
               <th>Удалить</th>
             </tr>
             </thead>
@@ -3673,6 +3899,9 @@ const resetSocial = () => {
               <td>{{ place.url }}</td>
               <td>
                 <img :src="place.image" alt="Фото" width="50"/>
+              </td>
+              <td>
+                <button @click="editPlace(place)" class="admin-panel__content_btn">Изменить</button>
               </td>
               <td>
                 <button @click="deletePlace(place.id)" class="admin-panel__content_btn">Удалить</button>
@@ -3718,7 +3947,7 @@ const resetSocial = () => {
               accept="image/*"
           />
           <button class="main_btn" type="submit">Изменить блок</button>
-          <button class="main_btn" @click="resetDelivery">Назад</button>
+          <button class="main_btn" @click="resetDelivery">Отмена</button>
         </form>
         <table>
           <thead>
@@ -3763,11 +3992,20 @@ const resetSocial = () => {
               v-model="socialUrl"
               placeholder="Введите ссылку"
           />
+          Фото основное
           <input
               type="file"
               ref="socialFile"
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangeSocial"
+              accept="image/*"
+          />
+          Фото для подвала
+          <input
+              type="file"
+              ref="socialFileFooter"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeSocialFooter"
               accept="image/*"
           />
           <button class="main_btn" type="submit">Создать соц сеть</button>
@@ -3785,6 +4023,7 @@ const resetSocial = () => {
               v-model="socialUrl"
               placeholder="Введите ссылку"
           />
+          Фото основное
           <input
               type="file"
               ref="socialFile"
@@ -3792,8 +4031,16 @@ const resetSocial = () => {
               @change="handleFileChangeSocial"
               accept="image/*"
           />
+          Фото для подвала
+          <input
+              type="file"
+              ref="socialFileFooter"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeSocialFooter"
+              accept="image/*"
+          />
           <button class="main_btn" type="submit">Изменить соц сеть</button>
-          <button class="main_btn" @click="resetSocial">Назад</button>
+          <button class="main_btn" @click="resetSocial">Отмена</button>
         </form>
         <table>
           <thead>
@@ -3801,6 +4048,7 @@ const resetSocial = () => {
             <th>Название</th>
             <th>Ссылка</th>
             <th>Фото</th>
+            <th>Фото подвал</th>
             <th>Изменить</th>
             <th>Удалить</th>
           </tr>
@@ -3811,6 +4059,9 @@ const resetSocial = () => {
             <td>{{ social.url }}</td>
             <td>
               <img :src="social.image" alt="Фото" width="50"/>
+            </td>
+            <td>
+              <img :src="social.image_footer" alt="Фото" width="50"/>
             </td>
             <td>
               <button @click="editSocial(social)" class="admin-panel__content_btn">Изменить</button>

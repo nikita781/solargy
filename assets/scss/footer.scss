@@ -100,13 +100,19 @@ $x-big: 1829.98px;
       font-size: 18px;
     }
     &_link {
+      cursor: pointer;
       color: white;
       font-size: 20px;
+      transition: 0.2s;
       @media screen and (max-width: $large){
         font-size: 18px;
       }
       @media screen and (max-width: $x-small) {
         font-size: 16px;
+      }
+      &:hover {
+        color: #EF7F1A;
+        transition: 0.2s;
       }
     }
     &_phone {
@@ -119,8 +125,41 @@ $x-big: 1829.98px;
   }
   &__end {
     margin-top: 6px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: end;
+    gap: 230px;
+    @media screen and (max-width: $x-large) {
+      gap: 150px;
+    }
+    @media screen and (max-width: $large) {
+      gap: 20px;
+    }
+    @media screen and (max-width: $medium) {
+      grid-template-columns: 1fr;
+    }
     @media screen and (max-width: $x-small) {
       font-size: 12px;
+    }
+    &_info {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    &_pict {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      @media screen and (max-width: $x-small) {
+        flex-direction: column;
+        gap: 20px;
+        align-items: flex-start;
+      }
+      svg {
+        @media screen and (max-width: $x-small) {
+          transform: scale(0.7);
+        }
+      }
     }
   }
 }

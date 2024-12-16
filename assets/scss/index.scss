@@ -528,6 +528,15 @@ $x-big: 1829.98px;
       grid-template-columns: 1fr;
     }
   }
+  &__btn {
+    //white-space: nowrap;
+    @media screen and (min-width: $x-large){
+      white-space: nowrap;
+    }
+    @media screen and (max-width: $large){
+      padding: 15px 30px;
+    }
+  }
   &__item {
     height: 568px;
     background-repeat: no-repeat;
@@ -577,7 +586,7 @@ $x-big: 1829.98px;
     letter-spacing: 3px;
     text-transform: uppercase;
     @media screen and (max-width: $large){
-      font-size: 18px;
+      font-size: 16px;
       line-height: 22px;
     }
     @media screen and (max-width: $small){

@@ -73,10 +73,12 @@ $x-big: 1829.98px;
       }
     }
     &_container-phone {
+      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 8px;
       text-decoration: none;
+      transition: 0.2s;
       svg {
         @media screen and (max-width: $x-small) {
           width: 16px;
@@ -88,6 +90,17 @@ $x-big: 1829.98px;
         font-size: 18px;
         @media screen and (max-width: $x-small) {
           font-size: 15px;
+        }
+      }
+      &:hover {
+        transition: 0.2s;
+        svg {
+          path {
+            fill: #171717;
+          }
+        }
+        p {
+          color: #171717;
         }
       }
     }
@@ -223,6 +236,23 @@ $x-big: 1829.98px;
           }
         }
       }
+      &_basket {
+        position: relative;
+        &_quantity {
+          position: absolute;
+          top: -6px;
+          right: -6px;
+          background-color: #EF7F1A;
+          font-size: 12px;
+          width: 15px;
+          height: 15px;
+          color: white;
+          border-radius: 50%;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+      }
     }
     &-search {
       display: flex;
@@ -296,6 +326,8 @@ $x-big: 1829.98px;
     position: absolute;
     top: 108px;
     left: calc(5%);
+    max-height: 70vh;
+    overflow: auto;
     width: calc(90% - 160px);
     background-color: #fff;
     padding: 40px 80px;
@@ -361,8 +393,13 @@ $x-big: 1829.98px;
       font-size: 20px;
       color: #171717;
       font-weight: bold;
+      transition: 0.2s;
       @media screen and (max-width: $small) {
         font-size: 14px;
+      }
+      &:hover {
+        color: #EF7F1A;
+        transition: 0.2s;
       }
     }
     &_items {
@@ -374,6 +411,11 @@ $x-big: 1829.98px;
       line-height: 14px;
       cursor: pointer;
       color: #171717;
+      transition: 0.2s;
+      &:hover {
+        color: #EF7F1A;
+        transition: 0.2s;
+      }
       &-container {
         display: flex;
         flex-direction: column;
