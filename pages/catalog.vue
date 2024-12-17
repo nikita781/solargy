@@ -1,7 +1,7 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue';
+import {onMounted, ref, computed} from 'vue';
 import axios from 'axios';
-import { useRoute, useRouter } from 'vue-router';
+import {useRoute, useRouter} from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
@@ -43,7 +43,7 @@ const fetchTabs = async () => {
     allCategories.value = flattenCategoriesWithChildren(categories);
 
     tabs.value = [
-      { id: 0, name: 'Все' },
+      {id: 0, name: 'Все'},
       ...allCategories.value,
     ];
   } catch (error) {
@@ -95,6 +95,7 @@ function generateSlug(name) {
       .replace(/\s+/g, '-')
       .trim();
 }
+
 const changeTab = (tabId) => {
   activeTab.value = tabId;
   page.value = 1;
@@ -159,13 +160,17 @@ onMounted(() => {
             :key="product.id"
             class="best-product__item"
         >
-          <img
-              class="best-product__item_img"
-              :src="product.photos[0]?.photo"
-              alt="Product Image"
-          />
+          <NuxtLink
+              :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+          >
+            <img
+                class="best-product__item_img"
+                :src="product.photos[0]?.photo"
+                alt="Product Image"
+            />
+          </NuxtLink>
           <div class="best-product__item_content">
-            <p class="best-product__item_title">{{ product.name }}</p>
+            <NuxtLink :to="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">{{ product.name }}</NuxtLink>
             <p class="best-product__item_desc">{{ product.description }}</p>
           </div>
           <div class="best-product__item_container">
@@ -259,6 +264,7 @@ $x-big: 1829.98px;
     @media screen and (max-width: $small) {
       transform: rotate(90deg) scale(0.8);
     }
+
     &::before,
     &::after {
       content: '';
@@ -267,11 +273,13 @@ $x-big: 1829.98px;
       height: 100%;
       background-color: #EF7F1A;
     }
+
     &::before {
       transform: rotate(-45deg);
       left: 0;
       top: 0;
     }
+
     &::after {
       transform: rotate(45deg);
       right: 0;
@@ -293,6 +301,7 @@ $x-big: 1829.98px;
     @media screen and (max-width: $small) {
       transform: rotate(-90deg) scale(0.8);
     }
+
     &::before,
     &::after {
       content: '';
@@ -301,11 +310,13 @@ $x-big: 1829.98px;
       height: 100%;
       background-color: #EF7F1A;
     }
+
     &::before {
       transform: rotate(-45deg);
       left: 0;
       top: 0;
     }
+
     &::after {
       transform: rotate(45deg);
       right: 0;

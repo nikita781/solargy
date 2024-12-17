@@ -7,15 +7,19 @@ $big: 1592.98px;
 $x-big: 1829.98px;
 .footer {
   background-color: #616161;
-  padding: 30px 80px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  @media screen and (max-width: $medium) {
-    padding: 30px 50px;
-  }
-  @media screen and (max-width: $x-small) {
-    padding: 30px;
+  &_page {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 30px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    @media screen and (max-width: $medium) {
+      padding: 30px 50px;
+    }
+    @media screen and (max-width: $x-small) {
+      padding: 30px;
+    }
   }
   &__social {
     display: flex;
@@ -149,6 +153,7 @@ $x-big: 1829.98px;
     &_pict {
       display: flex;
       justify-content: space-between;
+      max-width: 500px;
       align-items: center;
       @media screen and (max-width: $x-small) {
         flex-direction: column;

@@ -7,6 +7,8 @@ $big: 1592.98px;
 $x-big: 1829.98px;
 .card {
   &__main {
+    max-width: 1440px;
+    margin: 0 auto;
     padding: 30px 80px 0 80px;
     @media screen and (max-width: $large){
       padding: 30px 80px 0 80px;
@@ -256,6 +258,8 @@ $x-big: 1829.98px;
     }
   }
   &__tabs {
+    max-width: 1440px;
+    margin: 0 auto;
     padding: 60px 80px 0 80px;
     width: calc(100% - 160px);
     @media screen and (max-width: $large){
@@ -360,6 +364,8 @@ $x-big: 1829.98px;
     }
   }
   &__product {
+    max-width: 1440px;
+    margin: 0 auto;
     padding: 100px 80px;
     @media screen and (max-width: $large){
       padding: 80px;

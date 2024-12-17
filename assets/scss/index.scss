@@ -219,6 +219,8 @@ $x-big: 1829.98px;
     }
   }
   &__content {
+    max-width: 1440px;
+    margin: 0 auto;
     padding: 100px 80px;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -288,16 +290,20 @@ $x-big: 1829.98px;
   }
 }
 .best-product {
-  padding: 100px 80px;
   background: #F5F5F5;
-  @media screen and (max-width: $large){
-    padding: 80px;
-  }
-  @media screen and (max-width: $medium){
-    padding: 60px 50px;
-  }
-  @media screen and (max-width: $x-small){
-    padding: 40px 30px;
+  &_page {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 100px 80px;
+    @media screen and (max-width: $large){
+      padding: 80px;
+    }
+    @media screen and (max-width: $medium){
+      padding: 60px 50px;
+    }
+    @media screen and (max-width: $x-small){
+      padding: 40px 30px;
+    }
   }
   &__header {
     display: flex;
@@ -400,6 +406,8 @@ $x-big: 1829.98px;
   }
 }
 .types {
+  max-width: 1440px;
+  margin: 0 auto;
   padding: 50px 80px;
   @media screen and (max-width: $large){
     padding: 50px 80px;
@@ -506,6 +514,8 @@ $x-big: 1829.98px;
   }
 }
 .category-prod {
+  max-width: 1440px;
+  margin: 0 auto;
   padding: 50px 80px;
   @media screen and (max-width: $large){
     padding: 50px 80px;
@@ -596,8 +606,9 @@ $x-big: 1829.98px;
   }
 }
 .questions {
+  max-width: 1440px;
+  margin: 0 auto 50px auto;
   padding: 50px 80px;
-  margin-bottom: 50px;
   @media screen and (max-width: $large){
     padding: 50px 80px;
   }

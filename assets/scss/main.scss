@@ -14,19 +14,24 @@ $x-big: 1829.98px;
 a {
   text-decoration: none;
 }
-
-.container-content {
-  &.active {
-    position: relative;
-    &::after {
-      content: '';
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      background-color: rgba(0, 0, 0, 0.54);
-      z-index: 50;
+.container {
+  &-content {
+    &.active {
+      position: relative;
+      &::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.54);
+        z-index: 50;
+      }
+    }
+    &__page {
+      //max-width: 1440px;
+      //margin: 0 auto;
     }
   }
 }

@@ -6,6 +6,8 @@ $x-large: 1399.98px;
 $big: 1592.98px;
 $x-big: 1829.98px;
 .admin {
+  max-width: 1440px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;

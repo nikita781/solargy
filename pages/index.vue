@@ -203,29 +203,37 @@ onUnmounted(() => {
       </div>
     </div>
     <div class="best-product">
-      <div class="best-product__header">
-        <h2 class="main_title">Лучшие предложения</h2>
-        <NuxtLink to="/catalog" class="main_btn">Перейти в каталог</NuxtLink>
-      </div>
-      <div class="best-product__items">
-        <div
-            class="best-product__item"
-            v-for="product in topProduct.data"
-            :key="product.id"
-        >
-          <img class="best-product__item_img" :src="product?.photos[0]?.photo" alt="">
-          <div class="best-product__item_content">
-            <p class="best-product__item_title">{{ product?.name }}</p>
-            <p class="best-product__item_desc">{{ product?.description }}</p>
-          </div>
-          <div class="best-product__item_container">
-            <p class="best-product__item_price">от {{ product?.price }} ₽</p>
+      <div class="best-product_page">
+        <div class="best-product__header">
+          <h2 class="main_title">Лучшие предложения</h2>
+          <NuxtLink to="/catalog" class="main_btn">Перейти в каталог</NuxtLink>
+        </div>
+        <div class="best-product__items">
+          <div
+              class="best-product__item"
+              v-for="product in topProduct.data"
+              :key="product.id"
+          >
             <NuxtLink
-                class="best-product__item_btn"
                 :to="`/card/${product.id}-${generateSlug(product.name)}/`"
             >
-              Заказать
+              <img class="best-product__item_img" :src="product?.photos[0]?.photo" alt="">
             </NuxtLink>
+            <div class="best-product__item_content">
+              <NuxtLink :to="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">
+                {{ product?.name }}
+              </NuxtLink>
+              <p class="best-product__item_desc">{{ product?.description }}</p>
+            </div>
+            <div class="best-product__item_container">
+              <p class="best-product__item_price">от {{ product?.price }} ₽</p>
+              <NuxtLink
+                  class="best-product__item_btn"
+                  :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+              >
+                Заказать
+              </NuxtLink>
+            </div>
           </div>
         </div>
       </div>

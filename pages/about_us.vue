@@ -76,12 +76,14 @@ function formatDate(dateString) {
 <template>
   <div>
     <div v-if="blocks[0]" class="about_us__header">
-      <div class="about_us__header_info">
-        <h1 class="about_us__header_title">{{ blocks[0].title }}</h1>
-        <p class="about_us__header_subtitle editor__content" v-html="blocks[0].html"></p>
-      </div>
-      <div class="about_us__header_img">
-        <img :src="blocks[0].image" alt="Header Image" />
+      <div class="about_us__header_page">
+        <div class="about_us__header_info">
+          <h1 class="about_us__header_title">{{ blocks[0].title }}</h1>
+          <p class="about_us__header_subtitle editor__content" v-html="blocks[0].html"></p>
+        </div>
+        <div class="about_us__header_img">
+          <img :src="blocks[0].image" alt="Header Image" />
+        </div>
       </div>
     </div>
     <div class="about_us__content">
@@ -96,7 +98,7 @@ function formatDate(dateString) {
         >
           <h2 class="main_title">{{ block.title }}</h2>
           <p class="about_us__content_text editor__content" v-html="block.html"></p>
-          <button v-if="index === 0" class="main_btn">Узнать больше</button>
+          <a href="https://solargy.ru" target="_blank" v-if="index === 0" class="main_btn">Узнать больше</a>
         </div>
         <div
             :class="[

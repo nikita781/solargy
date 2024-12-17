@@ -6,6 +6,8 @@ $x-large: 1399.98px;
 $big: 1592.98px;
 $x-big: 1829.98px;
 .catalog {
+  max-width: 1440px;
+  margin: 0 auto;
   padding: 30px 80px;
   @media screen and (max-width: $large){
     padding: 30px 80px;
