@@ -6,7 +6,9 @@ const pageData = useState('pageData');
   <div class="container">
     <UIHeader />
     <div class="container-content">
-      <NuxtPage :style="{ display: pageData ? 'none' : '' }"/>
+      <div class="container-content__page">
+        <NuxtPage :style="{ display: pageData ? 'none' : '' }"/>
+      </div>
       <UIFooter :style="{ display: pageData ? 'none' : 'flex' }"/>
     </div>
   </div>

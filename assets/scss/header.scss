@@ -29,15 +29,19 @@ $x-big: 1829.98px;
   }
   &__info {
     background-color: #EF7F1A;
-    padding: 10px 80px;
-    display: flex;
-    justify-content: space-between;
     z-index: 52;
-    @media screen and (max-width: $medium) {
-      padding: 10px 50px;
-    }
-    @media screen and (max-width: $x-small) {
-      padding: 5px 30px;
+    &_page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 10px 80px;
+      display: flex;
+      justify-content: space-between;
+      @media screen and (max-width: $medium) {
+        padding: 10px 50px;
+      }
+      @media screen and (max-width: $x-small) {
+        padding: 5px 30px;
+      }
     }
     &_container-text {
       display: flex;
@@ -106,18 +110,22 @@ $x-big: 1829.98px;
     }
   }
   &__main {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 80px;
     background-color: #fff;
     border-bottom: 1px solid #CCCCCC;
     z-index: 51;
-    @media screen and (max-width: $medium) {
-      padding: 10px 50px;
-    }
-    @media screen and (max-width: $x-small) {
-      padding: 5px 30px;
+    &_page {
+      max-width: 1440px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 80px;
+      @media screen and (max-width: $medium) {
+        padding: 10px 50px;
+      }
+      @media screen and (max-width: $x-small) {
+        padding: 5px 30px;
+      }
     }
     &_logo {
       height: 30px;
@@ -325,9 +333,11 @@ $x-big: 1829.98px;
     background-color: rgba(0, 0, 0, 0.54);
     position: absolute;
     top: 108px;
-    left: calc(5%);
+    left: 50%;
+    transform: translateX(-50%);
     max-height: 70vh;
     overflow: auto;
+    max-width: 1280px;
     width: calc(90% - 160px);
     background-color: #fff;
     padding: 40px 80px;
@@ -339,6 +349,7 @@ $x-big: 1829.98px;
       gap: 30px 70px;
     }
     @media screen and (max-width: $medium) {
+      top: 98px;
       grid-template-columns: 1fr;
     }
     @media screen and (max-width: $small) {
@@ -354,6 +365,7 @@ $x-big: 1829.98px;
       position: relative;
       top: unset;
       left: unset;
+      transform: unset;
       padding: 0 10px;
       width: calc(100% - 20px);
     }

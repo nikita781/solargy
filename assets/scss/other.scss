@@ -7,6 +7,8 @@ $big: 1592.98px;
 $x-big: 1829.98px;
 .stocks {
   &__main {
+    max-width: 1440px;
+    margin: 0 auto;
     padding: 30px 80px 30px 80px;
     display: flex;
     flex-direction: column;
@@ -74,6 +76,8 @@ $x-big: 1829.98px;
     }
   }
   &__content {
+    max-width: 1440px;
+    margin: 0 auto;
     padding: 30px 80px 100px 80px;
     @media screen and (max-width: $large){
       padding: 30px 80px 100px 80px;
@@ -249,6 +253,8 @@ $x-big: 1829.98px;
     }
   }
   &__map {
+    max-width: 1440px;
+    margin: 0 auto;
     padding: 70px 80px 100px 80px;
     @media screen and (max-width: $large){
       padding: 70px 80px 100px 80px;

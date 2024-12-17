@@ -279,12 +279,12 @@ const handleDownload = async (fileUrl, file_name) => {
                     v-for="(slide, index) in product.photos"
                     :key="index"
                 >
-                    <div
-                        class="swiper__slide"
-                        :style="{ 'background-image': `url(${slide.photo})` }"
-                        @click="selectSlide(slide)"
+                  <div
+                      class="swiper__slide"
+                      :style="{ 'background-image': `url(${slide.photo})` }"
+                      @click="selectSlide(slide)"
 
-                    ></div>
+                  ></div>
                 </SwiperSlide>
               </Swiper>
             </client-only>
@@ -411,9 +411,13 @@ const handleDownload = async (fileUrl, file_name) => {
             v-for="(product, index) in products.slice(0, 4)"
             :key="index"
         >
-          <img class="best-product__item_img" :src="product?.photos[0].photo" alt="">
+          <NuxtLink
+              :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+          >
+            <img class="best-product__item_img" :src="product?.photos[0].photo" alt="">
+          </NuxtLink>
           <div class="best-product__item_content">
-            <p class="best-product__item_title">{{ product.title }}</p>
+            <NuxtLink :to="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">{{ product.name }}</NuxtLink>
             <p class="best-product__item_desc">{{ product.description }}</p>
           </div>
           <div class="best-product__item_container">
@@ -456,9 +460,11 @@ $x-big: 1829.98px;
       height: 48px;
     }
   }
+
   &__slide {
     height: calc(100% - 2px);
     width: calc(100% - 2px);
+
     &.active {
       border: 1px solid #EF7F1A;
     }

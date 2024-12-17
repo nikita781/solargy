@@ -8,21 +8,25 @@ $x-big: 1829.98px;
 .about_us {
   &__header {
     background-color: #EF7F1A;
-    padding: 50px 80px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    @media screen and (max-width: $large){
+    &_page {
+      max-width: 1440px;
+      margin: 0 auto;
       padding: 50px 80px;
-    }
-    @media screen and (max-width: $medium){
-      padding: 50px 50px;
-    }
-    @media screen and (max-width: $small){
-      grid-template-columns: 1fr;
-    }
-    @media screen and (max-width: $x-small){
-      padding: 40px 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      @media screen and (max-width: $large){
+        padding: 50px 80px;
+      }
+      @media screen and (max-width: $medium){
+        padding: 50px 50px;
+      }
+      @media screen and (max-width: $small){
+        grid-template-columns: 1fr;
+      }
+      @media screen and (max-width: $x-small){
+        padding: 40px 30px;
+      }
     }
     &_info {
       display: flex;
@@ -76,6 +80,8 @@ $x-big: 1829.98px;
     }
   }
   &__content {
+    max-width: 1440px;
+    margin: 0 auto;
     padding: 100px 80px;
     display: flex;
     flex-direction: column;
@@ -136,6 +142,8 @@ $x-big: 1829.98px;
     }
   }
   &__patents {
+    max-width: 1440px;
+    margin: 0 auto;
     padding: 0 80px 100px 80px;
     @media screen and (max-width: $large){
       padding: 0 80px 100px 80px;
@@ -231,6 +239,8 @@ $x-big: 1829.98px;
     }
   }
   &__team {
+    max-width: 1440px;
+    margin: 0 auto;
     padding: 0 80px 100px 80px;
     @media screen and (max-width: $large){
       padding: 0 80px 100px 80px;

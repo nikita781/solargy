@@ -78,87 +78,89 @@ onMounted(() => {
 
 <template>
   <footer class="footer">
-    <div class="footer__social">
-      <div class="footer__social_logo">
-        <IconsLogo color="#fff"/>
-        <p class="footer__social_info">{{ contacts.address }}</p>
-      </div>
-      <div class="footer__social_content">
-        <div class="footer__social_item">
-          <p class="footer__social_item_text">Мы в соцсетях</p>
-          <div class="footer__social_container">
-<!--            <IconsVk />-->
-<!--            <IconsTg />-->
-            <div
-                v-for="place in socials"
-                :key="place.id"
-            >
-              <NuxtLink :to="place.url">
-                <img :src="place.image_footer" alt="">
-              </NuxtLink>
+    <div class="footer_page">
+      <div class="footer__social">
+        <div class="footer__social_logo">
+          <IconsLogo color="#fff"/>
+          <p class="footer__social_info">{{ contacts.address }}</p>
+        </div>
+        <div class="footer__social_content">
+          <div class="footer__social_item">
+            <p class="footer__social_item_text">Мы в соцсетях</p>
+            <div class="footer__social_container">
+  <!--            <IconsVk />-->
+  <!--            <IconsTg />-->
+              <div
+                  v-for="place in socials"
+                  :key="place.id"
+              >
+                <NuxtLink :to="place.url">
+                  <img :src="place.image_footer" alt="">
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+          <div class="footer__social_item">
+            <p class="footer__social_item_text">Мы на маркетплейсах</p>
+            <div class="footer__social_container">
+  <!--            <IconsOzon />-->
+  <!--            <IconsYa />-->
+              <div
+                  v-for="place in marketplacesPlace"
+                  :key="place.id"
+              >
+                <NuxtLink :to="place.url">
+                  <img :src="place.image" alt="">
+                </NuxtLink>
+              </div>
             </div>
           </div>
         </div>
-        <div class="footer__social_item">
-          <p class="footer__social_item_text">Мы на маркетплейсах</p>
-          <div class="footer__social_container">
-<!--            <IconsOzon />-->
-<!--            <IconsYa />-->
-            <div
-                v-for="place in marketplacesPlace"
-                :key="place.id"
-            >
-              <NuxtLink :to="place.url">
-                <img :src="place.image" alt="">
-              </NuxtLink>
-            </div>
-          </div>
-        </div>
       </div>
-    </div>
-    <div class="footer__catalog">
-      <div class="footer__catalog_item">
-        <p class="footer__catalog_title">Покупателям</p>
-        <NuxtLink to="/stocks" class="footer__catalog_link">Акции</NuxtLink>
-        <NuxtLink to="/order" class="footer__catalog_link">Где купить?</NuxtLink>
-        <NuxtLink to="/delivery" class="footer__catalog_link">Доставка</NuxtLink>
-      </div>
-      <div class="footer__catalog_item">
-        <p class="footer__catalog_title">Навигация</p>
-        <NuxtLink to="/" class="footer__catalog_link">Главная</NuxtLink>
-        <NuxtLink to="/about_us" class="footer__catalog_link">О нас</NuxtLink>
-        <NuxtLink to="/catalog" class="footer__catalog_link">Каталог</NuxtLink>
-        <NuxtLink to="/contact" class="footer__catalog_link">Контакты</NuxtLink>
-      </div>
-      <div class="footer__catalog_item">
-        <p class="footer__catalog_title">Каталог</p>
-        <NuxtLink
-            v-for="tab in tabs"
-            :key="tab.id"
-            class="footer__catalog_link"
-            :to="`/catalog/${tab.id}-${generateSlug(tab.name)}/`"
-        >
-          {{ tab.name }}
-        </NuxtLink>
-      </div>
-      <div class="footer__catalog_phone">
+      <div class="footer__catalog">
         <div class="footer__catalog_item">
-          <p class="footer__catalog_title">Связаться с нами</p>
-          <NuxtLink :to="`tel:${contacts.phone}`" class="footer__catalog_link">{{ contacts.phone }}</NuxtLink>
-          <NuxtLink class="footer__catalog_link">{{ contacts.email }}</NuxtLink>
+          <p class="footer__catalog_title">Покупателям</p>
+          <NuxtLink to="/stocks" class="footer__catalog_link">Акции</NuxtLink>
+          <NuxtLink to="/order" class="footer__catalog_link">Где купить?</NuxtLink>
+          <NuxtLink to="/delivery" class="footer__catalog_link">Доставка</NuxtLink>
+        </div>
+        <div class="footer__catalog_item">
+          <p class="footer__catalog_title">Навигация</p>
+          <NuxtLink to="/" class="footer__catalog_link">Главная</NuxtLink>
+          <NuxtLink to="/about_us" class="footer__catalog_link">О нас</NuxtLink>
+          <NuxtLink to="/catalog" class="footer__catalog_link">Каталог</NuxtLink>
+          <NuxtLink to="/contact" class="footer__catalog_link">Контакты</NuxtLink>
+        </div>
+        <div class="footer__catalog_item">
+          <p class="footer__catalog_title">Каталог</p>
+          <NuxtLink
+              v-for="tab in tabs"
+              :key="tab.id"
+              class="footer__catalog_link"
+              :to="`/catalog/${tab.id}-${generateSlug(tab.name)}/`"
+          >
+            {{ tab.name }}
+          </NuxtLink>
+        </div>
+        <div class="footer__catalog_phone">
+          <div class="footer__catalog_item">
+            <p class="footer__catalog_title">Связаться с нами</p>
+            <NuxtLink :to="`tel:${contacts.phone}`" class="footer__catalog_link">{{ contacts.phone }}</NuxtLink>
+            <NuxtLink class="footer__catalog_link">{{ contacts.email }}</NuxtLink>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="footer__end">
-      <p class="footer__social_info">Производитель световодов, мансардных фонарей, зенитных фонарей SOLARGY ООО «Соларжи 18», 2024. Все права защищены.
-      </p>
-      <div class="footer__end_info">
-        <div class="footer__end_pict">
-          <IconsFond/>
-          <IconsMybusiness/>
-        </div>
-        <p class="footer__social_info">Сайт разработан в рамках национального проекта «Малое и среднее предпринимательство» при поддержке Центра «МОЙ БИЗНЕС»
+      <div class="footer__end">
+        <p class="footer__social_info">Производитель световодов, мансардных фонарей, зенитных фонарей SOLARGY ООО «Соларжи 18», 2024. Все права защищены.
         </p>
+        <div class="footer__end_info">
+          <div class="footer__end_pict">
+            <IconsFond/>
+            <IconsMybusiness/>
+          </div>
+          <p class="footer__social_info">Сайт разработан в рамках национального проекта «Малое и среднее предпринимательство» при поддержке Центра «МОЙ БИЗНЕС»
+          </p>
+        </div>
       </div>
     </div>
   </footer>

@@ -65,7 +65,7 @@ const sliderStyle = computed(() => {
 });
 
 const nameUser = ref('');
-const phone = ref('');
+const phone = ref('+7 ');
 const comment = ref('');
 
 const addSuppurt = async () => {
@@ -86,6 +86,22 @@ const reset = () => {
   nameUser.value = '';
   phone.value = '';
   comment.value = '';
+};
+
+const onInput = (event) => {
+  let input = event.target.value.replace(/\D/g, '');
+
+  if (!input.startsWith('7')) {
+    input = '7' + input.slice(1);
+  }
+
+  if (input.length > 11) input = input.slice(0, 11);
+
+  phone.value = input.replace(
+      /^(\d{1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})$/,
+      (_, p1, p2, p3, p4, p5) =>
+          `+${p1} ${p2 ? '(' + p2 : ''}${p3 ? ') ' + p3 : ''}${p4 ? '-' + p4 : ''}${p5 ? '-' + p5 : ''}`
+  );
 };
 
 onMounted(async () => {
@@ -173,7 +189,7 @@ onMounted(async () => {
               <p class="questions__form_name">Ваше имя</p>
               <input class="questions__form_input" type="text" v-model="nameUser" placeholder="Введите имя">
               <p class="questions__form_name">Ваш телефон</p>
-              <input class="questions__form_input" type="number" v-model="phone" placeholder="Введите телефон">
+              <input class="questions__form_input" type="text" @input="onInput"  v-model="phone" placeholder="Введите телефон">
               <p class="questions__form_name">Комментарий</p>
               <textarea style="min-height: 152px" class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий"></textarea>
             </div>
