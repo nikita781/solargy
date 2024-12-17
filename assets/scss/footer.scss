@@ -7,6 +7,7 @@ $big: 1592.98px;
 $x-big: 1829.98px;
 .footer {
   background-color: #616161;
+  flex: 0 0 auto;
   &_page {
     max-width: 1440px;
     margin: 0 auto;
@@ -129,18 +130,18 @@ $x-big: 1829.98px;
   }
   &__end {
     margin-top: 6px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    justify-content: space-between;
     align-items: end;
-    gap: 230px;
+    gap: 80px;
     @media screen and (max-width: $x-large) {
-      gap: 150px;
+      gap: 50px;
     }
     @media screen and (max-width: $large) {
       gap: 20px;
     }
     @media screen and (max-width: $medium) {
-      grid-template-columns: 1fr;
+      flex-direction: column;
     }
     @media screen and (max-width: $x-small) {
       font-size: 12px;
@@ -164,6 +165,15 @@ $x-big: 1829.98px;
         @media screen and (max-width: $x-small) {
           transform: scale(0.7);
         }
+      }
+    }
+    &_skb {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      white-space: nowrap;
+      @media screen and (max-width: $medium) {
+        width: 100%;
       }
     }
   }

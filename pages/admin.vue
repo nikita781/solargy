@@ -10,12 +10,42 @@ const activeTab = ref("Главная");
 
 const isAuthenticated = ref(false);
 
+onMounted(async () => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    isAuthenticated.value = true;
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    await fetchMainBanners();
+    await fetchSubBanners();
+    await fetchAllProducts();
+    await fetchCategory();
+    await fetchOptions();
+    await fetchAbout_usBlock();
+    await fetchPatents();
+    await fetchTeams();
+    await fetchContact();
+    await fetchCompanies();
+    await fetchPromo();
+    await fetchStocks();
+    await fetchPlace();
+    await fetchDelivery();
+    await fetchSocials();
+  }
+});
+const exitAdmin = () => {
+  localStorage.removeItem('authToken');
+  isAuthenticated.value = false;
+}
+
 const fetchAdmin = async () => {
   try {
     await axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', {withCredentials: true});
     const response = await axios.post(`/login?email=${nameUser.value}&password=${passwordUser.value}`, {withCredentials: true});
     result.value = response.data;
     isAuthenticated.value = true;
+
+    localStorage.setItem('authToken', result.value.token);
 
     await fetchMainBanners();
     await fetchSubBanners();
@@ -68,11 +98,7 @@ const handleFileChangeMainBanner = (event) => {
 };
 const fetchAllProducts = async () => {
   try {
-    const response = await axios.get('/all-products', {
-      headers: {
-        'Authorization': `Bearer ${result.value.token}`,
-      },
-    });
+    const response = await axios.get('/all-products');
     allProducts.value = response.data;
   } catch (error) {
     console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
@@ -91,7 +117,7 @@ const createMainBanners = async () => {
 
     await axios.post(`/main-banners`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -115,7 +141,7 @@ const updateMainBanners = async () => {
     }
     await axios.post(`/main-banners/${currentBannerId.value}?_method=PATCH`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -137,7 +163,7 @@ const deleteMainBanners = async (idBanner) => {
   try {
     await axios.delete(`/main-banners/${idBanner}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchMainBanners();
@@ -190,7 +216,7 @@ const createSubBanner = async () => {
 
     await axios.post(`/sub-banners`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -212,7 +238,7 @@ const updateSubBanners = async () => {
     }
     await axios.post(`/sub-banners/${currentSliderId.value}?_method=PATCH`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -234,7 +260,7 @@ const deleteSubBanners = async (idBanner) => {
   try {
     await axios.delete(`/sub-banners/${idBanner}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchSubBanners();
@@ -287,7 +313,7 @@ const createCategory = async () => {
 
     await axios.post(`/categories`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -340,7 +366,7 @@ const updateCategory = async () => {
     }
     await axios.post(`/categories/${currentCategoryId.value}?_method=PATCH`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -369,7 +395,7 @@ const deleteCategory = async (idCategory) => {
   try {
     await axios.delete(`/categories/${idCategory}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchCategory();
@@ -393,7 +419,7 @@ const createOptions = async () => {
 
     await axios.post(`/options`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchOptions();
@@ -409,7 +435,7 @@ const updateOptions = async () => {
 
     await axios.post(`/options/${currentOptionsId.value}?_method=PATCH`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchOptions();
@@ -430,7 +456,7 @@ const deleteOptions = async (idOptions) => {
   try {
     await axios.delete(`/options/${idOptions}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchOptions();
@@ -473,7 +499,7 @@ const createOptionValue = async () => {
 
     await axios.post(`/options/${optionId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -495,7 +521,7 @@ const updateOptionValue = async () => {
 
     await axios.post(`/options/${optionId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -509,7 +535,7 @@ const deleteOptionValue = async (idOptions, idValue) => {
   try {
     await axios.delete(`/options/${idOptions}/values/${idValue}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchOptions();
@@ -597,7 +623,7 @@ const fetchValueByOption = async (optionId) => {
   try {
     const response = await axios.get(`/options/${optionId}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     idByOption.value = response.data.id;
@@ -614,7 +640,7 @@ const createProductOptionValue = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchProductById(currentProductId.value);
@@ -642,7 +668,7 @@ const createProduct = async () => {
 
     await axios.post(`/products`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchAllProducts();
@@ -667,7 +693,7 @@ const updateProduct = async () => {
 
     await axios.post(`/products/${currentProductId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchAllProducts();
@@ -698,7 +724,7 @@ const fetchProductById = async (productId) => {
   try {
     const response = await axios.get(`/products/${productId}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     oneProd.value = response.data;
@@ -710,7 +736,7 @@ const deleteProductPhoto = async (idValue) => {
   try {
     await axios.delete(`/productPhoto/${idValue}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchProductById(currentProductId.value);
@@ -844,7 +870,7 @@ const addProductPhoto = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -887,14 +913,16 @@ const updateProductPhoto = async () => {
   try {
     const formData = new FormData();
     formData.append('photos[0][id]', currentProductPhotoId.value);
-    formData.append('photos[0][order]', productOrder.value);
+    if (productOrder.value) {
+      formData.append('photos[0][order]', productOrder.value);
+    }
     if (productPhoto.value) {
       formData.append('photos[0][photo]', productPhoto.value);
     }
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -927,7 +955,7 @@ const addProductOption = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -941,7 +969,7 @@ const fetchOptionsById = async (optionId) => {
   try {
     const response = await axios.get(`/options/${optionId}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     return response.data.values[0].id;
@@ -954,7 +982,7 @@ const deleteProductOption = async (idOption) => {
     // const valueId = await fetchOptionsById(idOption);
     await axios.delete(`/products/${oneProd.value.id}/values/${idOption}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchProductById(currentProductId.value);
@@ -1001,7 +1029,7 @@ const addProductPropertie = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1038,7 +1066,7 @@ const updateProductPropertie = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1078,7 +1106,7 @@ const deleteProductPropertie = async (idPropertie) => {
   try {
     await axios.delete(`/productProperties/${idPropertie}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchProductById(currentProductId.value);
@@ -1109,7 +1137,7 @@ const fetchAbout_usBlock = async () => {
   try {
     const response = await axios.get(`/pages/2`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     about_usBlock.value = response.data;
@@ -1132,7 +1160,7 @@ const createAbout_usBlock = async () => {
 
     await axios.post(`/pages/2?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1157,7 +1185,7 @@ const updateAbout_usBlock = async () => {
 
     await axios.post(`/pages/2?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1171,7 +1199,7 @@ const deleteAbout_usBlock = async (idBlock) => {
   try {
     await axios.delete(`/pages/${idBlock}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchAbout_usBlock();
@@ -1206,7 +1234,7 @@ const fetchPatents = async () => {
   try {
     const response = await axios.get(`/patents`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     patents.value = response.data.data;
@@ -1235,7 +1263,7 @@ const createProductPatent = async () => {
 
     await axios.post(`/patents`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1252,7 +1280,7 @@ const deletePatents = async (idPatent) => {
   try {
     await axios.delete(`/patents/${idPatent}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchPatents();
@@ -1276,7 +1304,7 @@ const fetchTeams = async () => {
   try {
     const response = await axios.get(`/teams`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     teams.value = response.data;
@@ -1301,7 +1329,7 @@ const createTeams = async () => {
 
     await axios.post(`/teams`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1329,7 +1357,7 @@ const updateTeams = async () => {
 
     await axios.post(`/teams/${currentTeamId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1349,7 +1377,7 @@ const deleteTeam = async (idTeam) => {
   try {
     await axios.delete(`/teams/${idTeam}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchTeams();
@@ -1389,7 +1417,7 @@ const fetchContact = async () => {
   try {
     const response = await axios.get(`/contacts`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     contacts.value = response.data;
@@ -1411,7 +1439,7 @@ const updateContact = async () => {
 
     await axios.post(`/contacts/1?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchContact();
@@ -1441,7 +1469,7 @@ const fetchCompanies = async () => {
   try {
     const response = await axios.get(`/companies`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     companies.value = response.data;
@@ -1466,7 +1494,7 @@ const createCompany = async () => {
 
     await axios.post(`/companies`, data, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1498,7 +1526,7 @@ const updateCompany = async () => {
 
     await axios.post(`/companies/${currentCompanyId.value}?_method=patch`, data, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1512,7 +1540,7 @@ const deleteCompany = async (idCompany) => {
   try {
     await axios.delete(`/companies/${idCompany}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchCompanies();
@@ -1550,7 +1578,7 @@ const createCustom = async () => {
 
     await axios.post(`/companies/${currentCompanyId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1570,7 +1598,7 @@ const updateCustom = async () => {
 
     await axios.post(`/companies/${currentCompanyCustomId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1600,7 +1628,7 @@ const deleteCustomDetails = async (idCustom) => {
   try {
     await axios.delete(`/custom-details/${idCustom}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchCompanies();
@@ -1624,7 +1652,7 @@ const fetchPromo = async () => {
   try {
     const response = await axios.get(`/pages/1`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     promo.value = response.data;
@@ -1650,7 +1678,7 @@ const createPromoBlock = async () => {
 
     await axios.post(`/pages/1?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1675,7 +1703,7 @@ const updatePromoBlock = async () => {
 
     await axios.post(`/pages/1?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1689,7 +1717,7 @@ const deletePromoBlock = async (idBlock) => {
   try {
     await axios.delete(`/pages/${idBlock}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchPromo();
@@ -1728,7 +1756,7 @@ const fetchStocks = async () => {
   try {
     const response = await axios.get(`/promos`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     stocks.value = response.data;
@@ -1760,7 +1788,7 @@ const createStock = async () => {
 
     await axios.post(`/promos`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1790,7 +1818,7 @@ const updateStock = async () => {
 
     await axios.post(`/promos/${currentStockId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1811,7 +1839,7 @@ const deleteStock = async (idStock) => {
   try {
     await axios.delete(`/promos/${idStock}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchStocks();
@@ -1860,7 +1888,7 @@ const fetchPlace = async () => {
   try {
     const response = await axios.get(`/purchase-place`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     place.value = response.data;
@@ -1890,7 +1918,7 @@ const createPlace = async () => {
 
     await axios.post(`/purchase-place`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1918,7 +1946,7 @@ const updatePlace = async () => {
 
     await axios.post(`/purchase-place/${currentPlaceId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1932,7 +1960,7 @@ const deletePlace = async (idPlace) => {
   try {
     await axios.delete(`/purchase-place/${idPlace}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchPlace();
@@ -1972,7 +2000,7 @@ const fetchDelivery = async () => {
   try {
     const response = await axios.get(`/pages/3`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     delivery.value = response.data;
@@ -1998,7 +2026,7 @@ const createDelivery = async () => {
 
     await axios.post(`/pages/3?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2023,7 +2051,7 @@ const updateDelivery = async () => {
 
     await axios.post(`/pages/3?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2041,7 +2069,7 @@ const deleteDelivery = async (idBlock) => {
   try {
     await axios.delete(`/pages/${idBlock}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchDelivery();
@@ -2081,7 +2109,7 @@ const fetchSocials = async () => {
   try {
     const response = await axios.get(`/socials`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     socials.value = response.data;
@@ -2111,7 +2139,7 @@ const createSocial = async () => {
 
     await axios.post(`/socials`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2135,7 +2163,7 @@ const updateSocial = async () => {
 
     await axios.post(`/socials/${currentSocialId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2149,7 +2177,7 @@ const deleteSocial = async (idSocial) => {
   try {
     await axios.delete(`/socials/${idSocial}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchSocials();
@@ -2256,6 +2284,7 @@ const resetSocial = () => {
         >
           Соц сети
         </p>
+        <button class="main_btn" @click="exitAdmin">Выйти</button>
       </div>
       <div class="admin-panel__content" v-if="activeTab === 'Главная'">
         <h2>Добро пожаловать!</h2>

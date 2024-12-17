@@ -7,6 +7,10 @@ const basketStore = useBasketStore();
 const basketItems = computed(() => basketStore.items);
 const nameUser = ref("");
 const phoneUser = ref("");
+const errors = ref({
+  name: false,
+  phone: false,
+});
 
 const totalBasketPrice = computed(() =>
     basketStore.items.reduce((total, item) => total + item.price * item.quantity, 0)
@@ -29,6 +33,22 @@ const quantityMinus = (itemId) => {
   }
 };
 
+const onInput = (event) => {
+  let input = event.target.value.replace(/\D/g, '');
+
+  if (!input.startsWith('7')) {
+    input = '7' + input.slice(1);
+  }
+
+  if (input.length > 11) input = input.slice(0, 11);
+
+  phoneUser.value = input.replace(
+      /^(\d{1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})$/,
+      (_, p1, p2, p3, p4, p5) =>
+          `+${p1} ${p2 ? '(' + p2 : ''}${p3 ? ') ' + p3 : ''}${p4 ? '-' + p4 : ''}${p5 ? '-' + p5 : ''}`
+  );
+};
+
 const application = ref(false);
 const toggleApplication = () => {
   if (basketStore.items.length === 0) {
@@ -40,6 +60,10 @@ const toggleApplication = () => {
 
 const formOpen = ref(false);
 const toggleFormOpen = () => {
+  errors.value.name = false;
+  errors.value.phone = false;
+  errors.value.name = !nameUser.value.trim();
+  errors.value.phone = phoneUser.value.replace(/\D/g, '').length !== 11;
   if (!nameUser.value.trim() || !phoneUser.value.trim()) {
     return;
   }
@@ -116,6 +140,13 @@ const bestProduct = ref([
               :key="index"
           >
             <div class="basket__item_content">
+              <div class="basket__item_characteristic-phone">
+                <div v-for="(option, index) in item.options" :key="index">
+                  <p class="basket__item_inf">
+                    {{ option.name }}: <span>{{ option.values.value }}</span>
+                  </p>
+                </div>
+              </div>
               <img :src="item.photo" alt="">
               <div class="basket__item_info">
                 <p class="basket__item_title">{{ item.name }}</p>
@@ -157,11 +188,11 @@ const bestProduct = ref([
           <div class="basket__form_content">
             <div class="basket__form_input-cont">
               <p class="basket__form_input-title">Ваше имя <span>*</span></p>
-              <input type="text" class="basket__form_input" v-model="nameUser" placeholder="Введите ФИО">
+              <input type="text" :class="{ error: errors.name }" class="basket__form_input" v-model="nameUser" placeholder="Введите ФИО">
             </div>
             <div class="basket__form_input-cont">
               <p class="basket__form_input-title">Ваш телефон <span>*</span></p>
-              <input type="text" class="basket__form_input" v-model="phoneUser" placeholder="Введите номер телефона">
+              <input type="text" :class="{ error: errors.phone }" @input="onInput" class="basket__form_input" v-model="phoneUser" placeholder="Введите номер телефона">
             </div>
           </div>
         </div>

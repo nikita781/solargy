@@ -68,6 +68,16 @@ $x-big: 1829.98px;
         border-radius: 8px;
         object-fit: cover;
       }
+      @media screen and (max-width: $x-small) {
+        flex-direction: column-reverse;
+        align-items: flex-start;
+        img {
+          width: 150px;
+          height: 150px;
+          border-radius: 8px;
+          object-fit: cover;
+        }
+      }
     }
     &_info {
       display: flex;
@@ -85,6 +95,17 @@ $x-big: 1829.98px;
       display: flex;
       flex-direction: column;
       gap: 11px;
+      @media screen and (max-width: $x-small) {
+        display: none;
+      }
+      &-phone {
+        display: none;
+        flex-direction: column;
+        gap: 11px;
+        @media screen and (max-width: $x-small) {
+          display: flex;
+        }
+      }
     }
     &_inf {
       color: #cccccc;
@@ -167,6 +188,9 @@ $x-big: 1829.98px;
       &:focus {
         border: 1px solid #EF7F1A;
         color: #171717;
+      }
+      &.error {
+        border-color: red;
       }
       &-cont {
         display: flex;
