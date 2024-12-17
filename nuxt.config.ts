@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['nuxt-swiper', "@qirolab/nuxt-sanctum-authentication", '@pinia/nuxt'],
   laravelSanctum: {
-    apiUrl: "http://127.0.0.1:8000/",
+    apiUrl: "https://api.solargy.shop/",
   },
   app: {
     head: {

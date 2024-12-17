@@ -12,7 +12,7 @@ const isAuthenticated = ref(false);
 
 const fetchAdmin = async () => {
   try {
-    await axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', {withCredentials: true});
+    await axios.get('https://api.solargy.shop/sanctum/csrf-cookie', {withCredentials: true});
     const response = await axios.post(`/login?email=${nameUser.value}&password=${passwordUser.value}`, {withCredentials: true});
     result.value = response.data;
     isAuthenticated.value = true;

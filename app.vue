@@ -18,7 +18,7 @@ import axios from 'axios';
 //  user.value = data;
 //}
 
-axios.defaults.baseURL = 'http://api.solargy.shop/api';
+axios.defaults.baseURL = 'https://api.solargy.shop/api';
 // axios.defaults.withCredentials = true;
 </script>
 
