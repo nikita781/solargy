@@ -1,9 +1,15 @@
 <script setup>
-import {nextTick, ref} from 'vue';
+import {computed, nextTick, ref} from 'vue';
 import {useRoute} from 'vue-router'
 import axios from "axios";
+import {useBasketStore} from "~/stores/basket.js";
 
 const route = useRoute()
+const basketStore = useBasketStore();
+const basketItems = computed(() => basketStore.items);
+const totalBasketQuantity = computed(() =>
+    basketStore.items.reduce((total, item) => total + item.quantity, 0)
+);
 
 const submenuRefs = ref(new Map());
 
@@ -94,7 +100,7 @@ const closeSearch = () => {
 }
 
 watch(isMenuOpen, (newValue) => {
-  const container = document.querySelector('.container');
+  const container = document.querySelector('.container-content');
   if (container) {
     if (newValue) {
       container.classList.add('active');
@@ -104,7 +110,7 @@ watch(isMenuOpen, (newValue) => {
   }
 });
 watch(isSearchOpen, (newValue) => {
-  const container = document.querySelector('.container');
+  const container = document.querySelector('.container-content');
   if (container) {
     if (newValue) {
       container.classList.add('active');
@@ -159,7 +165,21 @@ watch(
 );
 
 function generateSlug(name) {
-  return name
+  const cyrillicToLatinMap = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
+    и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+    с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch',
+    ы: 'y', э: 'e', ю: 'yu', я: 'ya', ъ: '', ь: ''
+  };
+
+  const transliterate = (str) => {
+    return str
+        .split('')
+        .map(char => cyrillicToLatinMap[char] || char)
+        .join('');
+  };
+
+  return transliterate(name)
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
@@ -176,15 +196,23 @@ onMounted(() => {
   fetchCategory();
   fetchContact();
   fetchTabs();
-  const container = document.querySelector('.container');
-  if (container) {
-    container.addEventListener('click', handleContainerClick);
+  // const container = document.querySelector('.container');
+  // if (container) {
+  //   container.addEventListener('click', handleContainerClick);
+  // }
+  const containerContent = document.querySelector('.container-content');
+  if (containerContent) {
+    containerContent.addEventListener('mouseenter', handleContainerClick);
   }
 });
 onBeforeUnmount(() => {
-  const container = document.querySelector('.container');
-  if (container) {
-    container.removeEventListener('click', handleContainerClick);
+  // const container = document.querySelector('.container');
+  // if (container) {
+  //   container.removeEventListener('click', handleContainerClick);
+  // }
+  const containerContent = document.querySelector('.container-content');
+  if (containerContent) {
+    containerContent.addEventListener('mouseenter', handleContainerClick);
   }
 });
 </script>
@@ -198,10 +226,10 @@ onBeforeUnmount(() => {
           <NuxtLink to="/order" :class="{ active: route.name === 'order' }">Где купить?</NuxtLink>
           <NuxtLink to="/delivery" :class="{ active: route.name === 'delivery' }">Доставка</NuxtLink>
         </div>
-        <a class="header__info_container-phone">
+        <NuxtLink :to="`tel:${contacts.phone}`" class="header__info_container-phone">
           <IconsPhone/>
           <p>{{ contacts.phone }}</p>
-        </a>
+        </NuxtLink>
       </div>
       <div class="header__main" v-if="!isSearch">
         <NuxtLink to="/">
@@ -234,8 +262,9 @@ onBeforeUnmount(() => {
         </nav>
         <div class="header__main_menu">
           <IconsSearch @click="toggleMenuSearch"/>
-          <NuxtLink to="/basket">
+          <NuxtLink to="/basket" class="header__main_menu_basket">
             <IconsBasket :class="{ active: route.name === 'basket' }"/>
+            <div v-if="totalBasketQuantity > 0" class="header__main_menu_basket_quantity">{{totalBasketQuantity}}</div>
           </NuxtLink>
           <IconsMenu class="header__main_menu-btn" @click="openMenu"/>
         </div>
@@ -346,6 +375,27 @@ onBeforeUnmount(() => {
                 block.name
               }}
             </NuxtLink>
+            <div v-for="(cat, menuIndex) in block.children" :key="menuIndex"
+                 class="header__menu_item-container">
+              <div class="header__menu_item-arrow">
+                <NuxtLink :to="`/catalog/${cat.id}-${generateSlug(cat.name)}/`"
+                          class="header__menu_item">
+                  {{ cat.name }}
+                </NuxtLink>
+                <IconsArrow v-if="cat.products.length" color="#EF7F1A" @click="toggleSubmenu(blockIndex, menuIndex)"/>
+              </div>
+              <div
+                  class="header__menu_subitem-container"
+                  :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"
+              >
+                <div v-for="(subItem, subIndex) in cat.products" :key="subIndex" class="header__menu_subitem">
+                  <NuxtLink :to="`/card/${subItem.id}-${generateSlug(subItem.name)}/`"
+                            class="header__menu_item">
+                    {{ subItem.name }}
+                  </NuxtLink>
+                </div>
+              </div>
+            </div>
             <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
               <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
                 <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">
@@ -353,14 +403,6 @@ onBeforeUnmount(() => {
                 </NuxtLink>
                 <!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
               </div>
-              <!--            <div-->
-              <!--                class="header__menu_subitem-container"-->
-              <!--                :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
-              <!--            >-->
-              <!--              <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
-              <!--                {{ subItem }}-->
-              <!--              </p>-->
-              <!--            </div>-->
             </div>
           </div>
         </div>

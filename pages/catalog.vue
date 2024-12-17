@@ -6,16 +6,46 @@ import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const tabs = ref([]);
+const allCategories = ref([]);
 const activeTab = ref(0);
 const products = ref([]);
 const page = ref(1);
 const totalPages = ref(0);
 const itemsPerPage = 8;
 
+const flattenCategoriesWithChildren = (categories) => {
+  const result = [];
+
+  const traverse = (categoryList) => {
+    categoryList.forEach((category) => {
+      result.push({
+        id: category.id,
+        name: category.name,
+        parent_id: category.parent_id,
+        level: category.level,
+      });
+
+      if (category.children && category.children.length > 0) {
+        traverse(category.children);
+      }
+    });
+  };
+
+  traverse(categories);
+  return result;
+};
+
 const fetchTabs = async () => {
   try {
     const response = await axios.get('/categories');
-    tabs.value = [{ id: 0, name: 'Все' }, ...response.data];
+    const categories = response.data;
+
+    allCategories.value = flattenCategoriesWithChildren(categories);
+
+    tabs.value = [
+      { id: 0, name: 'Все' },
+      ...allCategories.value,
+    ];
   } catch (error) {
     console.error('Ошибка загрузки категорий:', error.response?.data || error);
   }
@@ -45,13 +75,26 @@ watch(() => route.fullPath, () => {
 });
 
 function generateSlug(name) {
-  return name
+  const cyrillicToLatinMap = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
+    и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+    с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch',
+    ы: 'y', э: 'e', ю: 'yu', я: 'ya', ъ: '', ь: ''
+  };
+
+  const transliterate = (str) => {
+    return str
+        .split('')
+        .map(char => cyrillicToLatinMap[char] || char)
+        .join('');
+  };
+
+  return transliterate(name)
       .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
       .trim();
 }
-
 const changeTab = (tabId) => {
   activeTab.value = tabId;
   page.value = 1;
