@@ -175,6 +175,19 @@ $x-big: 1829.98px;
       @media screen and (max-width: $medium) {
         width: 100%;
       }
+      svg {
+        path {
+          transition: 0.3s;
+        }
+      }
+      &:hover {
+        svg {
+          path {
+            fill: red;
+            transition: 0.3s;
+          }
+        }
+      }
     }
   }
 }

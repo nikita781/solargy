@@ -16,6 +16,9 @@ a {
 }
 .container {
   height: 100vh;
+  &.active {
+    overflow: hidden;
+  }
   &-content {
     height: calc(100% - 108px);
     display: flex;

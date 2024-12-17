@@ -152,11 +152,11 @@ onMounted(() => {
       </div>
       <div class="footer__end">
         <p class="footer__social_info">Производитель световодов, мансардных фонарей, зенитных фонарей SOLARGY ООО «Соларжи 18», 2024. Все права защищены.</p>
-        <div class="footer__social_info footer__end_skb">
+        <a href="https://skb-44.ru/" target="_blank" class="footer__social_info footer__end_skb">
           Сделано с
           <IconsHeart/>
           в СКБ-44
-        </div>
+        </a>
         <div class="footer__end_info">
           <div class="footer__end_pict">
             <IconsFond/>

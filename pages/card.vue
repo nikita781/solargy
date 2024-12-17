@@ -1,6 +1,6 @@
 <script setup>
 import {Swiper, SwiperSlide} from "swiper/vue";
-import {Navigation, Pagination} from "swiper";
+import {Mousewheel, Navigation, Pagination} from "swiper";
 import {useRoute, useRouter} from 'vue-router';
 import {ref, reactive, onMounted, nextTick} from "vue";
 import 'swiper/css';
@@ -118,7 +118,7 @@ const quantityMinus = () => {
 const selectedSlide = ref(null);
 
 const swiperConfig = reactive({
-  modules: [Navigation, Pagination],
+  modules: [Navigation, Pagination, Mousewheel],
   spaceBetween: 16,
   slidesPerView: 4,
   slidesPerGroup: 1,
@@ -126,6 +126,10 @@ const swiperConfig = reactive({
   loop: false,
   watchSlidesProgress: true,
   direction: "vertical",
+  mousewheel: {
+    forceToAxis: true,
+    sensitivity: 1,
+  },
   navigation: {
     nextEl: '.card__main_swiper-bottom',
     prevEl: '.card__main_swiper-top',

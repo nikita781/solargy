@@ -109,6 +109,14 @@ watch(isMenuOpen, (newValue) => {
       container.classList.remove('active');
     }
   }
+  const containerMain = document.querySelector('.container');
+  if (containerMain) {
+    if (newValue) {
+      containerMain.classList.add('active');
+    } else {
+      containerMain.classList.remove('active');
+    }
+  }
 });
 watch(isSearchOpen, (newValue) => {
   const container = document.querySelector('.container-content');
@@ -301,26 +309,38 @@ onBeforeUnmount(() => {
                   >
                     <img :src="block.photo" alt=""/>
                     <div class="header__menu_info">
-                      <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">
-                        {{ block.name }}
+                      <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{
+                          block.name
+                        }}
                       </NuxtLink>
-                      <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex"
+                      <div v-for="(cat, menuIndex) in block.children" :key="menuIndex"
                            class="header__menu_item-container">
-                        <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
-                          <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`"
+                        <div class="header__menu_item-arrow">
+                          <NuxtLink :to="`/catalog/${cat.id}-${generateSlug(cat.name)}/`"
                                     class="header__menu_item">
+                            {{ cat.name }}
+                          </NuxtLink>
+                          <IconsArrow v-if="cat.products.length" color="#EF7F1A" @click="toggleSubmenu(blockIndex, menuIndex)"/>
+                        </div>
+                        <div
+                            class="header__menu_subitem-container"
+                            :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"
+                        >
+                          <div v-for="(subItem, subIndex) in cat.products" :key="subIndex" class="header__menu_subitem">
+                            <NuxtLink :to="`/card/${subItem.id}-${generateSlug(subItem.name)}/`"
+                                      class="header__menu_item">
+                              {{ subItem.name }}
+                            </NuxtLink>
+                          </div>
+                        </div>
+                      </div>
+                      <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
+                        <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
+                          <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">
                             {{ menuItem.name }}
                           </NuxtLink>
-                          <!--                      <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
+                          <!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
                         </div>
-                        <!--                    <div-->
-                        <!--                        class="header__menu_subitem-container"-->
-                        <!--                        :style="{ display: submenuRefs.get(`${blockIndex}-${menuIndex}`) ? 'flex' : 'none' }"-->
-                        <!--                    >-->
-                        <!--                      <p v-for="(subItem, subIndex) in menuItem.subitems" :key="subIndex" class="header__menu_subitem">-->
-                        <!--                        {{ subItem }}-->
-                        <!--                      </p>-->
-                        <!--                    </div>-->
                       </div>
                     </div>
                   </div>
