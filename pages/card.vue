@@ -84,21 +84,16 @@ const closeMenu = () => {
 };
 
 const selectItem = (item) => {
-  // Обновляем выбранную опцию для конкретного товара
   const optionIndex = product.value.options.findIndex(option => option.id === currentSelect.value.id);
 
   if (optionIndex >= 0) {
-    // Обновляем values для конкретной опции товара
     product.value.options[optionIndex].values = [item, ...product.value.options[optionIndex].values.filter(i => i.id !== item.id)];
   }
-
-  // Обновляем selectedOptions
   selectedOptions.value[product.value.options[currentIndex.value].id] = {
     name: product.value.options[currentIndex.value].name,
     values: item,
   };
 
-  // Обновляем текущий выбранный элемент
   currentSelectedId.value = item.id;
 
   closeMenu();
@@ -140,6 +135,8 @@ const tabs = [
   {title: 'Характеристики'},
   {title: 'Требования и рекомендации к монтажу'},
 ];
+
+const imgs = ref([]);
 
 const activeTab = ref(0);
 
@@ -192,6 +189,8 @@ watch(() => route.fullPath, async () => {
   await fetchProduct();
   await fetchCategory();
   await fetchProducts();
+  imgs.value = [];
+  imgs.value = product.value.photos.map(photo => photo.photo);
   selectedSlide.value = product.value?.photos[0];
   selectedOptions.value = {};
   product.value.options.forEach((option) => {
@@ -215,6 +214,8 @@ onMounted(async () => {
   await fetchProduct();
   await fetchCategory();
   await fetchProducts();
+  imgs.value = [];
+  imgs.value = product.value.photos.map(photo => photo.photo);
   selectedSlide.value = product.value?.photos[0];
   selectedOptions.value = {};
   product.value.options.forEach((option) => {
@@ -229,9 +230,17 @@ onMounted(async () => {
   });
 });
 
-const selectSlide = (slide) => {
+const indexRef = ref(0);
+const selectSlide = (slide, index) => {
   selectedSlide.value = slide;
+  indexRef.value = index;
 };
+
+const visibleRef = ref(false);
+const showImg = (index) => {
+  visibleRef.value = true;
+};
+const onHide = () => (visibleRef.value = false);
 
 const handleDownload = async (fileUrl, file_name) => {
   try {
@@ -286,7 +295,7 @@ const handleDownload = async (fileUrl, file_name) => {
                   <div
                       class="swiper__slide"
                       :style="{ 'background-image': `url(${slide.photo})` }"
-                      @click="selectSlide(slide)"
+                      @click="selectSlide(slide, index)"
 
                   ></div>
                 </SwiperSlide>
@@ -297,7 +306,14 @@ const handleDownload = async (fileUrl, file_name) => {
             </div>
           </div>
           <div class="card__main_img">
-            <img :src="selectedSlide?.photo" alt="Selected Image"/>
+            <img class="card__main_img-pict" :src="selectedSlide?.photo" alt="Selected Image" @click="() => showImg(selectedSlide?.photo)"/>
+            <VueEasyLightbox
+                :visible="visibleRef"
+                :imgs="imgs"
+                :index="indexRef"
+                @hide="onHide"
+                class="card__main_img-full"
+            />
           </div>
         </div>
         <div class="card__main_info">
@@ -363,22 +379,32 @@ const handleDownload = async (fileUrl, file_name) => {
         </div>
       </div>
     </div>
-    <div class="card__tabs">
+    <div
+        class="card__tabs"
+        v-if="product?.properties?.[0]"
+    >
       <div class="card__tabs_cont">
         <p
-            v-for="(tab, index) in tabs"
-            :key="index"
-            :class="['card__tabs_item', { active: activeTab === index }]"
-            @click="setActiveTab(index)"
+            class="card__tabs_item"
+            :class="{ active: activeTab === 0 }"
+            @click="setActiveTab(0)"
+            v-if="product?.properties?.[0]"
         >
-          {{ tab.title }}
+          Характеристики
+        </p>
+        <p
+            class="card__tabs_item"
+            :class="{ active: activeTab === 1 }"
+            @click="setActiveTab(1)"
+            v-if="product?.properties?.[1]"
+        >
+          Требования и рекомендации к монтажу
         </p>
         <div
             class="slider"
             :style="sliderStyle"
         ></div>
       </div>
-
       <div class="card__tabs_content">
         <div
             v-for="(property, index) in product.properties"
@@ -447,6 +473,9 @@ $large: 1199.98px;
 $x-large: 1399.98px;
 $big: 1592.98px;
 $x-big: 1829.98px;
+.vel-img {
+  object-fit: contain;
+}
 .swiper {
   margin-top: unset;
   width: 100%;

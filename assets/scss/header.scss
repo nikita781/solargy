@@ -228,9 +228,11 @@ $x-big: 1829.98px;
       svg {
         cursor: pointer;
         transition: 0.1s;
+        width: 24px;
+        height: 24px;
         @media screen and (max-width: $x-small){
-          width: 15px;
-          height: 15px;
+          width: 20px;
+          height: 20px;
         }
         &.active {
           path {

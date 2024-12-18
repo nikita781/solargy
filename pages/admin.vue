@@ -31,6 +31,8 @@ onMounted(async () => {
     await fetchPlace();
     await fetchDelivery();
     await fetchSocials();
+    await fetchEmails();
+    await fetchEmailTypes();
   }
 });
 const exitAdmin = () => {
@@ -62,6 +64,8 @@ const fetchAdmin = async () => {
     await fetchPlace();
     await fetchDelivery();
     await fetchSocials();
+    await fetchEmails();
+    await fetchEmailTypes();
 
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
@@ -147,6 +151,10 @@ const errors = ref({
   socialUrl: false,
   socialImage: false,
   socialImageFooter: false,
+
+  emailName: false,
+  emailNumber: false,
+  emailType: false,
 });
 
 //---------------------------------------------------------------------------------
@@ -198,7 +206,7 @@ const createMainBanners = async () => {
 
     await axios.post(`/main-banners`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -228,7 +236,7 @@ const updateMainBanners = async () => {
     }
     await axios.post(`/main-banners/${currentBannerId.value}?_method=PATCH`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -249,9 +257,7 @@ const fetchMainBanners = async () => {
 const deleteMainBanners = async (idBanner) => {
   try {
     await axios.delete(`/main-banners/${idBanner}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchMainBanners();
   } catch (error) {
@@ -315,7 +321,7 @@ const createSubBanner = async () => {
 
     await axios.post(`/sub-banners`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -339,7 +345,7 @@ const updateSubBanners = async () => {
     }
     await axios.post(`/sub-banners/${currentSliderId.value}?_method=PATCH`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -360,9 +366,7 @@ const fetchSubBanners = async () => {
 const deleteSubBanners = async (idBanner) => {
   try {
     await axios.delete(`/sub-banners/${idBanner}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchSubBanners();
   } catch (error) {
@@ -422,7 +426,7 @@ const createCategory = async () => {
 
     await axios.post(`/categories`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -477,7 +481,7 @@ const updateCategory = async () => {
     }
     await axios.post(`/categories/${currentCategoryId.value}?_method=PATCH`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -508,9 +512,7 @@ const resetCategory = () => {
 const deleteCategory = async (idCategory) => {
   try {
     await axios.delete(`/categories/${idCategory}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchCategory();
   } catch (error) {
@@ -534,9 +536,7 @@ const createOptions = async () => {
     formData.append('name', nameOptions.value);
 
     await axios.post(`/options`, formData, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchOptions();
     resetOptions();
@@ -552,9 +552,7 @@ const updateOptions = async () => {
     formData.append('name', nameOptions.value);
 
     await axios.post(`/options/${currentOptionsId.value}?_method=PATCH`, formData, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchOptions();
     resetOptions();
@@ -573,9 +571,7 @@ const fetchOptions = async () => {
 const deleteOptions = async (idOptions) => {
   try {
     await axios.delete(`/options/${idOptions}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchOptions();
   } catch (error) {
@@ -625,7 +621,7 @@ const createOptionValue = async () => {
 
     await axios.post(`/options/${optionId.value}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -651,7 +647,7 @@ const updateOptionValue = async () => {
 
     await axios.post(`/options/${optionId.value}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -664,9 +660,7 @@ const updateOptionValue = async () => {
 const deleteOptionValue = async (idOptions, idValue) => {
   try {
     await axios.delete(`/options/${idOptions}/values/${idValue}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchOptions();
   } catch (error) {
@@ -756,9 +750,7 @@ const currentProductPhotoId = ref(null)
 const fetchValueByOption = async (optionId) => {
   try {
     const response = await axios.get(`/options/${optionId}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     idByOption.value = response.data.id;
     valueByOption.value = response.data.values;
@@ -773,9 +765,7 @@ const createProductOptionValue = async () => {
     formData.append('options[0][values][0][id]', productOptionValue.value);
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchProductById(currentProductId.value);
     productOptionValue.value = '';
@@ -809,9 +799,7 @@ const createProduct = async () => {
     formData.append('is_top', topProd.value);
 
     await axios.post(`/products`, formData, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchAllProducts();
     resetProduct();
@@ -842,9 +830,7 @@ const updateProduct = async () => {
     formData.append('is_top', topProd.value);
 
     await axios.post(`/products/${currentProductId.value}?_method=patch`, formData, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchAllProducts();
     resetProduct();
@@ -881,9 +867,7 @@ const resetProduct = () => {
 const fetchProductById = async (productId) => {
   try {
     const response = await axios.get(`/products/${productId}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     oneProd.value = response.data;
   } catch (error) {
@@ -893,9 +877,7 @@ const fetchProductById = async (productId) => {
 const deleteProductPhoto = async (idValue) => {
   try {
     await axios.delete(`/productPhoto/${idValue}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchProductById(currentProductId.value);
   } catch (error) {
@@ -1028,7 +1010,7 @@ const addProductPhoto = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1080,7 +1062,7 @@ const updateProductPhoto = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1109,11 +1091,10 @@ const addProductOption = async () => {
     const valueId = await fetchOptionsById(productOption.value);
     const formData = new FormData();
     formData.append('options[0][id]', productOption.value);
-    formData.append('options[0][values][0][id]', valueId);
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1126,9 +1107,7 @@ const addProductOption = async () => {
 const fetchOptionsById = async (optionId) => {
   try {
     const response = await axios.get(`/options/${optionId}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     return response.data.values[0].id;
   } catch (error) {
@@ -1139,9 +1118,7 @@ const deleteProductOption = async (idOption) => {
   try {
     // const valueId = await fetchOptionsById(idOption);
     await axios.delete(`/products/${oneProd.value.id}/values/${idOption}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchProductById(currentProductId.value);
   } catch (error) {
@@ -1187,7 +1164,7 @@ const addProductPropertie = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1224,7 +1201,7 @@ const updateProductPropertie = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1263,9 +1240,7 @@ const resetProductPropertie = () => {
 const deleteProductPropertie = async (idPropertie) => {
   try {
     await axios.delete(`/productProperties/${idPropertie}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchProductById(currentProductId.value);
   } catch (error) {
@@ -1294,9 +1269,7 @@ const handleExportHtmlAbout_usBlock = (html) => {
 const fetchAbout_usBlock = async () => {
   try {
     const response = await axios.get(`/pages/2`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     about_usBlock.value = response.data;
   } catch (error) {
@@ -1324,7 +1297,7 @@ const createAbout_usBlock = async () => {
 
     await axios.post(`/pages/2?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1353,7 +1326,7 @@ const updateAbout_usBlock = async () => {
 
     await axios.post(`/pages/2?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1366,9 +1339,7 @@ const updateAbout_usBlock = async () => {
 const deleteAbout_usBlock = async (idBlock) => {
   try {
     await axios.delete(`/pages/${idBlock}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchAbout_usBlock();
   } catch (error) {
@@ -1407,9 +1378,7 @@ const patentText = ref(null)
 const fetchPatents = async () => {
   try {
     const response = await axios.get(`/patents`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     patents.value = response.data.data;
   } catch (error) {
@@ -1443,7 +1412,7 @@ const createProductPatent = async () => {
 
     await axios.post(`/patents`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1462,9 +1431,7 @@ const createProductPatent = async () => {
 const deletePatents = async (idPatent) => {
   try {
     await axios.delete(`/patents/${idPatent}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchPatents();
   } catch (error) {
@@ -1486,9 +1453,7 @@ const currentTeamId = ref(null);
 const fetchTeams = async () => {
   try {
     const response = await axios.get(`/teams`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     teams.value = response.data;
   } catch (error) {
@@ -1522,7 +1487,7 @@ const createTeams = async () => {
 
     await axios.post(`/teams`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1553,7 +1518,7 @@ const updateTeams = async () => {
 
     await axios.post(`/teams/${currentTeamId.value}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1566,9 +1531,7 @@ const updateTeams = async () => {
 const deleteTeam = async (idTeam) => {
   try {
     await axios.delete(`/teams/${idTeam}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchTeams();
   } catch (error) {
@@ -1616,9 +1579,7 @@ const mapContact = ref('');
 const fetchContact = async () => {
   try {
     const response = await axios.get(`/contacts`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     contacts.value = response.data;
     addressContact.value = contacts.value[0].address;
@@ -1646,9 +1607,7 @@ const updateContact = async () => {
     formData.append('map', mapContact.value);
 
     await axios.post(`/contacts/1?_method=patch`, formData, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchContact();
     errors.value.addressContact = false;
@@ -1680,9 +1639,7 @@ const currentCompanyCustomId = ref(null);
 const fetchCompanies = async () => {
   try {
     const response = await axios.get(`/companies`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     companies.value = response.data;
   } catch (error) {
@@ -1718,7 +1675,7 @@ const createCompany = async () => {
 
     await axios.post(`/companies`, data, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1757,7 +1714,7 @@ const updateCompany = async () => {
 
     await axios.post(`/companies/${currentCompanyId.value}?_method=patch`, data, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1770,9 +1727,7 @@ const updateCompany = async () => {
 const deleteCompany = async (idCompany) => {
   try {
     await axios.delete(`/companies/${idCompany}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchCompanies();
   } catch (error) {
@@ -1825,7 +1780,7 @@ const createCustom = async () => {
 
     await axios.post(`/companies/${currentCompanyId.value}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1848,7 +1803,7 @@ const updateCustom = async () => {
 
     await axios.post(`/companies/${currentCompanyCustomId.value}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1881,9 +1836,7 @@ const resetCustom = () => {
 const deleteCustomDetails = async (idCustom) => {
   try {
     await axios.delete(`/custom-details/${idCustom}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchCompanies();
   } catch (error) {
@@ -1905,9 +1858,7 @@ const currentPromosBlockId = ref(null);
 const fetchPromo = async () => {
   try {
     const response = await axios.get(`/pages/1`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     promo.value = response.data;
   } catch (error) {
@@ -1936,7 +1887,7 @@ const createPromoBlock = async () => {
 
     await axios.post(`/pages/1?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1960,7 +1911,7 @@ const updatePromoBlock = async () => {
 
     await axios.post(`/pages/1?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1973,9 +1924,7 @@ const updatePromoBlock = async () => {
 const deletePromoBlock = async (idBlock) => {
   try {
     await axios.delete(`/pages/${idBlock}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchPromo();
   } catch (error) {
@@ -2016,9 +1965,7 @@ const currentStockId = ref(null);
 const fetchStocks = async () => {
   try {
     const response = await axios.get(`/promos`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     stocks.value = response.data;
   } catch (error) {
@@ -2053,7 +2000,7 @@ const createStock = async () => {
 
     await axios.post(`/promos`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2085,7 +2032,7 @@ const updateStock = async () => {
 
     await axios.post(`/promos/${currentStockId.value}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2098,9 +2045,7 @@ const updateStock = async () => {
 const deleteStock = async (idStock) => {
   try {
     await axios.delete(`/promos/${idStock}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchStocks();
   } catch (error) {
@@ -2157,9 +2102,7 @@ const currentPlaceId = ref(false);
 const fetchPlace = async () => {
   try {
     const response = await axios.get(`/purchase-place`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     place.value = response.data;
     marketplacesPlace.value = place.value.filter((item) => item.type === "marketplace");
@@ -2196,7 +2139,7 @@ const createPlace = async () => {
 
     await axios.post(`/purchase-place`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2224,7 +2167,7 @@ const updatePlace = async () => {
 
     await axios.post(`/purchase-place/${currentPlaceId.value}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2237,9 +2180,7 @@ const updatePlace = async () => {
 const deletePlace = async (idPlace) => {
   try {
     await axios.delete(`/purchase-place/${idPlace}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchPlace();
   } catch (error) {
@@ -2283,9 +2224,7 @@ const deliveryFile = ref(null);
 const fetchDelivery = async () => {
   try {
     const response = await axios.get(`/pages/3`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     delivery.value = response.data;
   } catch (error) {
@@ -2314,7 +2253,7 @@ const createDelivery = async () => {
 
     await axios.post(`/pages/3?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2338,7 +2277,7 @@ const updateDelivery = async () => {
 
     await axios.post(`/pages/3?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2355,9 +2294,7 @@ const updateDelivery = async () => {
 const deleteDelivery = async (idBlock) => {
   try {
     await axios.delete(`/pages/${idBlock}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchDelivery();
   } catch (error) {
@@ -2399,9 +2336,7 @@ const currentSocialId = ref(null);
 const fetchSocials = async () => {
   try {
     const response = await axios.get(`/socials`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     socials.value = response.data;
   } catch (error) {
@@ -2438,7 +2373,7 @@ const createSocial = async () => {
 
     await axios.post(`/socials`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2466,7 +2401,7 @@ const updateSocial = async () => {
 
     await axios.post(`/socials/${currentSocialId.value}?_method=patch`, formData, {
       headers: {
-        
+
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2479,9 +2414,7 @@ const updateSocial = async () => {
 const deleteSocial = async (idSocial) => {
   try {
     await axios.delete(`/socials/${idSocial}`, {
-      headers: {
-        
-      },
+      headers: {},
     });
     await fetchSocials();
   } catch (error) {
@@ -2513,6 +2446,100 @@ const resetSocial = () => {
   errors.value.socialImageFooter = false;
 };
 
+//---------------------------------------------------------------------------------
+// Почты
+
+const emails = ref([]);
+const emailName = ref('');
+
+const emailTypes = ref([]);
+const emailType = ref(null);
+const emailNumber = ref(null);
+
+const fetchEmails = async () => {
+  try {
+    const response = await axios.get(`/emails`, {
+      headers: {},
+    });
+    emails.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const createEmails = async () => {
+  errors.value.emailName = false;
+  errors.value.emailName = !emailName.value;
+  try {
+    const formData = new FormData();
+    formData.append('email', emailName.value);
+
+    await axios.post(`/emails`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchEmails();
+    emailName.value = ''
+    errors.value.emailName = false;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const deleteEmail = async (idEmail) => {
+  try {
+    await axios.delete(`/emails/${idEmail}`, {
+      headers: {},
+    });
+    await fetchEmails();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
+const fetchEmailTypes = async () => {
+  try {
+    const response = await axios.get(`/email-types`, {
+      headers: {},
+    });
+    emailTypes.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const createEmailValue = async () => {
+  errors.value.emailType = false;
+  errors.value.emailNumber = false;
+  errors.value.emailType = !emailType.value;
+  errors.value.emailNumber = !emailNumber.value;
+  try {
+    const formData = new FormData();
+    formData.append('email_id', emailNumber.value);
+
+    await axios.post(`/email-types/${emailType.value}?_method=patch`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchEmailTypes();
+    emailType.value = ''
+    emailNumber.value = ''
+    errors.value.emailType = false;
+    errors.value.emailNumber = false;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+}
+const deleteEmailValue = async (idEmail, idType) => {
+  try {
+    await axios.delete(`/email-types/${idType}/emails/${idEmail}`, {
+      headers: {},
+    });
+    await fetchEmailTypes();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+
 </script>
 
 <template>
@@ -2524,78 +2551,87 @@ const resetSocial = () => {
       <button class="main_btn" @click="fetchAdmin()">Войти</button>
     </div>
     <div class="admin-panel" v-else>
-      <div class="admin-panel__menu">
-        <p
-            class="admin-panel__menu_item"
-            :class="{ active: activeTab === 'Главная' }"
-            @click="activeTab = 'Главная'"
-        >
-          Главная
-        </p>
-        <p
-            class="admin-panel__menu_item"
-            :class="{ active: activeTab === 'Категории' }"
-            @click="activeTab = 'Категории'"
-        >
-          Категории
-        </p>
-        <p
-            class="admin-panel__menu_item"
-            :class="{ active: activeTab === 'Параметры товара' }"
-            @click="activeTab = 'Параметры товара'"
-        >
-          Параметры товара
-        </p>
-        <p
-            class="admin-panel__menu_item"
-            :class="{ active: activeTab === 'Товары' }"
-            @click="activeTab = 'Товары'"
-        >
-          Товары
-        </p>
-        <p
-            class="admin-panel__menu_item"
-            :class="{ active: activeTab === 'О нас' }"
-            @click="activeTab = 'О нас'"
-        >
-          О нас
-        </p>
-        <p
-            class="admin-panel__menu_item"
-            :class="{ active: activeTab === 'Контакты' }"
-            @click="activeTab = 'Контакты'"
-        >
-          Контакты
-        </p>
-        <p
-            class="admin-panel__menu_item"
-            :class="{ active: activeTab === 'Акции' }"
-            @click="activeTab = 'Акции'"
-        >
-          Акции
-        </p>
-        <p
-            class="admin-panel__menu_item"
-            :class="{ active: activeTab === 'Где купить' }"
-            @click="activeTab = 'Где купить'"
-        >
-          Где купить
-        </p>
-        <p
-            class="admin-panel__menu_item"
-            :class="{ active: activeTab === 'Доставка' }"
-            @click="activeTab = 'Доставка'"
-        >
-          Доставка
-        </p>
-        <p
-            class="admin-panel__menu_item"
-            :class="{ active: activeTab === 'Соц сети' }"
-            @click="activeTab = 'Соц сети'"
-        >
-          Соц сети
-        </p>
-        <button class="main_btn" @click="exitAdmin">Выйти</button>
+      <div class="admin-panel__menu-cont">
+        <div class="admin-panel__menu">
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Главная' }"
+              @click="activeTab = 'Главная'"
+          >
+            Главная
+          </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Категории' }"
+              @click="activeTab = 'Категории'"
+          >
+            Категории
+          </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Параметры товара' }"
+              @click="activeTab = 'Параметры товара'"
+          >
+            Параметры товара
+          </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Товары' }"
+              @click="activeTab = 'Товары'"
+          >
+            Товары
+          </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'О нас' }"
+              @click="activeTab = 'О нас'"
+          >
+            О нас
+          </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Контакты' }"
+              @click="activeTab = 'Контакты'"
+          >
+            Контакты
+          </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Акции' }"
+              @click="activeTab = 'Акции'"
+          >
+            Акции
+          </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Где купить' }"
+              @click="activeTab = 'Где купить'"
+          >
+            Где купить
+          </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Доставка' }"
+              @click="activeTab = 'Доставка'"
+          >
+            Доставка
+          </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Соц сети' }"
+              @click="activeTab = 'Соц сети'"
+          >
+            Соц сети
+          </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Почты' }"
+              @click="activeTab = 'Почты'"
+          >
+            Почты
+          </p>
+          <button class="main_btn" @click="exitAdmin">Выйти</button>
+        </div>
       </div>
       <div class="admin-panel__content" v-if="activeTab === 'Главная'">
         <h2>Добро пожаловать!</h2>
@@ -2621,7 +2657,8 @@ const resetSocial = () => {
               placeholder="Введите описание"
           ></textarea>
           Продукт
-          <select v-model="productBanners" :class="{ error: errors.productBanners }" class="basket__form_input admin-panel__content_select">
+          <select v-model="productBanners" :class="{ error: errors.productBanners }"
+                  class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите продукт</option>
             <option v-for="product in allProducts" :key="product.id" :value="product.id">
               {{ product.name }}
@@ -2658,7 +2695,8 @@ const resetSocial = () => {
               placeholder="Введите описание"
           ></textarea>
           Продукт
-          <select v-model="productBanners" :class="{ error: errors.productBanners }" class="basket__form_input admin-panel__content_select">
+          <select v-model="productBanners" :class="{ error: errors.productBanners }"
+                  class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите продукт</option>
             <option v-for="product in allProducts" :key="product.id" :value="product.id">
               {{ product.name }}
@@ -2815,12 +2853,12 @@ const resetSocial = () => {
               placeholder="Введите новое имя категории"
               :class="{ error: errors.nameCategory }"
           />
-<!--          <select v-model="parentCategory" class="basket__form_input admin-panel__content_select">-->
-<!--            <option value="">Выберите родительскую категорию</option>-->
-<!--            <option v-for="cat in categoriesLevel" :key="cat.id" :value="cat.id">-->
-<!--              {{ cat.name }}-->
-<!--            </option>-->
-<!--          </select>-->
+          <!--          <select v-model="parentCategory" class="basket__form_input admin-panel__content_select">-->
+          <!--            <option value="">Выберите родительскую категорию</option>-->
+          <!--            <option v-for="cat in categoriesLevel" :key="cat.id" :value="cat.id">-->
+          <!--              {{ cat.name }}-->
+          <!--            </option>-->
+          <!--          </select>-->
           <input
               type="file"
               class="basket__form_input admin-panel__content_input"
@@ -2868,10 +2906,10 @@ const resetSocial = () => {
               <img :src="cat.photo" alt="Фото" width="50"/>
             </td>
             <td>
-<!--              <span v-if="cat.children.length > 0">-->
-<!--                {{ cat.children.length }} дочерних элемента(ов)-->
-<!--              </span>-->
-<!--              <span v-else>Нет</span>-->
+              <!--              <span v-if="cat.children.length > 0">-->
+              <!--                {{ cat.children.length }} дочерних элемента(ов)-->
+              <!--              </span>-->
+              <!--              <span v-else>Нет</span>-->
               Дочерняя
             </td>
             <td>
@@ -3031,7 +3069,8 @@ const resetSocial = () => {
               :class="{ error: errors.productDescription }"
           ></textarea>
           Категория
-          <select v-model="productCategory" :class="{ error: errors.productCategory }" class="basket__form_input admin-panel__content_select">
+          <select v-model="productCategory" :class="{ error: errors.productCategory }"
+                  class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option v-for="category in allCategories" :key="category.id" :value="category.id">
               {{ category.name }}
@@ -3068,7 +3107,8 @@ const resetSocial = () => {
               :class="{ error: errors.productDescription }"
           ></textarea>
           Категория
-          <select v-model="productCategory" :class="{ error: errors.productCategory }" class="basket__form_input admin-panel__content_select">
+          <select v-model="productCategory" :class="{ error: errors.productCategory }"
+                  class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option v-for="category in categories" :key="category.id" :value="category.id">
               {{ category.name }}
@@ -3092,7 +3132,8 @@ const resetSocial = () => {
           <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
         <h3 v-if="isEditingProduct">Добавить картинку</h3>
-        <form class="admin-panel__content_form" v-if="isEditingProduct && !isEditingProductPhoto" @submit.prevent="addProductPhoto">
+        <form class="admin-panel__content_form" v-if="isEditingProduct && !isEditingProductPhoto"
+              @submit.prevent="addProductPhoto">
           <input
               type="file"
               ref="productFile"
@@ -3253,7 +3294,8 @@ const resetSocial = () => {
           <button class="main_btn" type="submit">Добавить</button>
           <button class="main_btn" @click="resetProduct">Отмена</button>
         </form>
-        <form class="admin-panel__content_form" v-if="isEditingProduct && isEditingProductPhoto" @submit.prevent="updateProductPhoto">
+        <form class="admin-panel__content_form" v-if="isEditingProduct && isEditingProductPhoto"
+              @submit.prevent="updateProductPhoto">
           <input
               type="file"
               ref="productFile"
@@ -3284,7 +3326,7 @@ const resetSocial = () => {
             <td>
               <img :src="product.photo" alt="Фото" width="100"/>
             </td>
-            <td>{{product.order}}</td>
+            <td>{{ product.order }}</td>
             <td>
               <button @click="editProductPhoto(product)" class="admin-panel__content_btn">Изменить</button>
             </td>
@@ -3501,7 +3543,8 @@ const resetSocial = () => {
               placeholder="Введите название"
               :class="{ error: errors.about_usTitle }"
           />
-          <Editor :initialHtml="about_usDescription" @export-html="handleExportHtmlAbout_usBlock" :class="{ error: errors.about_usDescription }"/>
+          <Editor :initialHtml="about_usDescription" @export-html="handleExportHtmlAbout_usBlock"
+                  :class="{ error: errors.about_usDescription }"/>
           <input
               type="file"
               ref="fileBanners"
@@ -4137,7 +4180,8 @@ const resetSocial = () => {
               placeholder="Введите название"
               :class="{ error: errors.placeName }"
           />
-          <select v-model="placeSelect" :class="{ error: errors.placeSelect }" class="basket__form_input admin-panel__content_select">
+          <select v-model="placeSelect" :class="{ error: errors.placeSelect }"
+                  class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option value='marketplace'>
               Маркетплейсы
@@ -4175,7 +4219,8 @@ const resetSocial = () => {
               placeholder="Введите название"
               :class="{ error: errors.placeName }"
           />
-          <select v-model="placeSelect" :class="{ error: errors.placeSelect }" class="basket__form_input admin-panel__content_select">
+          <select v-model="placeSelect" :class="{ error: errors.placeSelect }"
+                  class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option value='marketplace'>
               Маркетплейсы
@@ -4493,6 +4538,121 @@ const resetSocial = () => {
           </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="admin-panel__content" v-if="activeTab === 'Почты'">
+        <h2>Управление почтами обратной связи</h2>
+        <h3>Почты</h3>
+        <form class="admin-panel__content_form" @submit.prevent="createEmails">
+          <input
+              type="email"
+              class="basket__form_input admin-panel__content_input"
+              v-model="emailName"
+              placeholder="Введите почту"
+              :class="{ error: errors.emailName }"
+          />
+          <button class="main_btn" type="submit">Добавить почту</button>
+        </form>
+        <table>
+          <thead>
+          <tr>
+            <th>Почта</th>
+            <th>Изменить</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr v-for="email in emails" :key="email.id">
+            <td>{{ email.email }}</td>
+            <td>
+              <button @click="deleteEmail(email.id)" class="admin-panel__content_btn">Удалить</button>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+        <h3>Привязки</h3>
+        <form class="admin-panel__content_form" @submit.prevent="createEmailValue">
+          Тип
+          <select v-model="emailType"
+                  class="basket__form_input admin-panel__content_select"
+                  :class="{ error: errors.emailType }"
+          >
+            <option value="" disabled>Выберите категорию</option>
+            <option value='1'>
+              Заказы
+            </option>
+            <option value='2'>
+              Звонки
+            </option>
+            <option value='3'>
+              Поддержка
+            </option>
+          </select>
+          Почта
+          <select v-model="emailNumber" :class="{ error: errors.emailNumber }" class="basket__form_input admin-panel__content_select">
+            <option value="" disabled>Выберите родительскую категорию</option>
+            <option v-for="email in emails" :key="email.id" :value="email.id">
+              {{ email.email }}
+            </option>
+          </select>
+          <button class="main_btn" type="submit">Привязать почту</button>
+        </form>
+        <div class="admin-panel__content_info_item">
+          Для заказов
+          <table>
+            <thead>
+            <tr>
+              <th>Почта</th>
+              <th>Изменить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="email in emailTypes?.[0]?.email" :key="email.id">
+              <td>{{ email.email }}</td>
+              <td>
+                <button @click="deleteEmailValue(email.id, 1)" class="admin-panel__content_btn">Отвязать</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="admin-panel__content_info_item">
+          Для звонков
+          <table>
+            <thead>
+            <tr>
+              <th>Почта</th>
+              <th>Изменить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="email in emailTypes?.[1]?.email" :key="email.id">
+              <td>{{ email.email }}</td>
+              <td>
+                <button @click="deleteEmailValue(email.id, 2)" class="admin-panel__content_btn">Отвязать</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="admin-panel__content_info_item">
+          Для поддержки
+          <table>
+            <thead>
+            <tr>
+              <th>Почта</th>
+              <th>Изменить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="email in emailTypes?.[2]?.email" :key="email.id">
+              <td>{{ email.email }}</td>
+              <td>
+                <button @click="deleteEmailValue(email.id, 3)" class="admin-panel__content_btn">Отвязать</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>

@@ -40,6 +40,10 @@ $x-big: 1829.98px;
       display: flex;
       flex-direction: column;
       gap: 10px;
+      position: -webkit-sticky;
+      position: sticky;
+      top: 200px;
+      overflow-y: auto;
       &_item {
         padding: 10px 15px;
         border: 1px solid #171717;

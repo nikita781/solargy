@@ -25,6 +25,7 @@
     "editorjs-html": "^3.4.3",
     "editorjs-style": "^3.0.3",
     "nuxt": "^3.14.1592",
+    "nuxt-easy-lightbox": "^1.0.2",
     "nuxt-swiper": "^2.0.0",
     "pinia": "^2.3.0",
     "pinia-plugin-persistedstate": "^4.1.3",
