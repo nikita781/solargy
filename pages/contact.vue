@@ -68,7 +68,19 @@ const nameUser = ref('');
 const phone = ref('+7 ');
 const comment = ref('');
 
+const errors = ref({
+  name: false,
+  phone: false,
+  comment: false
+});
+
 const addSuppurt = async () => {
+  errors.value.name = false;
+  errors.value.phone = false;
+  errors.value.comment = false;
+  errors.value.name = !nameUser.value.trim();
+  errors.value.phone = !phone.value.trim();
+  errors.value.comment = !comment.value.trim();
   try {
     const formData = new FormData();
     formData.append('name', nameUser.value);
@@ -187,11 +199,11 @@ onMounted(async () => {
             <p class="questions__form_title">Обратный звонок</p>
             <div class="questions__form_inputs">
               <p class="questions__form_name">Ваше имя</p>
-              <input class="questions__form_input" type="text" v-model="nameUser" placeholder="Введите имя">
+              <input class="questions__form_input" type="text" v-model="nameUser" placeholder="Введите имя" :class="{ error: errors.name }">
               <p class="questions__form_name">Ваш телефон</p>
-              <input class="questions__form_input" type="text" @input="onInput"  v-model="phone" placeholder="Введите телефон">
+              <input class="questions__form_input" type="text" @input="onInput"  v-model="phone" placeholder="Введите телефон" :class="{ error: errors.phone }">
               <p class="questions__form_name">Комментарий</p>
-              <textarea style="min-height: 152px" class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий"></textarea>
+              <textarea style="min-height: 152px" class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий" :class="{ error: errors.comment }"></textarea>
             </div>
             <button class="main_btn questions__form_btn" @click="addSuppurt">Заказать звонок</button>
           </div>

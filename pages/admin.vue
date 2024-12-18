@@ -1,6 +1,6 @@
 <script setup>
 import axios from "axios";
-import {onMounted} from "vue";
+import {onMounted, ref} from "vue";
 import Editor from '~/components/editor.vue';
 
 const nameUser = ref('');
@@ -10,12 +10,42 @@ const activeTab = ref("Главная");
 
 const isAuthenticated = ref(false);
 
+onMounted(async () => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    isAuthenticated.value = true;
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    await fetchMainBanners();
+    await fetchSubBanners();
+    await fetchAllProducts();
+    await fetchCategory();
+    await fetchOptions();
+    await fetchAbout_usBlock();
+    await fetchPatents();
+    await fetchTeams();
+    await fetchContact();
+    await fetchCompanies();
+    await fetchPromo();
+    await fetchStocks();
+    await fetchPlace();
+    await fetchDelivery();
+    await fetchSocials();
+  }
+});
+const exitAdmin = () => {
+  localStorage.removeItem('authToken');
+  isAuthenticated.value = false;
+}
+
 const fetchAdmin = async () => {
   try {
     await axios.get('https://api.solargy.shop/sanctum/csrf-cookie', {withCredentials: true});
     const response = await axios.post(`/login?email=${nameUser.value}&password=${passwordUser.value}`, {withCredentials: true});
     result.value = response.data;
     isAuthenticated.value = true;
+
+    localStorage.setItem('authToken', result.value.token);
 
     await fetchMainBanners();
     await fetchSubBanners();
@@ -46,6 +76,79 @@ const formatDate = (dateString) => {
   return `${day}.${month}.${year}`;
 };
 
+const errors = ref({
+  titleBanner: false,
+  descriptionBanner: false,
+  photoBanners: false,
+  productBanners: false,
+
+  titleSlider: false,
+  photoSlider: false,
+
+  nameCategory: false,
+  photoCategory: false,
+
+  nameOptions: false,
+
+  optionValue: false,
+  optionPrice: false,
+
+  productPrice: false,
+  productDescription: false,
+  productName: false,
+  productCategory: false,
+
+  about_usTitle: false,
+  about_usDescription: false,
+  about_usImage: false,
+
+  patentName: false,
+  patentDate: false,
+  patentText: false,
+
+  teamName: false,
+  teamDescription: false,
+  teamImage: false,
+  teamPhone: false,
+  teamEmail: false,
+
+  addressContact: false,
+  emailContact: false,
+  phoneContact: false,
+  mapContact: false,
+
+  companyName: false,
+  companyMainName: false,
+  companyOffice: false,
+  companyProduction: false,
+  companyPhone: false,
+  companyEmail: false,
+
+  customName: false,
+  customValue: false,
+
+  promoTitle: false,
+  promoImage: false,
+
+  stockTitle: false,
+  stockDescription: false,
+  stockImage: false,
+  stockStart: false,
+  stockEnd: false,
+
+  placeName: false,
+  placeSelect: false,
+  placeImg: false,
+
+  deliveryTitle: false,
+  deliveryImage: false,
+
+  socialPlatform: false,
+  socialUrl: false,
+  socialImage: false,
+  socialImageFooter: false,
+});
+
 //---------------------------------------------------------------------------------
 // Главная
 
@@ -55,7 +158,7 @@ const descriptionBanner = ref('');
 const numberBanner = ref('');
 const photoBanners = ref(null);
 const fileBanners = ref(null);
-const productBanners = ref([]);
+const productBanners = ref('');
 const isEditingBanners = ref(false);
 const allProducts = ref([]);
 const currentBannerId = ref(null)
@@ -68,17 +171,21 @@ const handleFileChangeMainBanner = (event) => {
 };
 const fetchAllProducts = async () => {
   try {
-    const response = await axios.get('/all-products', {
-      headers: {
-        'Authorization': `Bearer ${result.value.token}`,
-      },
-    });
+    const response = await axios.get('/all-products');
     allProducts.value = response.data;
   } catch (error) {
     console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
   }
 };
 const createMainBanners = async () => {
+  errors.value.titleBanner = false;
+  errors.value.descriptionBanner = false;
+  errors.value.productBanners = false;
+  errors.value.photoBanners = false;
+  errors.value.titleBanner = !titleBanner.value.trim();
+  errors.value.descriptionBanner = !descriptionBanner.value.trim();
+  errors.value.productBanners = !productBanners.value;
+  errors.value.photoBanners = !photoBanners.value;
   try {
     const formData = new FormData();
     formData.append('title', titleBanner.value);
@@ -91,7 +198,7 @@ const createMainBanners = async () => {
 
     await axios.post(`/main-banners`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -102,6 +209,12 @@ const createMainBanners = async () => {
   }
 };
 const updateMainBanners = async () => {
+  errors.value.titleBanner = false;
+  errors.value.descriptionBanner = false;
+  errors.value.productBanners = false;
+  errors.value.titleBanner = !titleBanner.value.trim();
+  errors.value.descriptionBanner = !descriptionBanner.value.trim();
+  errors.value.productBanners = !productBanners.value;
   try {
     const formData = new FormData();
     formData.append('title', titleBanner.value);
@@ -115,7 +228,7 @@ const updateMainBanners = async () => {
     }
     await axios.post(`/main-banners/${currentBannerId.value}?_method=PATCH`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -137,7 +250,7 @@ const deleteMainBanners = async (idBanner) => {
   try {
     await axios.delete(`/main-banners/${idBanner}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchMainBanners();
@@ -152,6 +265,10 @@ const editMainBanners = (banner) => {
   descriptionBanner.value = banner.description;
   productBanners.value = banner.product.id;
   photoBanners.value = null;
+  errors.value.titleBanner = false;
+  errors.value.descriptionBanner = false;
+  errors.value.productBanners = false;
+  errors.value.photoBanners = false;
 }
 const resetMainBanners = () => {
   isEditingBanners.value = false;
@@ -162,6 +279,10 @@ const resetMainBanners = () => {
   productBanners.value = null;
   numberBanner.value = '';
   fileBanners.value.value = ''
+  errors.value.titleBanner = false;
+  errors.value.descriptionBanner = false;
+  errors.value.productBanners = false;
+  errors.value.photoBanners = false;
 };
 
 
@@ -180,6 +301,10 @@ const handleFileChangeSubBanners = (event) => {
   }
 };
 const createSubBanner = async () => {
+  errors.value.titleSlider = false;
+  errors.value.photoSlider = false;
+  errors.value.titleSlider = !titleSlider.value.trim();
+  errors.value.photoSlider = !photoSlider.value;
   try {
     const formData = new FormData();
     formData.append('title', titleSlider.value);
@@ -190,7 +315,7 @@ const createSubBanner = async () => {
 
     await axios.post(`/sub-banners`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -201,6 +326,8 @@ const createSubBanner = async () => {
   }
 };
 const updateSubBanners = async () => {
+  errors.value.titleSlider = false;
+  errors.value.titleSlider = !titleSlider.value.trim();
   try {
     const formData = new FormData();
     formData.append('title', titleSlider.value);
@@ -212,7 +339,7 @@ const updateSubBanners = async () => {
     }
     await axios.post(`/sub-banners/${currentSliderId.value}?_method=PATCH`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -234,7 +361,7 @@ const deleteSubBanners = async (idBanner) => {
   try {
     await axios.delete(`/sub-banners/${idBanner}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchSubBanners();
@@ -247,6 +374,8 @@ const editSubBanner = (banner) => {
   currentSliderId.value = banner.id;
   titleSlider.value = banner.title;
   photoSlider.value = null;
+  errors.value.titleSlider = false;
+  errors.value.photoSlider = false;
 }
 const resetSubBanners = () => {
   isEditingSlider.value = false;
@@ -255,6 +384,8 @@ const resetSubBanners = () => {
   photoSlider.value = null;
   numberSlider.value = '';
   fileSlider.value.value = ''
+  errors.value.titleSlider = false;
+  errors.value.photoSlider = false;
 };
 
 //---------------------------------------------------------------------------------
@@ -277,6 +408,10 @@ const handleFileChangeCategory = (event) => {
   }
 };
 const createCategory = async () => {
+  errors.value.nameCategory = false;
+  errors.value.photoCategory = false;
+  errors.value.nameCategory = !nameCategory.value.trim();
+  errors.value.photoCategory = !photoCategory.value;
   try {
     const formData = new FormData();
     formData.append('name', nameCategory.value);
@@ -287,7 +422,7 @@ const createCategory = async () => {
 
     await axios.post(`/categories`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -329,6 +464,8 @@ const fetchCategory = async () => {
   }
 };
 const updateCategory = async () => {
+  errors.value.nameCategory = false;
+  errors.value.nameCategory = !nameCategory.value.trim();
   try {
     const formData = new FormData();
     formData.append('name', nameCategory.value);
@@ -340,7 +477,7 @@ const updateCategory = async () => {
     }
     await axios.post(`/categories/${currentCategoryId.value}?_method=PATCH`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -354,8 +491,9 @@ const editCategory = (category) => {
   isEditingCat.value = true;
   currentCategoryId.value = category.id;
   nameCategory.value = category.name;
-  parentCategory.value = category.parent_id;
   photoCategory.value = null;
+  errors.value.nameCategory = false;
+  errors.value.photoCategory = false;
 };
 const resetCategory = () => {
   isEditingCat.value = false;
@@ -364,12 +502,14 @@ const resetCategory = () => {
   photoCategory.value = null;
   fileCategory.value.value = ''
   parentCategory.value = null;
+  errors.value.nameCategory = false;
+  errors.value.photoCategory = false;
 };
 const deleteCategory = async (idCategory) => {
   try {
     await axios.delete(`/categories/${idCategory}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchCategory();
@@ -387,13 +527,15 @@ const isEditingOptions = ref(false);
 const currentOptionsId = ref(null);
 
 const createOptions = async () => {
+  errors.value.nameOptions = false;
+  errors.value.nameOptions = !nameOptions.value.trim();
   try {
     const formData = new FormData();
     formData.append('name', nameOptions.value);
 
     await axios.post(`/options`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchOptions();
@@ -403,13 +545,15 @@ const createOptions = async () => {
   }
 };
 const updateOptions = async () => {
+  errors.value.nameOptions = false;
+  errors.value.nameOptions = !nameOptions.value.trim();
   try {
     const formData = new FormData();
     formData.append('name', nameOptions.value);
 
     await axios.post(`/options/${currentOptionsId.value}?_method=PATCH`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchOptions();
@@ -430,7 +574,7 @@ const deleteOptions = async (idOptions) => {
   try {
     await axios.delete(`/options/${idOptions}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchOptions();
@@ -442,11 +586,13 @@ const editOptions = (options) => {
   isEditingOptions.value = true;
   currentOptionsId.value = options.id;
   nameOptions.value = options.name;
+  errors.value.nameOptions = false;
 };
 const resetOptions = () => {
   isEditingOptions.value = false;
   currentOptionsId.value = null;
   nameOptions.value = '';
+  errors.value.nameOptions = false;
 };
 
 
@@ -465,15 +611,21 @@ const handleFileChangeOption = (event) => {
   }
 };
 const createOptionValue = async () => {
+  errors.value.optionValue = false;
+  errors.value.optionPrice = false;
+  errors.value.optionValue = !optionValue.value.trim();
+  errors.value.optionPrice = !optionPrice.value;
   try {
     const formData = new FormData();
     formData.append('values[0][value]', optionValue.value);
     formData.append('values[0][price]', optionPrice.value);
-    formData.append('values[0][image]', optionPhoto.value);
+    if (optionPhoto.value) {
+      formData.append('values[0][image]', optionPhoto.value);
+    }
 
     await axios.post(`/options/${optionId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -484,6 +636,10 @@ const createOptionValue = async () => {
   }
 };
 const updateOptionValue = async () => {
+  errors.value.optionValue = false;
+  errors.value.optionPrice = false;
+  errors.value.optionValue = !optionValue.value.trim();
+  errors.value.optionPrice = !optionPrice.value;
   try {
     const formData = new FormData();
     formData.append('values[0][id]', currentOptionValueId.value);
@@ -495,7 +651,7 @@ const updateOptionValue = async () => {
 
     await axios.post(`/options/${optionId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -509,7 +665,7 @@ const deleteOptionValue = async (idOptions, idValue) => {
   try {
     await axios.delete(`/options/${idOptions}/values/${idValue}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchOptions();
@@ -524,6 +680,8 @@ const editOptionValue = (idOptions, options) => {
   optionPrice.value = options.price;
   optionPhoto.value = null;
   optionId.value = idOptions;
+  errors.value.optionValue = false;
+  errors.value.optionPrice = false;
 };
 const resetOptionValue = () => {
   idEditingOptionValue.value = false;
@@ -533,6 +691,8 @@ const resetOptionValue = () => {
   optionPhoto.value = null;
   optionId.value = null;
   optionFile.value.value = ''
+  errors.value.optionValue = false;
+  errors.value.optionPrice = false;
 };
 
 //---------------------------------------------------------------------------------
@@ -597,7 +757,7 @@ const fetchValueByOption = async (optionId) => {
   try {
     const response = await axios.get(`/options/${optionId}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     idByOption.value = response.data.id;
@@ -614,7 +774,7 @@ const createProductOptionValue = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchProductById(currentProductId.value);
@@ -628,6 +788,14 @@ const handleExportHtmlPropertie = (html) => {
   productPropertieDescription.value = html;
 };
 const createProduct = async () => {
+  errors.value.productCategory = false;
+  errors.value.productName = false;
+  errors.value.productDescription = false;
+  errors.value.productPrice = false;
+  errors.value.productCategory = !productCategory.value;
+  errors.value.productName = !productName.value;
+  errors.value.productDescription = !productDescription.value;
+  errors.value.productPrice = !productPrice.value;
   try {
     const topProd = ref(0);
     if (productTop.value === true) {
@@ -642,7 +810,7 @@ const createProduct = async () => {
 
     await axios.post(`/products`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchAllProducts();
@@ -652,6 +820,14 @@ const createProduct = async () => {
   }
 };
 const updateProduct = async () => {
+  errors.value.productCategory = false;
+  errors.value.productName = false;
+  errors.value.productDescription = false;
+  errors.value.productPrice = false;
+  errors.value.productCategory = !productCategory.value;
+  errors.value.productName = !productName.value;
+  errors.value.productDescription = !productDescription.value;
+  errors.value.productPrice = !productPrice.value;
   try {
     const topProd = ref(0);
     if (productTop.value === true) {
@@ -667,7 +843,7 @@ const updateProduct = async () => {
 
     await axios.post(`/products/${currentProductId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchAllProducts();
@@ -684,6 +860,10 @@ const editProduct = (product) => {
   productDescription.value = product.description;
   productCategory.value = product.category_id.id;
   productTop.value = product.is_top;
+  errors.value.productCategory = false;
+  errors.value.productName = false;
+  errors.value.productDescription = false;
+  errors.value.productPrice = false;
 };
 const resetProduct = () => {
   isEditingProduct.value = false;
@@ -693,12 +873,16 @@ const resetProduct = () => {
   productCategory.value = null;
   productPrice.value = null;
   productTop.value = false;
+  errors.value.productCategory = false;
+  errors.value.productName = false;
+  errors.value.productDescription = false;
+  errors.value.productPrice = false;
 };
 const fetchProductById = async (productId) => {
   try {
     const response = await axios.get(`/products/${productId}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     oneProd.value = response.data;
@@ -710,7 +894,7 @@ const deleteProductPhoto = async (idValue) => {
   try {
     await axios.delete(`/productPhoto/${idValue}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchProductById(currentProductId.value);
@@ -844,7 +1028,7 @@ const addProductPhoto = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -887,14 +1071,16 @@ const updateProductPhoto = async () => {
   try {
     const formData = new FormData();
     formData.append('photos[0][id]', currentProductPhotoId.value);
-    formData.append('photos[0][order]', productOrder.value);
+    if (productOrder.value) {
+      formData.append('photos[0][order]', productOrder.value);
+    }
     if (productPhoto.value) {
       formData.append('photos[0][photo]', productPhoto.value);
     }
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -927,7 +1113,7 @@ const addProductOption = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -941,7 +1127,7 @@ const fetchOptionsById = async (optionId) => {
   try {
     const response = await axios.get(`/options/${optionId}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     return response.data.values[0].id;
@@ -954,7 +1140,7 @@ const deleteProductOption = async (idOption) => {
     // const valueId = await fetchOptionsById(idOption);
     await axios.delete(`/products/${oneProd.value.id}/values/${idOption}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchProductById(currentProductId.value);
@@ -1001,7 +1187,7 @@ const addProductPropertie = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1038,7 +1224,7 @@ const updateProductPropertie = async () => {
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1078,7 +1264,7 @@ const deleteProductPropertie = async (idPropertie) => {
   try {
     await axios.delete(`/productProperties/${idPropertie}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchProductById(currentProductId.value);
@@ -1109,7 +1295,7 @@ const fetchAbout_usBlock = async () => {
   try {
     const response = await axios.get(`/pages/2`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     about_usBlock.value = response.data;
@@ -1124,6 +1310,12 @@ const handleFileChangeAbout_usBlock = (event) => {
   }
 };
 const createAbout_usBlock = async () => {
+  errors.value.about_usTitle = false;
+  errors.value.about_usDescription = false;
+  errors.value.about_usImage = false;
+  errors.value.about_usTitle = !about_usTitle.value;
+  errors.value.about_usDescription = !about_usDescription.value;
+  errors.value.about_usImage = !about_usImage.value;
   try {
     const formData = new FormData();
     formData.append('sections[0][title]', about_usTitle.value);
@@ -1132,7 +1324,7 @@ const createAbout_usBlock = async () => {
 
     await axios.post(`/pages/2?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1146,6 +1338,10 @@ const createAbout_usBlock = async () => {
   }
 }
 const updateAbout_usBlock = async () => {
+  errors.value.about_usTitle = false;
+  errors.value.about_usDescription = false;
+  errors.value.about_usTitle = !about_usTitle.value;
+  errors.value.about_usDescription = !about_usDescription.value;
   try {
     const formData = new FormData();
     formData.append('sections[0][id]', currentAbout_usBlockId.value);
@@ -1157,7 +1353,7 @@ const updateAbout_usBlock = async () => {
 
     await axios.post(`/pages/2?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1171,7 +1367,7 @@ const deleteAbout_usBlock = async (idBlock) => {
   try {
     await axios.delete(`/pages/${idBlock}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchAbout_usBlock();
@@ -1184,6 +1380,9 @@ const editAbout_usBlock = (block) => {
   currentAbout_usBlockId.value = block.id;
   about_usTitle.value = block.title;
   about_usDescription.value = block.html;
+  errors.value.about_usTitle = false;
+  errors.value.about_usDescription = false;
+  errors.value.about_usImage = false;
 };
 const resetAbout_usBlock = () => {
   isEditingAbout_usBlock.value = false;
@@ -1192,6 +1391,9 @@ const resetAbout_usBlock = () => {
   about_usImage.value = null;
   about_usFile.value.value = ''
   currentAbout_usBlockId.value = null
+  errors.value.about_usTitle = false;
+  errors.value.about_usDescription = false;
+  errors.value.about_usImage = false;
 };
 
 
@@ -1206,7 +1408,7 @@ const fetchPatents = async () => {
   try {
     const response = await axios.get(`/patents`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     patents.value = response.data.data;
@@ -1227,6 +1429,12 @@ const handleFileChangePatent = (event) => {
   }
 };
 const createProductPatent = async () => {
+  errors.value.patentName = false;
+  errors.value.patentDate = false;
+  errors.value.patentText = false;
+  errors.value.patentName = !patentName.value;
+  errors.value.patentDate = !patentDate.value;
+  errors.value.patentText = !patentFile.value;
   try {
     const formData = new FormData();
     formData.append('title', patentName.value);
@@ -1235,7 +1443,7 @@ const createProductPatent = async () => {
 
     await axios.post(`/patents`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1244,6 +1452,9 @@ const createProductPatent = async () => {
     patentDate.value = '';
     patentText.value = null;
     patentFile.value.value = ''
+    errors.value.patentName = false;
+    errors.value.patentDate = false;
+    errors.value.patentText = false;
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -1252,7 +1463,7 @@ const deletePatents = async (idPatent) => {
   try {
     await axios.delete(`/patents/${idPatent}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchPatents();
@@ -1276,7 +1487,7 @@ const fetchTeams = async () => {
   try {
     const response = await axios.get(`/teams`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     teams.value = response.data;
@@ -1291,6 +1502,16 @@ const handleFileChangeTeam = (event) => {
   }
 };
 const createTeams = async () => {
+  errors.value.teamName = false;
+  errors.value.teamDescription = false;
+  errors.value.teamImage = false;
+  errors.value.teamPhone = false;
+  errors.value.teamEmail = false;
+  errors.value.teamName = !teamName.value;
+  errors.value.teamDescription = !teamDescription.value;
+  errors.value.teamImage = !teamImage.value;
+  errors.value.teamPhone = !teamPhone.value;
+  errors.value.teamEmail = !teamEmail.value;
   try {
     const formData = new FormData();
     formData.append('name', teamName.value);
@@ -1301,22 +1522,25 @@ const createTeams = async () => {
 
     await axios.post(`/teams`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
     await fetchTeams();
-    teamName.value = '';
-    teamDescription.value = '';
-    teamPhone.value = '';
-    teamEmail.value = '';
-    teamImage.value = null;
-    teamFile.value.value = ''
+    resetTeam();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
 const updateTeams = async () => {
+  errors.value.teamName = false;
+  errors.value.teamDescription = false;
+  errors.value.teamPhone = false;
+  errors.value.teamEmail = false;
+  errors.value.teamName = !teamName.value;
+  errors.value.teamDescription = !teamDescription.value;
+  errors.value.teamPhone = !teamPhone.value;
+  errors.value.teamEmail = !teamEmail.value;
   try {
     const formData = new FormData();
     formData.append('name', teamName.value);
@@ -1329,18 +1553,12 @@ const updateTeams = async () => {
 
     await axios.post(`/teams/${currentTeamId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
     await fetchTeams();
-    teamName.value = '';
-    teamDescription.value = '';
-    teamPhone.value = '';
-    teamEmail.value = '';
-    teamImage.value = null;
-    teamFile.value.value = ''
-    isEditingTeam.value = false;
+    resetTeam();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -1349,7 +1567,7 @@ const deleteTeam = async (idTeam) => {
   try {
     await axios.delete(`/teams/${idTeam}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchTeams();
@@ -1364,6 +1582,11 @@ const editTeam = (team) => {
   teamDescription.value = team.description;
   teamPhone.value = team.phone;
   teamEmail.value = team.email;
+  errors.value.teamName = false;
+  errors.value.teamDescription = false;
+  errors.value.teamImage = false;
+  errors.value.teamPhone = false;
+  errors.value.teamEmail = false;
 };
 const resetTeam = () => {
   isEditingTeam.value = false;
@@ -1374,6 +1597,11 @@ const resetTeam = () => {
   teamImage.value = null;
   teamFile.value.value = ''
   currentTeamId.value = null
+  errors.value.teamName = false;
+  errors.value.teamDescription = false;
+  errors.value.teamImage = false;
+  errors.value.teamPhone = false;
+  errors.value.teamEmail = false;
 };
 
 //---------------------------------------------------------------------------------
@@ -1389,7 +1617,7 @@ const fetchContact = async () => {
   try {
     const response = await axios.get(`/contacts`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     contacts.value = response.data;
@@ -1402,6 +1630,14 @@ const fetchContact = async () => {
   }
 };
 const updateContact = async () => {
+  errors.value.addressContact = false;
+  errors.value.emailContact = false;
+  errors.value.phoneContact = false;
+  errors.value.mapContact = false;
+  errors.value.addressContact = !addressContact.value;
+  errors.value.emailContact = !emailContact.value;
+  errors.value.phoneContact = !phoneContact.value;
+  errors.value.mapContact = !mapContact.value;
   try {
     const formData = new FormData();
     formData.append('address', addressContact.value);
@@ -1411,10 +1647,14 @@ const updateContact = async () => {
 
     await axios.post(`/contacts/1?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchContact();
+    errors.value.addressContact = false;
+    errors.value.emailContact = false;
+    errors.value.phoneContact = false;
+    errors.value.mapContact = false;
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -1441,7 +1681,7 @@ const fetchCompanies = async () => {
   try {
     const response = await axios.get(`/companies`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     companies.value = response.data;
@@ -1450,6 +1690,18 @@ const fetchCompanies = async () => {
   }
 };
 const createCompany = async () => {
+  errors.value.companyName = false;
+  errors.value.companyMainName = false;
+  errors.value.companyOffice = false;
+  errors.value.companyProduction = false;
+  errors.value.companyPhone = false;
+  errors.value.companyEmail = false;
+  errors.value.companyName = !companyName.value;
+  errors.value.companyMainName = !companyMainName.value;
+  errors.value.companyOffice = !companyOffice.value;
+  errors.value.companyProduction = !companyProduction.value;
+  errors.value.companyPhone = !companyPhone.value;
+  errors.value.companyEmail = !companyEmail.value;
   try {
     const data = {
       name: companyName.value,
@@ -1466,22 +1718,29 @@ const createCompany = async () => {
 
     await axios.post(`/companies`, data, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
     await fetchCompanies();
-    companyName.value = '';
-    companyMainName.value = '';
-    companyOffice.value = '';
-    companyProduction.value = '';
-    companyPhone.value = '';
-    companyEmail.value = '';
+    resetCompany();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
 const updateCompany = async () => {
+  errors.value.companyName = false;
+  errors.value.companyMainName = false;
+  errors.value.companyOffice = false;
+  errors.value.companyProduction = false;
+  errors.value.companyPhone = false;
+  errors.value.companyEmail = false;
+  errors.value.companyName = !companyName.value;
+  errors.value.companyMainName = !companyMainName.value;
+  errors.value.companyOffice = !companyOffice.value;
+  errors.value.companyProduction = !companyProduction.value;
+  errors.value.companyPhone = !companyPhone.value;
+  errors.value.companyEmail = !companyEmail.value;
   try {
     const data = {
       name: companyName.value,
@@ -1498,7 +1757,7 @@ const updateCompany = async () => {
 
     await axios.post(`/companies/${currentCompanyId.value}?_method=patch`, data, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1512,7 +1771,7 @@ const deleteCompany = async (idCompany) => {
   try {
     await axios.delete(`/companies/${idCompany}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchCompanies();
@@ -1531,6 +1790,12 @@ const editCompany = (company) => {
   companyProduction.value = company.details.production;
   companyPhone.value = company.details.phone;
   companyEmail.value = company.details.email;
+  errors.value.companyName = false;
+  errors.value.companyMainName = false;
+  errors.value.companyOffice = false;
+  errors.value.companyProduction = false;
+  errors.value.companyPhone = false;
+  errors.value.companyEmail = false;
 };
 const resetCompany = () => {
   isEditingCompany.value = false;
@@ -1541,8 +1806,18 @@ const resetCompany = () => {
   companyPhone.value = '';
   companyEmail.value = '';
   currentCompanyId.value = null
+  errors.value.companyName = false;
+  errors.value.companyMainName = false;
+  errors.value.companyOffice = false;
+  errors.value.companyProduction = false;
+  errors.value.companyPhone = false;
+  errors.value.companyEmail = false;
 };
 const createCustom = async () => {
+  errors.value.customName = false;
+  errors.value.customValue = false;
+  errors.value.customName = !customName.value;
+  errors.value.customValue = !customValue.value;
   try {
     const formData = new FormData();
     formData.append('custom-details[0][title]', customName.value);
@@ -1550,18 +1825,21 @@ const createCustom = async () => {
 
     await axios.post(`/companies/${currentCompanyId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
     await fetchCompanies();
-    customName.value = '';
-    customValue.value = '';
+    resetCustom();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
 const updateCustom = async () => {
+  errors.value.customName = false;
+  errors.value.customValue = false;
+  errors.value.customName = !customName.value;
+  errors.value.customValue = !customValue.value;
   try {
     const formData = new FormData();
     formData.append('custom-details[0][id]', currentCustomId.value);
@@ -1570,7 +1848,7 @@ const updateCustom = async () => {
 
     await axios.post(`/companies/${currentCompanyCustomId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1588,6 +1866,8 @@ const editCustom = (custom, company) => {
   customName.value = custom.title;
   currentCustomId.value = custom.id;
   currentCompanyCustomId.value = company;
+  errors.value.customName = false;
+  errors.value.customValue = false;
 };
 const resetCustom = () => {
   customEditing.value = false;
@@ -1595,12 +1875,14 @@ const resetCustom = () => {
   customName.value = '';
   currentCustomId.value = '';
   currentCompanyCustomId.value = '';
+  errors.value.customName = false;
+  errors.value.customValue = false;
 };
 const deleteCustomDetails = async (idCustom) => {
   try {
     await axios.delete(`/custom-details/${idCustom}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchCompanies();
@@ -1624,7 +1906,7 @@ const fetchPromo = async () => {
   try {
     const response = await axios.get(`/pages/1`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     promo.value = response.data;
@@ -1642,6 +1924,10 @@ const handleExportHtmlPromoBlock = (html) => {
   promoDescription.value = html;
 }
 const createPromoBlock = async () => {
+  errors.value.promoTitle = false;
+  errors.value.promoImage = false;
+  errors.value.promoTitle = !promoTitle.value;
+  errors.value.promoImage = !promoImage.value;
   try {
     const formData = new FormData();
     formData.append('sections[0][title]', promoTitle.value);
@@ -1650,20 +1936,19 @@ const createPromoBlock = async () => {
 
     await axios.post(`/pages/1?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
     await fetchPromo();
-    promoTitle.value = '';
-    promoDescription.value = '';
-    promoImage.value = null;
-    promoFile.value.value = ''
+    resetPromoBlock();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
 const updatePromoBlock = async () => {
+  errors.value.promoTitle = false;
+  errors.value.promoTitle = !promoTitle.value;
   try {
     const formData = new FormData();
     formData.append('sections[0][id]', currentPromosBlockId.value);
@@ -1675,7 +1960,7 @@ const updatePromoBlock = async () => {
 
     await axios.post(`/pages/1?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1689,7 +1974,7 @@ const deletePromoBlock = async (idBlock) => {
   try {
     await axios.delete(`/pages/${idBlock}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchPromo();
@@ -1702,6 +1987,8 @@ const editPromoBlock = (block) => {
   currentPromosBlockId.value = block.id;
   promoTitle.value = block.title;
   promoDescription.value = block.html;
+  errors.value.promoTitle = false;
+  errors.value.promoImage = false;
 };
 const resetPromoBlock = () => {
   isEditingPromo.value = false;
@@ -1710,6 +1997,8 @@ const resetPromoBlock = () => {
   promoImage.value = null;
   promoFile.value.value = ''
   currentPromosBlockId.value = null
+  errors.value.promoTitle = false;
+  errors.value.promoImage = false;
 };
 
 
@@ -1728,7 +2017,7 @@ const fetchStocks = async () => {
   try {
     const response = await axios.get(`/promos`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     stocks.value = response.data;
@@ -1743,12 +2032,16 @@ const handleFileChangeStock = (event) => {
   }
 };
 const createStock = async () => {
-  // const isArchive = ref('');
-  // if (stockArchived.value) {
-  //   isArchive.value = 'true';
-  // } else {
-  //   isArchive.value = 'false';
-  // }
+  errors.value.stockTitle = false;
+  errors.value.stockDescription = false;
+  errors.value.stockImage = false;
+  errors.value.stockStart = false;
+  errors.value.stockEnd = false;
+  errors.value.stockTitle = !stockTitle.value;
+  errors.value.stockDescription = !stockDescription.value;
+  errors.value.stockImage = !stockImage.value;
+  errors.value.stockStart = !stockStart.value;
+  errors.value.stockEnd = !stockEnd.value;
   try {
     const formData = new FormData();
     formData.append('title', stockTitle.value);
@@ -1760,23 +2053,25 @@ const createStock = async () => {
 
     await axios.post(`/promos`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
     await fetchStocks();
-    stockTitle.value = '';
-    stockDescription.value = '';
-    stockStart.value = '';
-    stockEnd.value = '';
-    stockArchived.value = false;
-    stockImage.value = null;
-    stockFile.value.value = ''
+    resetStock();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
 const updateStock = async () => {
+  errors.value.stockTitle = false;
+  errors.value.stockDescription = false;
+  errors.value.stockStart = false;
+  errors.value.stockEnd = false;
+  errors.value.stockTitle = !stockTitle.value;
+  errors.value.stockDescription = !stockDescription.value;
+  errors.value.stockStart = !stockStart.value;
+  errors.value.stockEnd = !stockEnd.value;
   try {
     const formData = new FormData();
     formData.append('title', stockTitle.value);
@@ -1790,19 +2085,12 @@ const updateStock = async () => {
 
     await axios.post(`/promos/${currentStockId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
     await fetchStocks();
-    isEditingStock.value = false;
-    stockTitle.value = '';
-    stockDescription.value = '';
-    stockStart.value = '';
-    stockEnd.value = '';
-    stockArchived.value = false;
-    stockImage.value = null;
-    stockFile.value.value = ''
+    resetStock();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -1811,7 +2099,7 @@ const deleteStock = async (idStock) => {
   try {
     await axios.delete(`/promos/${idStock}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchStocks();
@@ -1827,6 +2115,11 @@ const editStock = (stock) => {
   stockStart.value = stock.start;
   stockEnd.value = stock.end;
   stockArchived.value = stock.is_archived;
+  errors.value.stockTitle = false;
+  errors.value.stockDescription = false;
+  errors.value.stockImage = false;
+  errors.value.stockStart = false;
+  errors.value.stockEnd = false;
 };
 const resetStock = () => {
   isEditingStock.value = false;
@@ -1838,6 +2131,11 @@ const resetStock = () => {
   stockEnd.value = '';
   stockArchived.value = false;
   currentStockId.value = null
+  errors.value.stockTitle = false;
+  errors.value.stockDescription = false;
+  errors.value.stockImage = false;
+  errors.value.stockStart = false;
+  errors.value.stockEnd = false;
 };
 
 //---------------------------------------------------------------------------------
@@ -1860,7 +2158,7 @@ const fetchPlace = async () => {
   try {
     const response = await axios.get(`/purchase-place`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     place.value = response.data;
@@ -1879,32 +2177,40 @@ const handleFileChangePlace = (event) => {
   }
 };
 const createPlace = async () => {
+  errors.value.placeName = false;
+  errors.value.placeSelect = false;
+  errors.value.placeImg = false;
+  errors.value.placeName = !placeName.value;
+  errors.value.placeSelect = !placeSelect.value;
+  errors.value.placeImg = !placeImg.value;
   try {
     const formData = new FormData();
     formData.append('name', placeName.value);
     formData.append('type', placeSelect.value);
-    formData.append('image', placeImg.value);
+    if (placeImg.value) {
+      formData.append('image', placeImg.value);
+    }
     if (placeUrl.value) {
       formData.append('url', placeUrl.value);
     }
 
     await axios.post(`/purchase-place`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
     await fetchPlace();
-    placeName.value = '';
-    placeSelect.value = '';
-    placeUrl.value = '';
-    placeImg.value = null;
-    placeFile.value.value = ''
+    resetPlace();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
 const updatePlace = async () => {
+  errors.value.placeName = false;
+  errors.value.placeSelect = false;
+  errors.value.placeName = !placeName.value;
+  errors.value.placeSelect = !placeSelect.value;
   try {
     const formData = new FormData();
     formData.append('name', placeName.value);
@@ -1918,7 +2224,7 @@ const updatePlace = async () => {
 
     await axios.post(`/purchase-place/${currentPlaceId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -1932,7 +2238,7 @@ const deletePlace = async (idPlace) => {
   try {
     await axios.delete(`/purchase-place/${idPlace}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchPlace();
@@ -1946,6 +2252,9 @@ const editPlace = (place) => {
   placeName.value = place.name;
   placeUrl.value = place.url;
   placeSelect.value = place.type;
+  errors.value.placeName = false;
+  errors.value.placeSelect = false;
+  errors.value.placeImg = false;
 };
 const resetPlace = () => {
   isEditingPlace.value = false;
@@ -1955,6 +2264,9 @@ const resetPlace = () => {
   placeFile.value.value = ''
   placeSelect.value = ''
   currentPlaceId.value = null
+  errors.value.placeName = false;
+  errors.value.placeSelect = false;
+  errors.value.placeImg = false;
 };
 
 //---------------------------------------------------------------------------------
@@ -1972,7 +2284,7 @@ const fetchDelivery = async () => {
   try {
     const response = await axios.get(`/pages/3`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     delivery.value = response.data;
@@ -1990,6 +2302,10 @@ const handleExportHtmlDelivery = (html) => {
   deliveryDescription.value = html;
 }
 const createDelivery = async () => {
+  errors.value.deliveryTitle = false;
+  errors.value.deliveryImage = false;
+  errors.value.deliveryTitle = !deliveryTitle.value;
+  errors.value.deliveryImage = !deliveryImage.value;
   try {
     const formData = new FormData();
     formData.append('sections[0][title]', deliveryTitle.value);
@@ -1998,20 +2314,19 @@ const createDelivery = async () => {
 
     await axios.post(`/pages/3?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
     await fetchDelivery();
-    deliveryTitle.value = '';
-    deliveryDescription.value = '';
-    deliveryImage.value = null;
-    deliveryFile.value.value = ''
+    resetDelivery();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
 }
 const updateDelivery = async () => {
+  errors.value.deliveryTitle = false;
+  errors.value.deliveryTitle = !deliveryTitle.value;
   try {
     const formData = new FormData();
     formData.append('sections[0][id]', currentDeliveryId.value);
@@ -2023,7 +2338,7 @@ const updateDelivery = async () => {
 
     await axios.post(`/pages/3?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2041,7 +2356,7 @@ const deleteDelivery = async (idBlock) => {
   try {
     await axios.delete(`/pages/${idBlock}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchDelivery();
@@ -2054,6 +2369,8 @@ const editDelivery = (block) => {
   currentDeliveryId.value = block.id;
   deliveryTitle.value = block.title;
   deliveryDescription.value = block.html;
+  errors.value.deliveryTitle = false;
+  errors.value.deliveryImage = false;
 };
 const resetDelivery = () => {
   isEditingDelivery.value = false;
@@ -2062,6 +2379,8 @@ const resetDelivery = () => {
   deliveryImage.value = null;
   deliveryFile.value.value = ''
   currentDeliveryId.value = null
+  errors.value.deliveryTitle = false;
+  errors.value.deliveryImage = false;
 };
 
 //---------------------------------------------------------------------------------
@@ -2081,7 +2400,7 @@ const fetchSocials = async () => {
   try {
     const response = await axios.get(`/socials`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     socials.value = response.data;
@@ -2102,6 +2421,14 @@ const handleFileChangeSocialFooter = (event) => {
   }
 };
 const createSocial = async () => {
+  errors.value.socialPlatform = false;
+  errors.value.socialUrl = false;
+  errors.value.socialImage = false;
+  errors.value.socialImageFooter = false;
+  errors.value.socialPlatform = !socialPlatform.value;
+  errors.value.socialUrl = !socialUrl.value;
+  errors.value.socialImage = !socialImage.value;
+  errors.value.socialImageFooter = !socialImageFooter.value;
   try {
     const formData = new FormData();
     formData.append('platform', socialPlatform.value);
@@ -2111,7 +2438,7 @@ const createSocial = async () => {
 
     await axios.post(`/socials`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2122,6 +2449,10 @@ const createSocial = async () => {
   }
 }
 const updateSocial = async () => {
+  errors.value.socialPlatform = false;
+  errors.value.socialUrl = false;
+  errors.value.socialPlatform = !socialPlatform.value;
+  errors.value.socialUrl = !socialUrl.value;
   try {
     const formData = new FormData();
     formData.append('platform', socialPlatform.value);
@@ -2135,7 +2466,7 @@ const updateSocial = async () => {
 
     await axios.post(`/socials/${currentSocialId.value}?_method=patch`, formData, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
         'Content-Type': 'multipart/form-data',
       },
     });
@@ -2149,7 +2480,7 @@ const deleteSocial = async (idSocial) => {
   try {
     await axios.delete(`/socials/${idSocial}`, {
       headers: {
-        'Authorization': `Bearer ${result.value.token}`,
+        
       },
     });
     await fetchSocials();
@@ -2162,6 +2493,10 @@ const editSocial = (block) => {
   currentSocialId.value = block.id;
   socialPlatform.value = block.platform;
   socialUrl.value = block.url;
+  errors.value.socialPlatform = false;
+  errors.value.socialUrl = false;
+  errors.value.socialImage = false;
+  errors.value.socialImageFooter = false;
 };
 const resetSocial = () => {
   isEditingSocial.value = false;
@@ -2172,6 +2507,10 @@ const resetSocial = () => {
   socialImageFooter.value = null;
   socialFileFooter.value.value = ''
   currentSocialId.value = null
+  errors.value.socialPlatform = false;
+  errors.value.socialUrl = false;
+  errors.value.socialImage = false;
+  errors.value.socialImageFooter = false;
 };
 
 </script>
@@ -2256,6 +2595,7 @@ const resetSocial = () => {
         >
           Соц сети
         </p>
+        <button class="main_btn" @click="exitAdmin">Выйти</button>
       </div>
       <div class="admin-panel__content" v-if="activeTab === 'Главная'">
         <h2>Добро пожаловать!</h2>
@@ -2266,6 +2606,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="titleBanner"
               placeholder="Введите название"
+              :class="{ error: errors.titleBanner }"
           />
           <input
               type="number"
@@ -2276,10 +2617,11 @@ const resetSocial = () => {
           <textarea
               class="basket__form_input admin-panel__content_textarea"
               v-model="descriptionBanner"
+              :class="{ error: errors.descriptionBanner }"
               placeholder="Введите описание"
           ></textarea>
           Продукт
-          <select v-model="productBanners" class="basket__form_input admin-panel__content_select">
+          <select v-model="productBanners" :class="{ error: errors.productBanners }" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите продукт</option>
             <option v-for="product in allProducts" :key="product.id" :value="product.id">
               {{ product.name }}
@@ -2288,6 +2630,7 @@ const resetSocial = () => {
           <input
               type="file"
               ref="fileBanners"
+              :class="{ error: errors.photoBanners }"
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangeMainBanner"
               accept="image/*"
@@ -2300,6 +2643,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="titleBanner"
               placeholder="Введите название"
+              :class="{ error: errors.titleBanner }"
           />
           <input
               type="number"
@@ -2310,10 +2654,11 @@ const resetSocial = () => {
           <textarea
               class="basket__form_input admin-panel__content_textarea"
               v-model="descriptionBanner"
+              :class="{ error: errors.descriptionBanner }"
               placeholder="Введите описание"
           ></textarea>
           Продукт
-          <select v-model="productBanners" class="basket__form_input admin-panel__content_select">
+          <select v-model="productBanners" :class="{ error: errors.productBanners }" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите продукт</option>
             <option v-for="product in allProducts" :key="product.id" :value="product.id">
               {{ product.name }}
@@ -2366,6 +2711,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="titleSlider"
               placeholder="Введите название"
+              :class="{ error: errors.titleSlider }"
           />
           <input
               type="number"
@@ -2379,6 +2725,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangeSubBanners"
               accept="image/*"
+              :class="{ error: errors.photoSlider }"
           />
           <button class="main_btn" type="submit">Создать слайд</button>
         </form>
@@ -2388,6 +2735,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="titleSlider"
               placeholder="Введите название"
+              :class="{ error: errors.titleSlider }"
           />
           <input
               type="number"
@@ -2441,6 +2789,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="nameCategory"
               placeholder="Введите имя категории"
+              :class="{ error: errors.nameCategory }"
           />
           <select v-model="parentCategory" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите родительскую категорию</option>
@@ -2454,6 +2803,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangeCategory"
               accept="image/*"
+              :class="{ error: errors.photoCategory }"
           />
           <button class="main_btn" type="submit">Создать категорию</button>
         </form>
@@ -2463,13 +2813,14 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="nameCategory"
               placeholder="Введите новое имя категории"
+              :class="{ error: errors.nameCategory }"
           />
-          <select v-model="parentCategory" class="basket__form_input admin-panel__content_select">
-            <option value="" disabled>Выберите родительскую категорию</option>
-            <option v-for="cat in categoriesLevel" :key="cat.id" :value="cat.id">
-              {{ cat.name }}
-            </option>
-          </select>
+<!--          <select v-model="parentCategory" class="basket__form_input admin-panel__content_select">-->
+<!--            <option value="">Выберите родительскую категорию</option>-->
+<!--            <option v-for="cat in categoriesLevel" :key="cat.id" :value="cat.id">-->
+<!--              {{ cat.name }}-->
+<!--            </option>-->
+<!--          </select>-->
           <input
               type="file"
               class="basket__form_input admin-panel__content_input"
@@ -2544,6 +2895,7 @@ const resetSocial = () => {
                 class="basket__form_input admin-panel__content_input"
                 v-model="nameOptions"
                 placeholder="Введите имя параметра"
+                :class="{ error: errors.nameOptions }"
             />
             <button class="main_btn" type="submit">Создать параметр</button>
           </form>
@@ -2553,6 +2905,7 @@ const resetSocial = () => {
                 class="basket__form_input admin-panel__content_input"
                 v-model="nameOptions"
                 placeholder="Введите имя параметра"
+                :class="{ error: errors.nameOptions }"
             />
             <button class="main_btn" type="submit">Изменить параметр</button>
             <button class="main_btn" type="button" @click="resetOptions">Отмена</button>
@@ -2564,12 +2917,14 @@ const resetSocial = () => {
                 class="basket__form_input admin-panel__content_input"
                 v-model="optionValue"
                 placeholder="Введите имя пункта"
+                :class="{ error: errors.optionValue }"
             />
             <input
                 type="number"
                 class="basket__form_input admin-panel__content_input"
                 v-model="optionPrice"
                 placeholder="Введите цену пункта"
+                :class="{ error: errors.optionPrice }"
             />
             <input
                 type="file"
@@ -2593,12 +2948,14 @@ const resetSocial = () => {
                 class="basket__form_input admin-panel__content_input"
                 v-model="optionValue"
                 placeholder="Введите имя пункта"
+                :class="{ error: errors.optionValue }"
             />
             <input
                 type="number"
                 class="basket__form_input admin-panel__content_input"
                 v-model="optionPrice"
                 placeholder="Введите цену пункта"
+                :class="{ error: errors.optionPrice }"
             />
             <input
                 type="file"
@@ -2665,14 +3022,16 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="productName"
               placeholder="Введите имя товара"
+              :class="{ error: errors.productName }"
           />
           <textarea
               class="basket__form_input admin-panel__content_textarea"
               v-model="productDescription"
               placeholder="Введите описание"
+              :class="{ error: errors.productDescription }"
           ></textarea>
           Категория
-          <select v-model="productCategory" class="basket__form_input admin-panel__content_select">
+          <select v-model="productCategory" :class="{ error: errors.productCategory }" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option v-for="category in allCategories" :key="category.id" :value="category.id">
               {{ category.name }}
@@ -2690,6 +3049,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="productPrice"
               placeholder="Введите цену"
+              :class="{ error: errors.productPrice }"
           />
           <button class="main_btn" type="submit">Создать товар</button>
         </form>
@@ -2699,14 +3059,16 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="productName"
               placeholder="Введите имя товара"
+              :class="{ error: errors.productName }"
           />
           <textarea
               class="basket__form_input admin-panel__content_textarea"
               v-model="productDescription"
               placeholder="Введите описание"
+              :class="{ error: errors.productDescription }"
           ></textarea>
           Категория
-          <select v-model="productCategory" class="basket__form_input admin-panel__content_select">
+          <select v-model="productCategory" :class="{ error: errors.productCategory }" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option v-for="category in categories" :key="category.id" :value="category.id">
               {{ category.name }}
@@ -2724,6 +3086,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="productPrice"
               placeholder="Введите цену"
+              :class="{ error: errors.productPrice }"
           />
           <button class="main_btn" type="submit">Изменить товар</button>
           <button class="main_btn" @click="resetProduct">Отмена</button>
@@ -3117,14 +3480,16 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="about_usTitle"
               placeholder="Введите название"
+              :class="{ error: errors.about_usTitle }"
           />
-          <Editor @export-html="handleExportHtmlAbout_usBlock"/>
+          <Editor @export-html="handleExportHtmlAbout_usBlock" :class="{ error: errors.about_usDescription }"/>
           <input
               type="file"
               ref="fileBanners"
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangeAbout_usBlock"
               accept="image/*"
+              :class="{ error: errors.about_usImage }"
           />
           <button class="main_btn" type="submit">Создать блок</button>
         </form>
@@ -3134,8 +3499,9 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="about_usTitle"
               placeholder="Введите название"
+              :class="{ error: errors.about_usTitle }"
           />
-          <Editor :initialHtml="about_usDescription" @export-html="handleExportHtmlAbout_usBlock"/>
+          <Editor :initialHtml="about_usDescription" @export-html="handleExportHtmlAbout_usBlock" :class="{ error: errors.about_usDescription }"/>
           <input
               type="file"
               ref="fileBanners"
@@ -3179,12 +3545,14 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="patentName"
               placeholder="Введите название"
+              :class="{ error: errors.patentName }"
           />
           <input
               type="date"
               class="basket__form_input admin-panel__content_input"
               v-model="patentDate"
               placeholder="Введите дату"
+              :class="{ error: errors.patentDate }"
           />
           <label class="admin-panel__content_label">Текстовый файл</label>
           <input
@@ -3193,6 +3561,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangePatent"
               accept="text/plain,.csv,.json"
+              :class="{ error: errors.patentText }"
           />
           <button class="main_btn" type="submit">Создать</button>
         </form>
@@ -3223,24 +3592,28 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="teamName"
               placeholder="Введите ФИО"
+              :class="{ error: errors.teamName }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="teamDescription"
               placeholder="Введите описание"
+              :class="{ error: errors.teamDescription }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="teamPhone"
               placeholder="Введите телефон"
+              :class="{ error: errors.teamPhone }"
           />
           <input
               type="email"
               class="basket__form_input admin-panel__content_input"
               v-model="teamEmail"
               placeholder="Введите почту"
+              :class="{ error: errors.teamEmail }"
           />
           <input
               type="file"
@@ -3248,6 +3621,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangeTeam"
               accept="image/*"
+              :class="{ error: errors.teamImage }"
           />
           <button class="main_btn" type="submit">Создать</button>
         </form>
@@ -3257,24 +3631,28 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="teamName"
               placeholder="Введите ФИО"
+              :class="{ error: errors.teamName }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="teamDescription"
               placeholder="Введите описание"
+              :class="{ error: errors.teamDescription }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="teamPhone"
               placeholder="Введите телефон"
+              :class="{ error: errors.teamPhone }"
           />
           <input
               type="email"
               class="basket__form_input admin-panel__content_input"
               v-model="teamEmail"
               placeholder="Введите почту"
+              :class="{ error: errors.teamEmail }"
           />
           <input
               type="file"
@@ -3329,24 +3707,28 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="addressContact"
               placeholder="Введите адрес"
+              :class="{ error: errors.addressContact }"
           />
           <input
               type="email"
               class="basket__form_input admin-panel__content_input"
               v-model="emailContact"
               placeholder="Введите почту"
+              :class="{ error: errors.emailContact }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="phoneContact"
               placeholder="Введите телефон"
+              :class="{ error: errors.phoneContact }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="mapContact"
               placeholder="Введите координаты: x, y"
+              :class="{ error: errors.mapContact }"
           />
           <button class="main_btn" type="submit">Изменить</button>
         </form>
@@ -3375,36 +3757,42 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="companyName"
               placeholder="Введите название"
+              :class="{ error: errors.companyName }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="companyMainName"
               placeholder="Введите полное название"
+              :class="{ error: errors.companyMainName }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="companyOffice"
               placeholder="Введите адрес офиса"
+              :class="{ error: errors.companyOffice }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="companyProduction"
               placeholder="Введите производство"
+              :class="{ error: errors.companyProduction }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="companyPhone"
               placeholder="Введите телефон"
+              :class="{ error: errors.companyPhone }"
           />
           <input
               type="email"
               class="basket__form_input admin-panel__content_input"
               v-model="companyEmail"
               placeholder="Введите почту"
+              :class="{ error: errors.companyEmail }"
           />
           <button class="main_btn" type="submit">Создать компанию</button>
         </form>
@@ -3414,36 +3802,42 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="companyName"
               placeholder="Введите название"
+              :class="{ error: errors.companyName }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="companyMainName"
               placeholder="Введите полное название"
+              :class="{ error: errors.companyMainName }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="companyOffice"
               placeholder="Введите адрес офиса"
+              :class="{ error: errors.companyOffice }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="companyProduction"
               placeholder="Введите производство"
+              :class="{ error: errors.companyProduction }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="companyPhone"
               placeholder="Введите телефон"
+              :class="{ error: errors.companyPhone }"
           />
           <input
               type="email"
               class="basket__form_input admin-panel__content_input"
               v-model="companyEmail"
               placeholder="Введите почту"
+              :class="{ error: errors.companyEmail }"
           />
           <button class="main_btn" type="submit">Изменить компанию</button>
           <button class="main_btn" @click="resetCompany">Отмена</button>
@@ -3455,12 +3849,14 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="customName"
               placeholder="Введите название"
+              :class="{ error: errors.customName }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="customValue"
               placeholder="Введите значение"
+              :class="{ error: errors.customValue }"
           />
           <button class="main_btn" type="submit">Добавить параметр</button>
           <button class="main_btn" @click="resetCompany">Отмена</button>
@@ -3471,12 +3867,14 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="customName"
               placeholder="Введите название"
+              :class="{ error: errors.customName }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="customValue"
               placeholder="Введите значение"
+              :class="{ error: errors.customValue }"
           />
           <button class="main_btn" type="submit">Изменить параметр</button>
           <button class="main_btn" @click="resetCustom">Отмена</button>
@@ -3544,6 +3942,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="promoTitle"
               placeholder="Введите название"
+              :class="{ error: errors.promoTitle }"
           />
           <Editor @export-html="handleExportHtmlPromoBlock"/>
           <input
@@ -3552,6 +3951,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangePromo"
               accept="image/*"
+              :class="{ error: errors.promoImage }"
           />
           <button class="main_btn" type="submit">Создать блок</button>
         </form>
@@ -3561,6 +3961,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="promoTitle"
               placeholder="Введите название"
+              :class="{ error: errors.promoTitle }"
           />
           <Editor :initialHtml="promoDescription" @export-html="handleExportHtmlPromoBlock"/>
           <input
@@ -3606,24 +4007,28 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="stockTitle"
               placeholder="Введите название"
+              :class="{ error: errors.stockTitle }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="stockDescription"
               placeholder="Введите описание"
+              :class="{ error: errors.stockDescription }"
           />
           <input
               type="date"
               class="basket__form_input admin-panel__content_input"
               v-model="stockStart"
               placeholder="Введите дату начала"
+              :class="{ error: errors.stockStart }"
           />
           <input
               type="date"
               class="basket__form_input admin-panel__content_input"
               v-model="stockEnd"
               placeholder="Введите дату конца"
+              :class="{ error: errors.stockEnd }"
           />
           В архив
           <input
@@ -3638,6 +4043,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangeStock"
               accept="image/*"
+              :class="{ error: errors.stockImage }"
           />
           <button class="main_btn" type="submit">Создать акцию</button>
         </form>
@@ -3647,24 +4053,28 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="stockTitle"
               placeholder="Введите название"
+              :class="{ error: errors.stockTitle }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="stockDescription"
               placeholder="Введите описание"
+              :class="{ error: errors.stockDescription }"
           />
           <input
               type="date"
               class="basket__form_input admin-panel__content_input"
               v-model="stockStart"
               placeholder="Введите дату начала"
+              :class="{ error: errors.stockStart }"
           />
           <input
               type="date"
               class="basket__form_input admin-panel__content_input"
               v-model="stockEnd"
               placeholder="Введите дату конца"
+              :class="{ error: errors.stockEnd }"
           />
           В архив
           <input
@@ -3725,8 +4135,9 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="placeName"
               placeholder="Введите название"
+              :class="{ error: errors.placeName }"
           />
-          <select v-model="placeSelect" class="basket__form_input admin-panel__content_select">
+          <select v-model="placeSelect" :class="{ error: errors.placeSelect }" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option value='marketplace'>
               Маркетплейсы
@@ -3762,8 +4173,9 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="placeName"
               placeholder="Введите название"
+              :class="{ error: errors.placeName }"
           />
-          <select v-model="placeSelect" class="basket__form_input admin-panel__content_select">
+          <select v-model="placeSelect" :class="{ error: errors.placeSelect }" class="basket__form_input admin-panel__content_select">
             <option value="" disabled>Выберите категорию</option>
             <option value='marketplace'>
               Маркетплейсы
@@ -3920,6 +4332,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="deliveryTitle"
               placeholder="Введите название"
+              :class="{ error: errors.deliveryTitle }"
           />
           <Editor @export-html="handleExportHtmlDelivery"/>
           <input
@@ -3928,6 +4341,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangeDelivery"
               accept="image/*"
+              :class="{ error: errors.deliveryImage }"
           />
           <button class="main_btn" type="submit">Создать блок</button>
         </form>
@@ -3937,6 +4351,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="deliveryTitle"
               placeholder="Введите название"
+              :class="{ error: errors.deliveryTitle }"
           />
           <Editor :initialHtml="deliveryDescription" @export-html="handleExportHtmlDelivery"/>
           <input
@@ -3985,12 +4400,14 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="socialPlatform"
               placeholder="Введите название"
+              :class="{ error: errors.socialPlatform }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="socialUrl"
               placeholder="Введите ссылку"
+              :class="{ error: errors.socialUrl }"
           />
           Фото основное
           <input
@@ -3999,6 +4416,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangeSocial"
               accept="image/*"
+              :class="{ error: errors.socialImage }"
           />
           Фото для подвала
           <input
@@ -4007,6 +4425,7 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               @change="handleFileChangeSocialFooter"
               accept="image/*"
+              :class="{ error: errors.socialImageFooter }"
           />
           <button class="main_btn" type="submit">Создать соц сеть</button>
         </form>
@@ -4016,12 +4435,14 @@ const resetSocial = () => {
               class="basket__form_input admin-panel__content_input"
               v-model="socialPlatform"
               placeholder="Введите название"
+              :class="{ error: errors.socialPlatform }"
           />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="socialUrl"
               placeholder="Введите ссылку"
+              :class="{ error: errors.socialUrl }"
           />
           Фото основное
           <input

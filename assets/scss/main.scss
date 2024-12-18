@@ -15,7 +15,17 @@ a {
   text-decoration: none;
 }
 .container {
+  height: 100vh;
+  &.active {
+    overflow: hidden;
+  }
   &-content {
+    height: calc(100% - 108px);
+    display: flex;
+    flex-direction: column;
+    @media screen and (max-width: $medium) {
+      height: unset;
+    }
     &.active {
       position: relative;
       &::after {
@@ -32,6 +42,14 @@ a {
     &__page {
       //max-width: 1440px;
       //margin: 0 auto;
+      //min-height: calc(100vh - 778px);
+      flex: 1 0 auto;
+      //@media screen and (max-width: 1505px) {
+      //  min-height: calc(100vh - 794px);
+      //}
+      //@media screen and (max-width: $medium) {
+      //  min-height: unset;
+      //}
     }
   }
 }

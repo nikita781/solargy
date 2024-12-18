@@ -113,18 +113,31 @@ let interval;
 const nameUser = ref('');
 const email = ref('');
 const comment = ref('');
+const errors = ref({
+  name: false,
+  email: false,
+  comment: false
+});
 
 const addSuppurt = async () => {
-  try {
-    const formData = new FormData();
-    formData.append('name', nameUser.value);
-    formData.append('email', email.value);
-    formData.append('comment', comment.value);
+  errors.value.name = false;
+  errors.value.email = false;
+  errors.value.comment = false;
+  errors.value.name = !nameUser.value.trim();
+  errors.value.email = !email.value.trim();
+  errors.value.comment = !comment.value.trim();
+  if (!errors.value.name && !errors.value.email && !errors.value.comment) {
+    try {
+      const formData = new FormData();
+      formData.append('name', nameUser.value);
+      formData.append('email', email.value);
+      formData.append('comment', comment.value);
 
-    await axios.post(`/support`, formData);
-    reset();
-  } catch (error) {
-    console.error('Ошибка:', error.response?.data || error);
+      await axios.post(`/support`, formData);
+      reset();
+    } catch (error) {
+      console.error('Ошибка:', error.response?.data || error);
+    }
   }
 };
 
@@ -299,11 +312,11 @@ onUnmounted(() => {
             <p class="questions__form_title">Оставьте свое обращение</p>
             <div class="questions__form_inputs">
               <p class="questions__form_name">Ваше имя</p>
-              <input class="questions__form_input" type="text" v-model="nameUser" placeholder="Введите имя">
+              <input class="questions__form_input" type="text" v-model="nameUser" placeholder="Введите имя" :class="{ error: errors.name }">
               <p class="questions__form_name">Ваш e-mail</p>
-              <input class="questions__form_input" type="email" v-model="email" placeholder="Введите e-mail">
+              <input class="questions__form_input" type="email" v-model="email" placeholder="Введите e-mail" :class="{ error: errors.email }">
               <p class="questions__form_name">Комментарий</p>
-              <textarea class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий"></textarea>
+              <textarea class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий" :class="{ error: errors.comment }"></textarea>
             </div>
             <button class="main_btn questions__form_btn" @click="addSuppurt">Отправить заявку</button>
           </div>
