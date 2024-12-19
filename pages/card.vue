@@ -118,7 +118,7 @@ const swiperConfig = reactive({
   slidesPerView: 4,
   slidesPerGroup: 1,
   speed: 500,
-  loop: false,
+  loop: true,
   watchSlidesProgress: true,
   direction: "vertical",
   mousewheel: {
