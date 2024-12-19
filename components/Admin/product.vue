@@ -34,33 +34,43 @@ const oneProd = ref([]);
 
 const productPhoto = ref(null);
 const productFile = ref(null);
+const productPreview = ref(null);
 const productOrder = ref(null);
 const productPhoto1 = ref(null);
 const productFile1 = ref(null);
+const productPreview1 = ref(null);
 const productOrder1 = ref(null);
 const productPhoto2 = ref(null);
 const productFile2 = ref(null);
+const productPreview2 = ref(null);
 const productOrder2 = ref(null);
 const productPhoto3 = ref(null);
 const productFile3 = ref(null);
+const productPreview3 = ref(null);
 const productOrder3 = ref(null);
 const productPhoto4 = ref(null);
 const productFile4 = ref(null);
+const productPreview4 = ref(null);
 const productOrder4 = ref(null);
 const productPhoto5 = ref(null);
 const productFile5 = ref(null);
+const productPreview5 = ref(null);
 const productOrder5 = ref(null);
 const productPhoto6 = ref(null);
 const productFile6 = ref(null);
+const productPreview6 = ref(null);
 const productOrder6 = ref(null);
 const productPhoto7 = ref(null);
 const productFile7 = ref(null);
+const productPreview7 = ref(null);
 const productOrder7 = ref(null);
 const productPhoto8 = ref(null);
 const productFile8 = ref(null);
+const productPreview8 = ref(null);
 const productOrder8 = ref(null);
 const productPhoto9 = ref(null);
 const productFile9 = ref(null);
+const productPreview9 = ref(null);
 const productOrder9 = ref(null);
 
 const productOption = ref(null);
@@ -71,6 +81,7 @@ const productPropertieTitle = ref(null);
 const productPropertieDescription = ref('');
 const productFilePropertie = ref(null);
 const productPhotoPropertie = ref(null);
+const productPreviewPropertie = ref(null);
 const productTextFile = ref(null);
 const productTextPropertie = ref(null);
 const isEditingPropertie = ref(false);
@@ -140,6 +151,7 @@ const fetchValueByOption = async (optionId) => {
   }
 };
 const createProductOptionValue = async () => {
+  isLoading.value = true;
   try {
     const formData = new FormData();
     formData.append('options[0][id]', idByOption.value);
@@ -153,12 +165,15 @@ const createProductOptionValue = async () => {
     idByOption.value = '';
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 const handleExportHtmlPropertie = (html) => {
   productPropertieDescription.value = html;
 };
 const createProduct = async () => {
+  isLoading.value = true;
   errors.value.productCategory = false;
   errors.value.productName = false;
   errors.value.productDescription = false;
@@ -186,9 +201,12 @@ const createProduct = async () => {
     resetProduct();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 const updateProduct = async () => {
+  isLoading.value = true;
   errors.value.productCategory = false;
   errors.value.productName = false;
   errors.value.productDescription = false;
@@ -217,6 +235,8 @@ const updateProduct = async () => {
     resetProduct();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 const editProduct = (product) => {
@@ -256,6 +276,7 @@ const fetchProductById = async (productId) => {
   }
 };
 const deleteProductPhoto = async (idValue) => {
+  isLoading.value = true;
   try {
     await axios.delete(`/productPhoto/${idValue}`, {
       headers: {},
@@ -263,6 +284,8 @@ const deleteProductPhoto = async (idValue) => {
     await fetchProductById(currentProductId.value);
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -270,64 +293,75 @@ const handleFileChangeProductPhoto = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto.value = file;
+    productPreview.value = URL.createObjectURL(file);
   }
 };
 const handleFileChangeProductPhoto1 = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto1.value = file;
+    productPreview1.value = URL.createObjectURL(file);
   }
 };
 const handleFileChangeProductPhoto2 = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto2.value = file;
+    productPreview2.value = URL.createObjectURL(file);
   }
 };
 const handleFileChangeProductPhoto3 = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto3.value = file;
+    productPreview3.value = URL.createObjectURL(file);
   }
 };
 const handleFileChangeProductPhoto4 = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto4.value = file;
+    productPreview4.value = URL.createObjectURL(file);
   }
 };
 const handleFileChangeProductPhoto5 = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto5.value = file;
+    productPreview5.value = URL.createObjectURL(file);
   }
 };
 const handleFileChangeProductPhoto6 = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto6.value = file;
+    productPreview6.value = URL.createObjectURL(file);
   }
 };
 const handleFileChangeProductPhoto7 = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto7.value = file;
+    productPreview7.value = URL.createObjectURL(file);
   }
 };
 const handleFileChangeProductPhoto8 = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto8.value = file;
+    productPreview8.value = URL.createObjectURL(file);
   }
 };
 const handleFileChangeProductPhoto9 = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhoto9.value = file;
+    productPreview9.value = URL.createObjectURL(file);
   }
 };
 
 const addProductPhoto = async () => {
+  isLoading.value = true;
   try {
     const formData = new FormData();
     formData.append('photos[0][photo]', productPhoto.value);
@@ -398,39 +432,52 @@ const addProductPhoto = async () => {
     await fetchProductById(currentProductId.value);
     productPhoto.value = null;
     productFile.value.value = ''
+    productPreview.value = null
     productOrder.value = '';
     productPhoto1.value = null;
     productFile1.value.value = ''
+    productPreview1.value = null
     productOrder1.value = '';
     productPhoto2.value = null;
     productFile2.value.value = ''
+    productPreview2.value = null
     productOrder2.value = '';
     productPhoto3.value = null;
     productFile3.value.value = ''
+    productPreview3.value = null
     productOrder3.value = '';
     productPhoto4.value = null;
     productFile4.value.value = ''
+    productPreview4.value = null
     productOrder4.value = '';
     productPhoto5.value = null;
     productFile5.value.value = ''
+    productPreview5.value = null
     productOrder5.value = '';
     productPhoto6.value = null;
     productFile6.value.value = ''
+    productPreview6.value = null
     productOrder6.value = '';
     productPhoto7.value = null;
     productFile7.value.value = ''
+    productPreview7.value = null
     productOrder7.value = '';
     productPhoto8.value = null;
     productFile8.value.value = ''
+    productPreview8.value = null
     productOrder8.value = '';
     productPhoto9.value = null;
     productFile9.value.value = ''
+    productPreview9.value = null
     productOrder9.value = '';
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 }
 const updateProductPhoto = async () => {
+  isLoading.value = true;
   try {
     const formData = new FormData();
     formData.append('photos[0][id]', currentProductPhotoId.value);
@@ -450,10 +497,13 @@ const updateProductPhoto = async () => {
     await fetchProductById(currentProductId.value);
     productPhoto.value = null;
     productFile.value.value = ''
+    productPreview.value = null
     productOrder.value = '';
     await resetProductPhoto();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 }
 const resetProductPhoto = async () => {
@@ -461,13 +511,16 @@ const resetProductPhoto = async () => {
   productPhoto.value = null;
   productFile.value = null;
   productOrder.value = null;
+  productPreview.value = null
 }
 const editProductPhoto = async (photo) => {
   currentProductPhotoId.value = photo.id;
   isEditingProductPhoto.value = true;
   productOrder.value = photo.order;
+  productPreview.value = photo.photo;
 }
 const addProductOption = async () => {
+  isLoading.value = true;
   try {
     const valueId = await fetchOptionsById(productOption.value);
     const formData = new FormData();
@@ -483,6 +536,8 @@ const addProductOption = async () => {
     productOption.value = null;
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 }
 const fetchOptionsById = async (optionId) => {
@@ -496,6 +551,7 @@ const fetchOptionsById = async (optionId) => {
   }
 };
 const deleteProductOption = async (idOption) => {
+  isLoading.value = true;
   try {
     // const valueId = await fetchOptionsById(idOption);
     await axios.delete(`/products/${oneProd.value.id}/values/${idOption}`, {
@@ -504,12 +560,15 @@ const deleteProductOption = async (idOption) => {
     await fetchProductById(currentProductId.value);
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 const handleFileChangeProductPropertie = (event) => {
   const file = event.target.files[0];
   if (file) {
     productPhotoPropertie.value = file;
+    productPreviewPropertie.value = URL.createObjectURL(file);
   }
 };
 const handleFileChangeText = (event) => {
@@ -525,6 +584,7 @@ const handleFileChangeText = (event) => {
   }
 }
 const addProductPropertie = async () => {
+  isLoading.value = true;
   try {
     const title = ref('');
     if (productPropertieTitle.value === '1') {
@@ -556,11 +616,15 @@ const addProductPropertie = async () => {
     productPhotoPropertie.value = null;
     productFilePropertie.value.value = '';
     productTextFile.value.value = ''
+    productPreviewPropertie.value = null
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 }
 const updateProductPropertie = async () => {
+  isLoading.value = true;
   try {
     const title = ref('');
     if (productPropertieTitle.value === '1') {
@@ -594,8 +658,11 @@ const updateProductPropertie = async () => {
     productPhotoPropertie.value = null;
     productFilePropertie.value.value = '';
     productTextFile.value.value = ''
+    productPreviewPropertie.value = false;
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 }
 const editProductPropertie = (propertie) => {
@@ -607,6 +674,7 @@ const editProductPropertie = (propertie) => {
     productPropertieTitle.value = '2';
   }
   productPropertieDescription.value = propertie.html;
+  productPreviewPropertie.value = propertie.image;
 };
 const resetProductPropertie = () => {
   isEditingPropertie.value = false;
@@ -617,8 +685,10 @@ const resetProductPropertie = () => {
   productPhotoPropertie.value = null;
   productFilePropertie.value.value = '';
   productTextFile.value.value = ''
+  productPreviewPropertie.value = null;
 };
 const deleteProductPropertie = async (idPropertie) => {
+  isLoading.value = true;
   try {
     await axios.delete(`/productProperties/${idPropertie}`, {
       headers: {},
@@ -626,9 +696,12 @@ const deleteProductPropertie = async (idPropertie) => {
     await fetchProductById(currentProductId.value);
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 const deleteProduct = async (idOptions) => {
+  isLoading.value = true;
   try {
     await axios.delete(`/products/${idOptions}`, {
       headers: {},
@@ -636,6 +709,8 @@ const deleteProduct = async (idOptions) => {
     await fetchAllProducts();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -683,7 +758,16 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите цену"
         :class="{ error: errors.productPrice }"
     />
-    <button class="main_btn" type="submit">Создать товар</button>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Создать товар</span>
+    </button>
   </form>
   <form class="admin-panel__content_form" v-if="isEditingProduct" @submit.prevent="updateProduct">
     <input
@@ -721,19 +805,39 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите цену"
         :class="{ error: errors.productPrice }"
     />
-    <button class="main_btn" type="submit">Изменить товар</button>
-    <button class="main_btn" @click="resetProduct">Отмена</button>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Изменить товар</span>
+    </button>
+    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
   </form>
   <h3 v-if="isEditingProduct">Добавить картинку</h3>
   <form class="admin-panel__content_form" v-if="isEditingProduct && !isEditingProductPhoto"
         @submit.prevent="addProductPhoto">
-    <input
-        type="file"
-        ref="productFile"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto"
-        accept="image/*"
-    />
+<!--    <input-->
+<!--        type="file"-->
+<!--        ref="productFile"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeProductPhoto"-->
+<!--        accept="image/*"-->
+<!--    />-->
+    <div class="input__wrapper">
+      <input ref="productFile" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview" class="input__file-icon" :src="productPreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         type="number"
         class="basket__form_input admin-panel__content_input"
@@ -741,14 +845,25 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите порядок фото"
     />
 
-    <input
-        v-if="productPhoto"
-        type="file"
-        ref="productFile1"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto1"
-        accept="image/*"
-    />
+<!--    <input-->
+<!--        v-if="productPhoto"-->
+<!--        type="file"-->
+<!--        ref="productFile1"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeProductPhoto1"-->
+<!--        accept="image/*"-->
+<!--    />-->
+    <div class="input__wrapper" v-if="productPhoto">
+      <input ref="productFile1" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto1" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview1" class="input__file-icon" :src="productPreview1" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         v-if="productPhoto"
         type="number"
@@ -757,14 +872,25 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите порядок фото"
     />
 
-    <input
-        v-if="productPhoto1"
-        type="file"
-        ref="productFile2"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto2"
-        accept="image/*"
-    />
+<!--    <input-->
+<!--        v-if="productPhoto1"-->
+<!--        type="file"-->
+<!--        ref="productFile2"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeProductPhoto2"-->
+<!--        accept="image/*"-->
+<!--    />-->
+    <div class="input__wrapper" v-if="productPhoto1">
+      <input ref="productFile2" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto2" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview2" class="input__file-icon" :src="productPreview2" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         v-if="productPhoto1"
         type="number"
@@ -773,14 +899,25 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите порядок фото"
     />
 
-    <input
-        v-if="productPhoto2"
-        type="file"
-        ref="productFile3"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto3"
-        accept="image/*"
-    />
+<!--    <input-->
+<!--        v-if="productPhoto2"-->
+<!--        type="file"-->
+<!--        ref="productFile3"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeProductPhoto3"-->
+<!--        accept="image/*"-->
+<!--    />-->
+    <div class="input__wrapper" v-if="productPhoto2">
+      <input ref="productFile3" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto3" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview3" class="input__file-icon" :src="productPreview3" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         v-if="productPhoto2"
         type="number"
@@ -789,14 +926,25 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите порядок фото"
     />
 
-    <input
-        v-if="productPhoto3"
-        type="file"
-        ref="productFile4"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto4"
-        accept="image/*"
-    />
+<!--    <input-->
+<!--        v-if="productPhoto3"-->
+<!--        type="file"-->
+<!--        ref="productFile4"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeProductPhoto4"-->
+<!--        accept="image/*"-->
+<!--    />-->
+    <div class="input__wrapper" v-if="productPhoto3">
+      <input ref="productFile4" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto4" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview4" class="input__file-icon" :src="productPreview4" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         v-if="productPhoto3"
         type="number"
@@ -805,14 +953,25 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите порядок фото"
     />
 
-    <input
-        v-if="productPhoto4"
-        type="file"
-        ref="productFile5"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto5"
-        accept="image/*"
-    />
+<!--    <input-->
+<!--        v-if="productPhoto4"-->
+<!--        type="file"-->
+<!--        ref="productFile5"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeProductPhoto5"-->
+<!--        accept="image/*"-->
+<!--    />-->
+    <div class="input__wrapper" v-if="productPhoto4">
+      <input ref="productFile5" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto5" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview5" class="input__file-icon" :src="productPreview5" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         v-if="productPhoto4"
         type="number"
@@ -821,14 +980,25 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите порядок фото"
     />
 
-    <input
-        v-if="productPhoto5"
-        type="file"
-        ref="productFile6"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto6"
-        accept="image/*"
-    />
+<!--    <input-->
+<!--        v-if="productPhoto5"-->
+<!--        type="file"-->
+<!--        ref="productFile6"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeProductPhoto6"-->
+<!--        accept="image/*"-->
+<!--    />-->
+    <div class="input__wrapper" v-if="productPhoto5">
+      <input ref="productFile6" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto6" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview6" class="input__file-icon" :src="productPreview6" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         v-if="productPhoto5"
         type="number"
@@ -837,14 +1007,25 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите порядок фото"
     />
 
-    <input
-        v-if="productPhoto6"
-        type="file"
-        ref="productFile7"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto7"
-        accept="image/*"
-    />
+<!--    <input-->
+<!--        v-if="productPhoto6"-->
+<!--        type="file"-->
+<!--        ref="productFile7"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeProductPhoto7"-->
+<!--        accept="image/*"-->
+<!--    />-->
+    <div class="input__wrapper" v-if="productPhoto6">
+      <input ref="productFile7" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto7" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview7" class="input__file-icon" :src="productPreview7" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         v-if="productPhoto6"
         type="number"
@@ -853,14 +1034,25 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите порядок фото"
     />
 
-    <input
-        v-if="productPhoto7"
-        type="file"
-        ref="productFile8"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto8"
-        accept="image/*"
-    />
+<!--    <input-->
+<!--        v-if="productPhoto7"-->
+<!--        type="file"-->
+<!--        ref="productFile8"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeProductPhoto8"-->
+<!--        accept="image/*"-->
+<!--    />-->
+    <div class="input__wrapper" v-if="productPhoto7">
+      <input ref="productFile8" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto8" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview8" class="input__file-icon" :src="productPreview8" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         v-if="productPhoto7"
         type="number"
@@ -869,14 +1061,25 @@ watch(() => currentProductId.value, () => {
         placeholder="Введите порядок фото"
     />
 
-    <input
-        v-if="productPhoto8"
-        type="file"
-        ref="productFile9"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto9"
-        accept="image/*"
-    />
+<!--    <input-->
+<!--        v-if="productPhoto8"-->
+<!--        type="file"-->
+<!--        ref="productFile9"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeProductPhoto9"-->
+<!--        accept="image/*"-->
+<!--    />-->
+    <div class="input__wrapper" v-if="productPhoto8">
+      <input ref="productFile9" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto9" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview9" class="input__file-icon" :src="productPreview9" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         v-if="productPhoto8"
         type="number"
@@ -884,26 +1087,48 @@ watch(() => currentProductId.value, () => {
         v-model="productOrder9"
         placeholder="Введите порядок фото"
     />
-    <button class="main_btn" type="submit">Добавить</button>
-    <button class="main_btn" @click="resetProduct">Отмена</button>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Добавить</span>
+    </button>
+    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
   </form>
   <form class="admin-panel__content_form" v-if="isEditingProduct && isEditingProductPhoto"
         @submit.prevent="updateProductPhoto">
-    <input
-        type="file"
-        ref="productFile"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPhoto"
-        accept="image/*"
-    />
+    <div class="input__wrapper">
+      <input ref="productFile" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPhoto" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview" class="input__file-icon" :src="productPreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <input
         type="number"
         class="basket__form_input admin-panel__content_input"
         v-model="productOrder"
         placeholder="Введите порядок фото"
     />
-    <button class="main_btn" type="submit">Изменить</button>
-    <button class="main_btn" @click="resetProductPhoto">Отмена</button>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Изменить</span>
+    </button>
+    <button class="main_btn" @click="resetProductPhoto" v-if="!isLoading">Отмена</button>
   </form>
   <table v-if="isEditingProduct">
     <thead>
@@ -937,8 +1162,17 @@ watch(() => currentProductId.value, () => {
         {{ option.name }}
       </option>
     </select>
-    <button class="main_btn" type="submit">Добавить</button>
-    <button class="main_btn" @click="resetProduct">Отмена</button>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Добавить</span>
+    </button>
+    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
   </form>
   <div
       v-if="isEditingProduct"
@@ -982,13 +1216,24 @@ watch(() => currentProductId.value, () => {
           {{ value.value }}
         </option>
       </select>
-      <button class="main_btn" type="submit">Привязать</button>
+      <button
+          class="main_btn"
+          type="submit"
+          :disabled="isLoading"
+          :class="{ 'loading': isLoading }"
+          :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+      >
+        <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+        <span v-else>Привязать</span>
+      </button>
     </form>
   </div>
   <h3 v-if="isEditingProduct">Добавить таб (максимум 2)</h3>
-  <form class="admin-panel__content_form"
-        v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 2"
-        @submit.prevent="addProductPropertie">
+  <form
+      class="admin-panel__content_form"
+      v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 2"
+      @submit.prevent="addProductPropertie"
+  >
     <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
       <option value="" disabled>Выберите категорию</option>
       <option value='1'>
@@ -999,14 +1244,17 @@ watch(() => currentProductId.value, () => {
       </option>
     </select>
     <Editor @export-html="handleExportHtmlPropertie"/>
-    <label class="admin-panel__content_label">Изображение</label>
-    <input
-        type="file"
-        ref="productFilePropertie"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPropertie"
-        accept="image/*"
-    />
+    <div class="input__wrapper">
+      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPropertie" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreviewPropertie" class="input__file-icon" :src="productPreviewPropertie" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <label class="admin-panel__content_label">Текстовый файл</label>
     <input
         type="file"
@@ -1015,11 +1263,22 @@ watch(() => currentProductId.value, () => {
         @change="handleFileChangeText"
         accept="text/plain,.csv,.json"
     />
-    <button class="main_btn" type="submit">Добавить</button>
-    <button class="main_btn" @click="resetProduct">Отмена</button>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Добавить</span>
+    </button>
+    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
   </form>
-  <form class="admin-panel__content_form" v-if="isEditingProduct && isEditingPropertie"
-        @submit.prevent="updateProductPropertie">
+  <form
+      class="admin-panel__content_form" v-if="isEditingProduct && isEditingPropertie"
+      @submit.prevent="updateProductPropertie"
+  >
     <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
       <option value="" disabled>Выберите категорию</option>
       <option value='1'>
@@ -1036,13 +1295,17 @@ watch(() => currentProductId.value, () => {
     <!--          ></textarea>-->
     <Editor :initialHtml="productPropertieDescription" @export-html="handleExportHtmlPropertie"/>
     <label class="admin-panel__content_label">Изображение</label>
-    <input
-        type="file"
-        ref="productFilePropertie"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeProductPropertie"
-        accept="image/*"
-    />
+    <div class="input__wrapper">
+      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeProductPropertie" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreviewPropertie" class="input__file-icon" :src="productPreviewPropertie" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
     <label class="admin-panel__content_label">Текстовый файл</label>
     <input
         type="file"
@@ -1051,8 +1314,17 @@ watch(() => currentProductId.value, () => {
         @change="handleFileChangeText"
         accept="text/plain,.csv,.json"
     />
-    <button class="main_btn" type="submit">Изменить</button>
-    <button class="main_btn" @click="resetProductPropertie">Отмена</button>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Изменить</span>
+    </button>
+    <button class="main_btn" @click="resetProductPropertie" v-if="!isLoading">Отмена</button>
   </form>
   <table v-if="isEditingProduct">
     <thead>

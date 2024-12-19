@@ -45,6 +45,7 @@ const about_usTitle = ref('');
 const about_usDescription = ref('');
 const about_usImage = ref(null);
 const about_usFile = ref(null);
+const about_usPreview = ref(null);
 const isEditingAbout_usBlock = ref(false);
 const currentAbout_usBlockId = ref(null);
 
@@ -65,9 +66,11 @@ const handleFileChangeAbout_usBlock = (event) => {
   const file = event.target.files[0];
   if (file) {
     about_usImage.value = file;
+    about_usPreview.value = URL.createObjectURL(file);
   }
 };
 const createAbout_usBlock = async () => {
+  isLoading.value = true;
   errors.value.about_usTitle = false;
   errors.value.about_usDescription = false;
   errors.value.about_usImage = false;
@@ -91,11 +94,15 @@ const createAbout_usBlock = async () => {
     about_usDescription.value = '';
     about_usImage.value = null;
     about_usFile.value.value = ''
+    about_usPreview.value = null;
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 }
 const updateAbout_usBlock = async () => {
+  isLoading.value = true;
   errors.value.about_usTitle = false;
   errors.value.about_usDescription = false;
   errors.value.about_usTitle = !about_usTitle.value;
@@ -119,9 +126,12 @@ const updateAbout_usBlock = async () => {
     resetAbout_usBlock();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 }
 const deleteAbout_usBlock = async (idBlock) => {
+  isLoading.value = true;
   try {
     await axios.delete(`/pages/${idBlock}`, {
       headers: {},
@@ -129,6 +139,8 @@ const deleteAbout_usBlock = async (idBlock) => {
     await fetchAbout_usBlock();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 const editAbout_usBlock = (block) => {
@@ -136,11 +148,13 @@ const editAbout_usBlock = (block) => {
   currentAbout_usBlockId.value = block.id;
   about_usTitle.value = block.title;
   about_usDescription.value = block.html;
+  about_usPreview.value = block.image;
   errors.value.about_usTitle = false;
   errors.value.about_usDescription = false;
   errors.value.about_usImage = false;
 };
 const resetAbout_usBlock = () => {
+  about_usPreview.value = null;
   isEditingAbout_usBlock.value = false;
   about_usTitle.value = '';
   about_usDescription.value = '';
@@ -183,6 +197,7 @@ const handleFileChangePatent = (event) => {
   }
 };
 const createProductPatent = async () => {
+  isLoading.value = true;
   errors.value.patentName = false;
   errors.value.patentDate = false;
   errors.value.patentText = false;
@@ -211,9 +226,12 @@ const createProductPatent = async () => {
     errors.value.patentText = false;
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 }
 const deletePatents = async (idPatent) => {
+  isLoading.value = true;
   try {
     await axios.delete(`/patents/${idPatent}`, {
       headers: {},
@@ -221,6 +239,8 @@ const deletePatents = async (idPatent) => {
     await fetchPatents();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -231,6 +251,7 @@ const teamName = ref('');
 const teamDescription = ref('');
 const teamImage = ref(null);
 const teamFile = ref(null);
+const teamPreview = ref(null);
 const teamPhone = ref('');
 const teamEmail = ref('');
 const currentTeamId = ref(null);
@@ -249,9 +270,11 @@ const handleFileChangeTeam = (event) => {
   const file = event.target.files[0];
   if (file) {
     teamImage.value = file;
+    teamPreview.value = URL.createObjectURL(file);
   }
 };
 const createTeams = async () => {
+  isLoading.value = true;
   errors.value.teamName = false;
   errors.value.teamDescription = false;
   errors.value.teamImage = false;
@@ -280,9 +303,12 @@ const createTeams = async () => {
     resetTeam();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 }
 const updateTeams = async () => {
+  isLoading.value = true;
   errors.value.teamName = false;
   errors.value.teamDescription = false;
   errors.value.teamPhone = false;
@@ -311,9 +337,12 @@ const updateTeams = async () => {
     resetTeam();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 }
 const deleteTeam = async (idTeam) => {
+  isLoading.value = true;
   try {
     await axios.delete(`/teams/${idTeam}`, {
       headers: {},
@@ -321,9 +350,12 @@ const deleteTeam = async (idTeam) => {
     await fetchTeams();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 const editTeam = (team) => {
+  teamPreview.value = team.image;
   isEditingTeam.value = true;
   currentTeamId.value = team.id;
   teamName.value = team.name;
@@ -337,6 +369,7 @@ const editTeam = (team) => {
   errors.value.teamEmail = false;
 };
 const resetTeam = () => {
+  teamPreview.value = null;
   isEditingTeam.value = false;
   teamName.value = '';
   teamDescription.value = '';
@@ -366,15 +399,27 @@ const resetTeam = () => {
         :class="{ error: errors.about_usTitle }"
     />
     <Editor @export-html="handleExportHtmlAbout_usBlock" :class="{ error: errors.about_usDescription }"/>
-    <input
-        type="file"
-        ref="fileBanners"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeAbout_usBlock"
-        accept="image/*"
-        :class="{ error: errors.about_usImage }"
-    />
-    <button class="main_btn" type="submit">Создать блок</button>
+    <div class="input__wrapper">
+      <input ref="fileBanners" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeAbout_usBlock" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button" :class="{ error: errors.about_usImage }">
+          <span class="input__file-icon-wrapper">
+            <img v-if="about_usPreview" class="input__file-icon" :src="about_usPreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Создать блок</span>
+    </button>
   </form>
   <form class="admin-panel__content_form" v-if="isEditingAbout_usBlock" @submit.prevent="updateAbout_usBlock">
     <input
@@ -386,15 +431,28 @@ const resetTeam = () => {
     />
     <Editor :initialHtml="about_usDescription" @export-html="handleExportHtmlAbout_usBlock"
             :class="{ error: errors.about_usDescription }"/>
-    <input
-        type="file"
-        ref="fileBanners"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeAbout_usBlock"
-        accept="image/*"
-    />
-    <button class="main_btn" type="submit">Изменить блок</button>
-    <button class="main_btn" type="submit" @click="resetAbout_usBlock">Отмена</button>
+    <div class="input__wrapper">
+      <input ref="fileBanners" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeAbout_usBlock" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="about_usPreview" class="input__file-icon" :src="about_usPreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Изменить блок</span>
+    </button>
+    <button class="main_btn" type="submit" @click="resetAbout_usBlock" v-if="!isLoading">Отмена</button>
   </form>
   <table>
     <thead>
@@ -447,7 +505,16 @@ const resetTeam = () => {
         accept="text/plain,.csv,.json"
         :class="{ error: errors.patentText }"
     />
-    <button class="main_btn" type="submit">Создать</button>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Создать</span>
+    </button>
   </form>
   <table>
     <thead>
@@ -499,15 +566,27 @@ const resetTeam = () => {
         placeholder="Введите почту"
         :class="{ error: errors.teamEmail }"
     />
-    <input
-        type="file"
-        ref="teamFile"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeTeam"
-        accept="image/*"
-        :class="{ error: errors.teamImage }"
-    />
-    <button class="main_btn" type="submit">Создать</button>
+    <div class="input__wrapper">
+      <input ref="teamFile" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeTeam" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button" :class="{ error: errors.teamImage }">
+          <span class="input__file-icon-wrapper">
+            <img v-if="teamPreview" class="input__file-icon" :src="teamPreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Создать</span>
+    </button>
   </form>
   <form class="admin-panel__content_form" v-if="isEditingTeam" @submit.prevent="updateTeams">
     <input
@@ -538,15 +617,28 @@ const resetTeam = () => {
         placeholder="Введите почту"
         :class="{ error: errors.teamEmail }"
     />
-    <input
-        type="file"
-        ref="teamFile"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeTeam"
-        accept="image/*"
-    />
-    <button class="main_btn" type="submit">Изменить</button>
-    <button class="main_btn" @click="resetTeam">Отмена</button>
+    <div class="input__wrapper">
+      <input ref="teamFile" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangeTeam" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="teamPreview" class="input__file-icon" :src="teamPreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Изменить</span>
+    </button>
+    <button class="main_btn" @click="resetTeam" v-if="!isLoading">Отмена</button>
   </form>
   <table>
     <thead>

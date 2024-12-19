@@ -128,4 +128,63 @@ $x-big: 1829.98px;
   img {
     border-radius: 4px;
   }
+  .input__wrapper {
+    width: 100%;
+    position: relative;
+  }
+  .input__file {
+    opacity: 0;
+    //visibility: hidden;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 100;
+  }
+  .input__file-icon {
+    object-fit: cover;
+  }
+
+  .input__file-icon-wrapper {
+    height: 60px;
+    width: 60px;
+    margin-right: 15px;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -ms-flex-pack: center;
+    justify-content: center;
+    border-right: 1px solid #fff;
+  }
+
+  .input__file-button-text {
+    line-height: 1;
+    margin-top: 1px;
+  }
+
+  .input__file-button {
+    width: 100%;
+    height: 60px;
+    background: #EF7F1A;
+    color: #fff;
+    font-size: 1.125rem;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    -webkit-box-pack: start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 0 auto;
+    &.error {
+      background-color: #ff4545;
+    }
+  }
 }

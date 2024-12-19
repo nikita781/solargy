@@ -177,7 +177,7 @@ const bestProduct = ref([
                 </div>
               </div>
               <p class="basket__item_price">{{ item.price * item.quantity }} ₽</p>
-              <IconsTrash @click="removeFromBasket(item.id)" />
+              <IconsTrash class="basket__item_trash" @click="removeFromBasket(item.id)" />
             </div>
           </div>
         </div>

@@ -147,7 +147,7 @@ const editMainBanners = (banner) => {
   descriptionBanner.value = banner.description;
   numberBanner.value = banner.order;
   productBanners.value = banner.product.id;
-  photoBanners.value = null;
+  previewImage.value = banner.image;
   errors.value.titleBanner = false;
   errors.value.descriptionBanner = false;
   errors.value.productBanners = false;
@@ -159,6 +159,7 @@ const resetMainBanners = () => {
   titleBanner.value = '';
   descriptionBanner.value = '';
   photoBanners.value = null;
+  previewImage.value = null;
   productBanners.value = null;
   numberBanner.value = '';
   fileBanners.value.value = ''
@@ -174,6 +175,7 @@ const titleSlider = ref('');
 const numberSlider = ref('');
 const photoSlider = ref(null);
 const fileSlider = ref(null);
+const previewImageSlider = ref(null)
 const isEditingSlider = ref(false);
 const currentSliderId = ref(null)
 
@@ -181,9 +183,11 @@ const handleFileChangeSubBanners = (event) => {
   const file = event.target.files[0];
   if (file) {
     photoSlider.value = file;
+    previewImageSlider.value = URL.createObjectURL(file);
   }
 };
 const createSubBanner = async () => {
+  isLoading.value = true;
   errors.value.titleSlider = false;
   errors.value.photoSlider = false;
   errors.value.titleSlider = !titleSlider.value.trim();
@@ -206,9 +210,12 @@ const createSubBanner = async () => {
     resetSubBanners();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 const updateSubBanners = async () => {
+  isLoading.value = true;
   errors.value.titleSlider = false;
   errors.value.titleSlider = !titleSlider.value.trim();
   try {
@@ -230,6 +237,8 @@ const updateSubBanners = async () => {
     resetSubBanners();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 const fetchSubBanners = async () => {
@@ -241,6 +250,7 @@ const fetchSubBanners = async () => {
   }
 };
 const deleteSubBanners = async (idBanner) => {
+  isLoading.value = true;
   try {
     await axios.delete(`/sub-banners/${idBanner}`, {
       headers: {},
@@ -248,6 +258,8 @@ const deleteSubBanners = async (idBanner) => {
     await fetchSubBanners();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
   }
 };
 const editSubBanner = (banner) => {
@@ -255,7 +267,7 @@ const editSubBanner = (banner) => {
   currentSliderId.value = banner.id;
   titleSlider.value = banner.title;
   numberSlider.value = banner.order
-  photoSlider.value = null;
+  previewImageSlider.value = banner.image;
   errors.value.titleSlider = false;
   errors.value.photoSlider = false;
 }
@@ -266,6 +278,7 @@ const resetSubBanners = () => {
   photoSlider.value = null;
   numberSlider.value = '';
   fileSlider.value.value = ''
+  previewImageSlider.value = null;
   errors.value.titleSlider = false;
   errors.value.photoSlider = false;
 };
@@ -303,21 +316,23 @@ const resetSubBanners = () => {
           {{ product.name }}
         </option>
       </select>
-      <input
-          type="file"
-          ref="fileBanners"
-          :class="{ error: errors.photoBanners }"
-          class="basket__form_input admin-panel__content_input"
-          @change="handleFileChangeMainBanner"
-          accept="image/*"
-      />
-<!--      <div class="input__wrapper">-->
-<!--        <input ref="fileBanners" type="file" id="input__file" class="input input__file"  @change="handleFileChangeMainBanner" accept="image/*" multiple>-->
-<!--        <label for="input__file" class="input__file-button">-->
-<!--          <span class="input__file-icon-wrapper"><img v-if="previewImage" class="input__file-icon" :src="previewImage" alt="Выбрать файл" width="25"></span>-->
-<!--          <span class="input__file-button-text">Выберите файл</span>-->
-<!--        </label>-->
-<!--      </div>-->
+<!--      <input-->
+<!--          type="file"-->
+<!--          ref="fileBanners"-->
+<!--          :class="{ error: errors.photoBanners }"-->
+<!--          class="basket__form_input admin-panel__content_input"-->
+<!--          @change="handleFileChangeMainBanner"-->
+<!--          accept="image/*"-->
+<!--      />-->
+      <div class="input__wrapper">
+        <input ref="fileBanners" type="file" id="input__file" class="input input__file"  @change="handleFileChangeMainBanner" accept="image/*" multiple>
+        <label for="input__file" class="input__file-button" :class="{ error: errors.photoBanners }">
+          <span class="input__file-icon-wrapper">
+            <img v-if="previewImage" class="input__file-icon" :src="previewImage" alt="Выбрать файл" width="50" height="50px">
+          </span>
+          <span class="input__file-button-text">Выберите картинку</span>
+        </label>
+      </div>
       <button
           class="main_btn"
           type="submit"
@@ -357,13 +372,15 @@ const resetSubBanners = () => {
           {{ product.name }}
         </option>
       </select>
-      <input
-          type="file"
-          ref="fileBanners"
-          class="basket__form_input admin-panel__content_input"
-          @change="handleFileChangeMainBanner"
-          accept="image/*"
-      />
+      <div class="input__wrapper">
+        <input ref="fileBanners" type="file" id="input__file" class="input input__file"  @change="handleFileChangeMainBanner" accept="image/*" multiple>
+        <label for="input__file" class="input__file-button" :class="{ error: errors.photoBanners }">
+          <span class="input__file-icon-wrapper">
+            <img v-if="previewImage" class="input__file-icon" :src="previewImage" alt="Выбрать файл" width="50" height="50px">
+          </span>
+          <span class="input__file-button-text">Выберите картинку</span>
+        </label>
+      </div>
       <button
           class="main_btn"
           type="submit"
@@ -428,15 +445,25 @@ const resetSubBanners = () => {
           v-model="numberSlider"
           placeholder="Введите порядок"
       />
-      <input
-          type="file"
-          ref="fileSlider"
-          class="basket__form_input admin-panel__content_input"
-          @change="handleFileChangeSubBanners"
-          accept="image/*"
-          :class="{ error: errors.photoSlider }"
-      />
-      <button class="main_btn" type="submit">Создать слайд</button>
+      <div class="input__wrapper">
+        <input ref="fileSlider" type="file" id="input__file" class="input input__file"  @change="handleFileChangeSubBanners" accept="image/*" multiple>
+        <label for="input__file" class="input__file-button" :class="{ error: errors.photoSlider }">
+          <span class="input__file-icon-wrapper">
+            <img v-if="previewImageSlider" class="input__file-icon" :src="previewImageSlider" alt="Выбрать файл" width="50" height="50px">
+          </span>
+          <span class="input__file-button-text">Выберите картинку</span>
+        </label>
+      </div>
+      <button
+          class="main_btn"
+          type="submit"
+          :disabled="isLoading"
+          :class="{ 'loading': isLoading }"
+          :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+      >
+        <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+        <span v-else>Создать слайд</span>
+      </button>
     </form>
     <form class="admin-panel__content_form" v-if="isEditingSlider" @submit.prevent="updateSubBanners">
       <input
@@ -452,15 +479,26 @@ const resetSubBanners = () => {
           v-model="numberSlider"
           placeholder="Введите порядок"
       />
-      <input
-          type="file"
-          ref="fileBanners"
-          class="basket__form_input admin-panel__content_input"
-          @change="handleFileChangeSubBanners"
-          accept="image/*"
-      />
-      <button class="main_btn" type="submit">Изменить слайд</button>
-      <button class="main_btn" type="button" @click="resetSubBanners">Отмена</button>
+      <div class="input__wrapper">
+        <input ref="fileSlider" type="file" id="input__file" class="input input__file"  @change="handleFileChangeSubBanners" accept="image/*" multiple>
+        <label for="input__file" class="input__file-button" :class="{ error: errors.photoSlider }">
+          <span class="input__file-icon-wrapper">
+            <img v-if="previewImageSlider" class="input__file-icon" :src="previewImageSlider" alt="Выбрать файл" width="50" height="50px">
+          </span>
+          <span class="input__file-button-text">Выберите картинку</span>
+        </label>
+      </div>
+      <button
+          class="main_btn"
+          type="submit"
+          :disabled="isLoading"
+          :class="{ 'loading': isLoading }"
+          :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+      >
+        <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+        <span v-else>Изменить слайд</span>
+      </button>
+      <button class="main_btn" type="button" @click="resetSubBanners" v-if="!isLoading">Отмена</button>
     </form>
     <table>
       <thead>
@@ -492,59 +530,5 @@ const resetSubBanners = () => {
 </template>
 
 <style scoped lang="scss">
-.input__wrapper {
-  width: 100%;
-  position: relative;
-  margin: 15px 0;
-  text-align: center;
-}
 
-.input__file {
-  opacity: 0;
-  visibility: hidden;
-  position: absolute;
-}
-
-.input__file-icon-wrapper {
-  height: 60px;
-  width: 60px;
-  margin-right: 15px;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-pack: center;
-  -ms-flex-pack: center;
-  justify-content: center;
-  border-right: 1px solid #fff;
-}
-
-.input__file-button-text {
-  line-height: 1;
-  margin-top: 1px;
-}
-
-.input__file-button {
-  width: 100%;
-  max-width: 290px;
-  height: 60px;
-  background: #1bbc9b;
-  color: #fff;
-  font-size: 1.125rem;
-  font-weight: 700;
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  -webkit-box-pack: start;
-  -ms-flex-pack: start;
-  justify-content: flex-start;
-  border-radius: 3px;
-  cursor: pointer;
-  margin: 0 auto;
-}
 </style>

@@ -122,6 +122,16 @@ $x-big: 1829.98px;
       line-height: 18px;
       letter-spacing: 1px;
     }
+    &_trash {
+      cursor: pointer;
+      transition: 0.2s;
+      &:hover {
+        path {
+          fill: #EF7F1A;
+          transition: 0.2s;
+        }
+      }
+    }
   }
   &__button {
     &-cont {
