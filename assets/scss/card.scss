@@ -105,7 +105,8 @@ $x-big: 1829.98px;
     }
     &_img {
       width: 100%;
-      img {
+      &-pict {
+        cursor: pointer;
         width: 100%;
         height: 650px;
         object-fit: cover;

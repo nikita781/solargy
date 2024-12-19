@@ -183,13 +183,13 @@ function generateSlug(name) {
 
   const transliterate = (str) => {
     return str
+        .toLowerCase()
         .split('')
         .map(char => cyrillicToLatinMap[char] || char)
         .join('');
   };
 
   return transliterate(name)
-      .toLowerCase()
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
       .trim();

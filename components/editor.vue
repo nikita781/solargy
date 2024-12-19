@@ -50,7 +50,6 @@ onMounted(async () => {
         }
       },
     });
-
     editorInstance.htmlParser = EditorJSHTML();
   }
 });
