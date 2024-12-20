@@ -86,6 +86,7 @@ const addSuppurt = async () => {
     formData.append('name', nameUser.value);
     formData.append('phone', phone.value);
     formData.append('comment', comment.value);
+    formData.append('email-type', 2);
 
     await axios.post(`/call`, formData);
     reset();

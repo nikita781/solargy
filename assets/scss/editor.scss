@@ -20,4 +20,20 @@
   p {
     line-height: 25px;
   }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background-color: #EF7F1A;
+    color: white;
+  }
+  img {
+    border-radius: 4px;
+  }
 }

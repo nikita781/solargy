@@ -2,7 +2,7 @@
 import {Swiper, SwiperSlide} from "swiper/vue";
 import {Mousewheel, Navigation, Pagination} from "swiper";
 import {useRoute, useRouter} from 'vue-router';
-import {ref, reactive, onMounted, nextTick} from "vue";
+import {ref, reactive, onMounted, nextTick, computed} from "vue";
 import 'swiper/css';
 import axios from "axios";
 import {useBasketStore} from '@/stores/basket';
@@ -118,7 +118,7 @@ const swiperConfig = reactive({
   slidesPerView: 4,
   slidesPerGroup: 1,
   speed: 500,
-  loop: false,
+  loop: true,
   watchSlidesProgress: true,
   direction: "vertical",
   mousewheel: {
@@ -172,7 +172,7 @@ const addToBasket = () => {
     id: product.value.id,
     name: product.value.name,
     photo: product.value.photos[0].photo,
-    price: product.value.price,
+    price: totalPrice,
     options: Object.values(selectedOptions.value),
     quantity: quantity.value,
   };
@@ -235,6 +235,20 @@ const selectSlide = (slide, index) => {
   selectedSlide.value = slide;
   indexRef.value = index;
 };
+
+const totalPrice = computed(() => {
+  let basePrice = parseFloat(product.value?.price || 0);
+
+  if (product.value?.options?.length) {
+    product.value.options.forEach(option => {
+      if (option.values?.length) {
+        basePrice += parseFloat(option.values[0]?.price || 0);
+      }
+    });
+  }
+
+  return basePrice;
+});
 
 const visibleRef = ref(false);
 const showImg = (index) => {
@@ -319,7 +333,7 @@ const handleDownload = async (fileUrl, file_name) => {
         <div class="card__main_info">
           <div>
             <h1 class="card__main_title">{{ product.name }}</h1>
-            <p class="card__main_price">{{ product.price }} ₽</p>
+            <p class="card__main_price">{{ totalPrice }} ₽</p>
           </div>
           <p class="card__main_description">{{ product.description }}</p>
           <div class="card__main_select-cont">

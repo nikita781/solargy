@@ -1,7 +1,7 @@
 <template>
   <client-only>
     <div ref="editor" class="editor"></div>
-    <button @click="exportHtml" type="button" class="main_btn">Применить редактор</button>
+<!--    <button @click="exportHtml" type="button" class="main_btn">Применить редактор</button>-->
   </client-only>
 </template>
 
@@ -24,7 +24,24 @@ onMounted(async () => {
     const { default: EditorJS } = await import('@editorjs/editorjs');
     const { default: Header } = await import('@editorjs/header');
     const { default: List } = await import('@editorjs/list');
+    const { default: Table } = await import('@editorjs/table');
     const { default: EditorJSHTML } = await import('editorjs-html');
+
+    const htmlParser = EditorJSHTML({
+      table: (block: any) => {
+        const rows = block.data.content.map((row: string[], rowIndex: number) => {
+          const cells = row
+              .map((cell: string) => {
+                return rowIndex === 0
+                    ? `<th>${cell}</th>`
+                    : `<td>${cell}</td>`;
+              })
+              .join('');
+          return `<tr>${cells}</tr>`;
+        }).join('');
+        return `<table>${rows}</table>`;
+      },
+    });
 
     editorInstance = new EditorJS({
       holder: editor.value!,
@@ -36,6 +53,14 @@ onMounted(async () => {
         list: {
           class: List,
           inlineToolbar: true,
+        },
+        table: {
+          class: Table,
+          inlineToolbar: true,
+          config: {
+            rows: 2,
+            cols: 3,
+          },
         },
       },
       placeholder: 'Начните писать здесь...',
@@ -49,8 +74,13 @@ onMounted(async () => {
           }
         }
       },
+      onChange: async () => {
+        const data = await editorInstance.save();
+        const html = editorInstance.htmlParser.parse(data).join('');
+        emit('export-html', html);
+      },
     });
-    editorInstance.htmlParser = EditorJSHTML();
+    editorInstance.htmlParser = htmlParser;
   }
 });
 

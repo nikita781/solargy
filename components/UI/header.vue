@@ -162,6 +162,7 @@ const closeMenu = () => {
 };
 
 watch(() => route.fullPath, () => {
+  handleContainerClick();
   closeSearch();
   isSearchOpen.value = false;
   searchQuery.value = '';
@@ -236,7 +237,7 @@ onBeforeUnmount(() => {
             <NuxtLink to="/order" :class="{ active: route.name === 'order' }">Где купить?</NuxtLink>
             <NuxtLink to="/delivery" :class="{ active: route.name === 'delivery' }">Доставка</NuxtLink>
           </div>
-          <NuxtLink :to="`tel:${contacts.phone}`" class="header__info_container-phone">
+          <NuxtLink :to="`tel: ${contacts.phone}`" class="header__info_container-phone">
             <IconsPhone/>
             <p>{{ contacts.phone }}</p>
           </NuxtLink>

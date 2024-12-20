@@ -132,6 +132,7 @@ const addSuppurt = async () => {
       formData.append('name', nameUser.value);
       formData.append('email', email.value);
       formData.append('comment', comment.value);
+      formData.append('email-type', 3);
 
       await axios.post(`/support`, formData);
       reset();
