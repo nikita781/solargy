@@ -228,6 +228,10 @@ onMounted(async () => {
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');
   });
+  const container = document.querySelector('.container');
+  if (container && menuVisible.value === true) {
+    container.addEventListener('click', closeMenu);
+  }
 });
 
 const indexRef = ref(0);

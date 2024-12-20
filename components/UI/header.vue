@@ -369,7 +369,7 @@ onBeforeUnmount(() => {
         <div class="header__main-search-cont">
           <div class="header__main-search_container">
             <input class="header__main-search_input" v-model="searchQuery" name="search" type="text"
-                   placeholder="Искать"/>
+                   placeholder="Искать" @keydown.enter="handleSearch"/>
             <IconsSearch @click="handleSearch"/>
           </div>
           <IconsCross class="header__main-search_close" color="#cccccc" @click="closeSearch"/>

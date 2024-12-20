@@ -39,7 +39,11 @@ onMounted(async () => {
               .join('');
           return `<tr>${cells}</tr>`;
         }).join('');
-        return `<table>${rows}</table>`;
+        return `
+      <div class="table-container">
+        <table>${rows}</table>
+      </div>
+    `;
       },
     });
 
@@ -62,6 +66,7 @@ onMounted(async () => {
             cols: 3,
           },
         },
+        // table: TablePlugin
       },
       placeholder: 'Начните писать здесь...',
       onReady: () => {

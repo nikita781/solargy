@@ -4,6 +4,8 @@ import {Swiper, SwiperSlide} from 'swiper/vue';
 import 'swiper/css';
 import {Navigation, Pagination} from 'swiper';
 import axios from 'axios';
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 
 const swiperRight = ref(null);
 const swiperLeft = ref(null);
@@ -136,8 +138,24 @@ const addSuppurt = async () => {
 
       await axios.post(`/support`, formData);
       reset();
+      Toastify({
+        text: "Заявка успешно отправлена!",
+        duration: 3000,
+        gravity: "top", // Позиция: "top" или "bottom"
+        position: "right", // Позиция: "left", "center" или "right"
+        backgroundColor: "#EF7F1A",
+        stopOnFocus: true,
+      }).showToast();
     } catch (error) {
       console.error('Ошибка:', error.response?.data || error);
+      Toastify({
+        text: "Не удалось отправить заявку. Попробуйте снова.",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#ff4545",
+        stopOnFocus: true,
+      }).showToast();
     }
   }
 };
@@ -306,7 +324,7 @@ onUnmounted(() => {
       <div class="questions__container">
         <div class="questions__info">
           <p class="questions__info_description">Напишите нам и менеджер ответит вам в ближайшее время</p>
-          <img class="questions__info_img" src="/a2638c413d54ccc28941e175b45711e1.jpg" alt="">
+          <img class="questions__info_img" src="/583400127_1734363646.png" alt="">
         </div>
         <div class="questions__form">
           <div class="questions__form_container">

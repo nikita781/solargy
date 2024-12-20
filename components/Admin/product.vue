@@ -1230,7 +1230,7 @@ watch(() => currentProductId.value, () => {
   </div>
   <h3 v-if="isEditingProduct">Добавить таб (максимум 2)</h3>
   <form
-      class="admin-panel__content_form"
+      class="admin-panel__content_form admin-panel__content_form-long"
       v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 2"
       @submit.prevent="addProductPropertie"
   >
@@ -1276,7 +1276,7 @@ watch(() => currentProductId.value, () => {
     <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
   </form>
   <form
-      class="admin-panel__content_form" v-if="isEditingProduct && isEditingPropertie"
+      class="admin-panel__content_form admin-panel__content_form-long" v-if="isEditingProduct && isEditingPropertie"
       @submit.prevent="updateProductPropertie"
   >
     <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">

@@ -1,6 +1,8 @@
 <script setup>
 import {nextTick, onMounted, ref} from 'vue';
 import axios from "axios";
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 
 const tabs = [
   { title: 'ООО «Соларжи 18»' },
@@ -90,8 +92,24 @@ const addSuppurt = async () => {
 
     await axios.post(`/call`, formData);
     reset();
+    Toastify({
+      text: "Заявка успешно отправлена!",
+      duration: 3000,
+      gravity: "top", // Позиция: "top" или "bottom"
+      position: "right", // Позиция: "left", "center" или "right"
+      backgroundColor: "#EF7F1A",
+      stopOnFocus: true,
+    }).showToast();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+    Toastify({
+      text: "Не удалось отправить заявку. Попробуйте снова.",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ff4545",
+      stopOnFocus: true,
+    }).showToast();
   }
 };
 

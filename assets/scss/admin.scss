@@ -68,6 +68,9 @@ $x-big: 1829.98px;
         gap: 20px;
         max-width: 500px;
         width: 100%;
+        &-long {
+          max-width: 750px;
+        }
       }
       &_info {
         display: flex;
