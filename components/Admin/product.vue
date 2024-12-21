@@ -687,6 +687,11 @@ const resetProductPropertie = () => {
   productTextFile.value.value = ''
   productPreviewPropertie.value = null;
 };
+const resetProductPreviewPropertie = () => {
+  productPhotoPropertie.value = null;
+  productFilePropertie.value.value = '';
+  productPreviewPropertie.value = null;
+};
 const deleteProductPropertie = async (idPropertie) => {
   isLoading.value = true;
   try {
@@ -1245,14 +1250,17 @@ watch(() => currentProductId.value, () => {
     </select>
     <Editor @export-html="handleExportHtmlPropertie"/>
     <div class="input__wrapper">
-      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file"
+      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file-reset"
              @change="handleFileChangeProductPropertie" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
+      <label for="input__file" class="input__file-button-reset">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreviewPropertie" class="input__file-icon" :src="productPreviewPropertie" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
         <span class="input__file-button-text">Выберите картинку</span>
+        <span class="input__file-icon-reset" @click.prevent="resetProductPreviewPropertie">
+            <IconsCross color="#fff"/>
+          </span>
       </label>
     </div>
     <label class="admin-panel__content_label">Текстовый файл</label>

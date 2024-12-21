@@ -3,6 +3,57 @@ import {nextTick, onMounted, ref} from 'vue';
 import axios from "axios";
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
+import { useAsyncData } from '#app';
+
+const { data: seos, error } = await useAsyncData("fetchSeos", () =>
+    axios.get(`/seos`).then((res) => res.data)
+);
+
+const deliverySeo = ref(null);
+
+const defaultSeo = {
+  title: "SOLARGY SHOP - Световые панели для вашего дома и бизнеса",
+  description: "SOLARGY SHOP предлагает световые панели высокого качества по доступным ценам. Энергосберегающие технологии, широкий ассортимент и доставка по всей России.",
+  keywords: "световые панели, солнечные панели, энергосбережение, купить световые панели, панели для дома, панели для бизнеса, Solargy Shop, солнечные батареи, возобновляемая энергия",
+  author: "Solargy"
+};
+
+if (seos.value) {
+  deliverySeo.value = seos.value.find((seo) => seo.url === "contact");
+
+  if (deliverySeo.value) {
+    const seoFields = deliverySeo.value.seos.reduce((acc, item) => {
+      acc[item.name] = item.content;
+      return acc;
+    }, {});
+    useHead({
+      title: seoFields.title || defaultSeo.title,
+      meta: [
+        { name: "description", content: seoFields.description || defaultSeo.description },
+        { name: "keywords", content: seoFields.keywords || defaultSeo.keywords },
+        { name: "author", content: seoFields.author || defaultSeo.author },
+      ],
+    });
+  } else {
+    useHead({
+      title: defaultSeo.title,
+      meta: [
+        { name: "description", content: defaultSeo.description },
+        { name: "keywords", content: defaultSeo.keywords },
+        { name: "author", content: defaultSeo.author },
+      ],
+    });
+  }
+} else {
+  useHead({
+    title: defaultSeo.title,
+    meta: [
+      { name: "description", content: defaultSeo.description },
+      { name: "keywords", content: defaultSeo.keywords },
+      { name: "author", content: defaultSeo.author },
+    ],
+  });
+}
 
 const tabs = [
   { title: 'ООО «Соларжи 18»' },
@@ -97,7 +148,7 @@ const addSuppurt = async () => {
       duration: 3000,
       gravity: "top", // Позиция: "top" или "bottom"
       position: "right", // Позиция: "left", "center" или "right"
-      backgroundColor: "#EF7F1A",
+      backgroundColor: "#28a745",
       stopOnFocus: true,
     }).showToast();
   } catch (error) {
