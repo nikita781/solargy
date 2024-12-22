@@ -35,4 +35,5 @@ axios.defaults.baseURL = 'http://127.0.0.1:8000/api';
 @use "/assets/scss/basket" as *;
 @use "/assets/scss/admin" as *;
 @use "/assets/scss/editor" as *;
+@use "/assets/scss/search" as *;
 </style>

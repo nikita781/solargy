@@ -156,11 +156,14 @@ $x-big: 1829.98px;
     }
     &_items {
       margin-top: 30px;
-      display: flex;
-      flex-direction: column;
-      gap: 30px;
-      @media screen and (max-width: $medium){
-        gap: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+      @media screen and (max-width: $large){
+        grid-template-columns: 1fr 1fr;
+      }
+      @media screen and (max-width: $small){
+        grid-template-columns: 1fr;
       }
     }
     &_item {

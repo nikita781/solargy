@@ -68,7 +68,7 @@ const swiperConfig = reactive({
   slidesPerView: 1,
   slidesPerGroup: 1,
   speed: 500,
-  loop: false,
+  loop: true,
   watchSlidesProgress: true,
   navigation: {
     nextEl: swiperRight.value,
@@ -315,7 +315,7 @@ onUnmounted(() => {
                   class="best-product__item_btn"
                   :to="`/card/${product.id}-${generateSlug(product.name)}/`"
               >
-                Заказать
+                Посмотреть
               </NuxtLink>
             </div>
           </div>

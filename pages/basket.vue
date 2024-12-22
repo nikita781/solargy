@@ -281,7 +281,7 @@ const bestProduct = ref([
           </div>
           <div class="best-product__item_container">
             <p class="best-product__item_price">{{ product.price }}</p>
-            <NuxtLink to="/card" class="best-product__item_btn">Заказать</NuxtLink>
+            <NuxtLink to="/card" class="best-product__item_btn">Посмотреть</NuxtLink>
           </div>
         </div>
       </div>

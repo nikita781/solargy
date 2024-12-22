@@ -231,7 +231,7 @@ onMounted(() => {
                 class="best-product__item_btn"
                 :to="`/card/${product.id}-${generateSlug(product.name)}/`"
             >
-              Заказать
+              Посмотреть
             </NuxtLink>
           </div>
         </div>

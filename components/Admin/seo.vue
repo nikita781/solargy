@@ -72,10 +72,10 @@ const updateSeo = async () => {
   try {
     console.log(currentSeoValueId.value)
     const formData = new FormData();
-    formData.append('id', currentSeoValueId.value);
+    formData.append('page_id', currentSeoId.value);
     formData.append('content', contentSeo.value);
 
-    await axios.post(`/seos/${currentSeoId.value}?_method=patch`, formData, {
+    await axios.post(`/seos/${currentSeoValueId.value}?_method=patch`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -88,6 +88,19 @@ const updateSeo = async () => {
     isLoading.value = false;
   }
 }
+const deleteSeo = async (idTeam) => {
+  isLoading.value = true;
+  try {
+    await axios.delete(`/seos/${idTeam}`, {
+      headers: {},
+    });
+    await fetchSeos();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 const editSeo = (value, seoId) => {
   isEditingSeo.value = true;
   pageSeo.value = null;

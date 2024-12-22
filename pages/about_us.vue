@@ -179,15 +179,15 @@ function formatDate(dateString) {
             <IconsPatent />
           </div>
           <div class="about_us__patents_info">
-            <p class="about_us__patents_data">{{ formatDate(patent.date) }}</p>
             <p class="about_us__patents_name">
               {{ patent.title }}
             </p>
             <a
                 class="about_us__patents_download"
-                @click.prevent="handleDownload(patent.file, patent.file_name)"
+                target="_blank"
+                :href="patent.file"
             >
-              <p>Скачать документ</p>
+              <p>Посмотреть</p>
               <IconsDownload />
             </a>
           </div>
