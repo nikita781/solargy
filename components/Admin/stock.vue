@@ -379,7 +379,7 @@ const resetStock = () => {
       <td>{{ section.title }}</td>
       <td>{{ section.html }}</td>
       <td>
-        <img :src="section.image" alt="Фото" width="50"/>
+        <img v-if="section.image" :src="section.image" alt="Фото" width="50"/>
       </td>
       <td>
         <button @click="editPromoBlock(section)" class="admin-panel__content_btn">Изменить</button>
@@ -526,7 +526,7 @@ const resetStock = () => {
       <td>{{ stock.title }}</td>
       <td>{{ stock.description }}</td>
       <td>
-        <img :src="stock.image" alt="Фото" width="50"/>
+        <img v-if="stock.image" :src="stock.image" alt="Фото" width="50"/>
       </td>
       <td>{{ formatDate(stock.start) }}</td>
       <td>{{ formatDate(stock.end) }}</td>

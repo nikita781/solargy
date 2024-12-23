@@ -238,10 +238,10 @@ const addToBasket = () => {
     name: product.value.name,
     photo: product.value.photos[0].photo,
     price: totalPrice,
+    url: window.location.href,
     options: Object.values(selectedOptions.value),
     quantity: quantity.value,
   };
-
   basketStore.addToBasket(basketItem);
 };
 
@@ -387,7 +387,7 @@ const handleDownload = async (fileUrl, file_name) => {
               <IconsArrow class="card__main_swiper-bottom" color="#EF7F1A"/>
             </div>
           </div>
-          <div class="card__main_img">
+          <div class="card__main_img" v-if="selectedSlide">
             <img class="card__main_img-pict" :src="selectedSlide?.photo" alt="Selected Image" @click="() => showImg(selectedSlide?.photo)"/>
             <VueEasyLightbox
                 :visible="visibleRef"
@@ -525,6 +525,7 @@ const handleDownload = async (fileUrl, file_name) => {
         >
           <NuxtLink
               :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+              v-if="product?.photos.length > 0"
           >
             <img class="best-product__item_img" :src="product?.photos[0].photo" alt="">
           </NuxtLink>

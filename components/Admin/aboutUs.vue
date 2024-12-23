@@ -210,7 +210,6 @@ const createProductPatent = async () => {
   try {
     const formData = new FormData();
     formData.append('title', patentName.value);
-    formData.append('date', patentDate.value);
     formData.append('file', patentText.value);
 
     await axios.post(`/patents`, formData, {
@@ -472,7 +471,7 @@ const resetTeam = () => {
       <td>{{ section.title }}</td>
       <td>{{ section.html }}</td>
       <td>
-        <img :src="section.image" alt="Фото" width="50"/>
+        <img v-if="section.image" :src="section.image" alt="Фото" width="50"/>
       </td>
       <td>
         <button @click="editAbout_usBlock(section)" class="admin-panel__content_btn">Изменить</button>
@@ -492,14 +491,7 @@ const resetTeam = () => {
         placeholder="Введите название"
         :class="{ error: errors.patentName }"
     />
-    <input
-        type="date"
-        class="basket__form_input admin-panel__content_input"
-        v-model="patentDate"
-        placeholder="Введите дату"
-        :class="{ error: errors.patentDate }"
-    />
-    <label class="admin-panel__content_label">Текстовый файл</label>
+    <label class="admin-panel__content_label">PDF файл</label>
     <input
         type="file"
         ref="patentText"
@@ -524,7 +516,6 @@ const resetTeam = () => {
     <tr>
       <th>ID</th>
       <th>Название</th>
-      <th>Дата</th>
       <th>Удалить</th>
     </tr>
     </thead>
@@ -532,7 +523,6 @@ const resetTeam = () => {
     <tr v-for="patent in patents" :key="patent.id">
       <td>{{ patent.id }}</td>
       <td>{{ patent.title }}</td>
-      <td>{{ formatDate(patent.date) }}</td>
       <td>
         <button @click="deletePatents(patent.id)" class="admin-panel__content_btn">Удалить</button>
       </td>
@@ -662,7 +652,7 @@ const resetTeam = () => {
       <td>{{ patent.name }}</td>
       <td>{{ patent.description }}</td>
       <td>
-        <img :src="patent.image" alt="Фото" width="50"/>
+        <img v-if="patent.image" :src="patent.image" alt="Фото" width="50"/>
       </td>
       <td>{{ patent.phone }}</td>
       <td>{{ patent.email }}</td>

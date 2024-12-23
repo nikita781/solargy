@@ -375,7 +375,7 @@ const resetOptionPreview = () => {
           <td>{{ value.value }}</td>
           <td>{{ value.price }}</td>
           <td>
-            <img :src="value.image" alt="Фото" width="50"/>
+            <img v-if="value.image" :src="value.image" alt="Фото" width="50"/>
           </td>
           <td>
             <button @click="editOptionValue(option.id, value)" class="admin-panel__content_btn">Изменить</button>

@@ -418,7 +418,7 @@ const resetSubBanners = () => {
         <td>{{ banner.order }}</td>
         <td>{{ banner.description }}</td>
         <td>
-          <img :src="banner.image" alt="Фото" width="50"/>
+          <img v-if="banner.image" :src="banner.image" alt="Фото" width="50"/>
         </td>
         <td>{{ banner?.product.name }}</td>
         <td>
@@ -515,7 +515,7 @@ const resetSubBanners = () => {
         <td>{{ banner.title }}</td>
         <td>{{ banner.order }}</td>
         <td>
-          <img :src="banner.image" alt="Фото" width="50"/>
+          <img v-if="banner.image" :src="banner.image" alt="Фото" width="50"/>
         </td>
         <td>
           <button @click="editSubBanner(banner)" class="admin-panel__content_btn">Изменить</button>

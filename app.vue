@@ -20,6 +20,12 @@ import axios from 'axios';
 
 axios.defaults.baseURL = 'http://127.0.0.1:8000/api';
 // axios.defaults.withCredentials = true;
+
+import {useBasketStore} from '@/stores/basket';
+const basketStore = useBasketStore();
+if (process.client) {
+  basketStore.loadBasketFromStorage();
+}
 </script>
 
 <style lang="scss">
