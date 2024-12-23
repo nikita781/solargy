@@ -191,9 +191,12 @@ const handleFileChangePatent = (event) => {
   if (
       file.type === 'text/plain' ||
       file.type === 'application/json' ||
-      file.name.endsWith('.csv')
+      file.name.endsWith('.csv') ||
+      file.type === 'application/pdf'
   ) {
     patentText.value = file;
+  } else {
+    console.error('Unsupported file type:', file.type);
   }
 };
 const createProductPatent = async () => {
@@ -502,7 +505,7 @@ const resetTeam = () => {
         ref="patentText"
         class="basket__form_input admin-panel__content_input"
         @change="handleFileChangePatent"
-        accept="text/plain,.csv,.json"
+        accept="application/pdf"
         :class="{ error: errors.patentText }"
     />
     <button

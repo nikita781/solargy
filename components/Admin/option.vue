@@ -207,6 +207,11 @@ const resetOptionValue = () => {
   errors.value.optionValue = false;
   errors.value.optionPrice = false;
 };
+const resetOptionPreview = () => {
+  optionPhoto.value = null;
+  optionFile.value.value = ''
+  optionPreview.value = null
+};
 </script>
 
 <template>
@@ -270,14 +275,17 @@ const resetOptionValue = () => {
           :class="{ error: errors.optionPrice }"
       />
       <div class="input__wrapper">
-        <input ref="optionFile" type="file" id="input__file" class="input input__file"
+        <input ref="optionFile" type="file" id="input__file" class="input input__file-reset"
                @change="handleFileChangeOption" accept="image/*" multiple>
-        <label for="input__file" class="input__file-button">
+        <label for="input__file" class="input__file-button-reset">
           <span class="input__file-icon-wrapper">
             <img v-if="optionPreview" class="input__file-icon" :src="optionPreview" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
           <span class="input__file-button-text">Выберите картинку</span>
+          <span class="input__file-icon-reset" @click.prevent="resetOptionPreview">
+            <IconsCross color="#fff"/>
+          </span>
         </label>
       </div>
       Параметр

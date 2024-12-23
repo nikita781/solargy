@@ -58,10 +58,9 @@ const handleSearch = async () => {
   }
 
   try {
-    const response = await axios.get(`/search?q=${searchQuery.value}`);
+    const response = await axios.get(`/search-fast?q=${searchQuery.value}`);
     searchResult.value = response.data;
-    console.log(searchResult.value)
-    if (searchResult.value.length > 0) {
+    if (searchResult.value.newPromos.length > 0 || searchResult.value.products.length) {
       openMenuSearch();
     }
   } catch (error) {
@@ -75,7 +74,6 @@ const openMenuMain = () => {
 
 const openMenuSearch = () => {
   isSearchOpen.value = true;
-  console.log(isSearchOpen.value)
 };
 
 const toggleMenuPhone = () => {
@@ -125,6 +123,14 @@ watch(isSearchOpen, (newValue) => {
       container.classList.add('active');
     } else {
       container.classList.remove('active');
+    }
+  }
+  const containerMain = document.querySelector('.container');
+  if (containerMain) {
+    if (newValue) {
+      containerMain.classList.add('active');
+    } else {
+      containerMain.classList.remove('active');
     }
   }
 });
@@ -202,6 +208,18 @@ const handleContainerClick = () => {
   }
 };
 
+const convertDateToText = (dateString) => {
+  const months = [
+    "января", "февраля", "марта", "апреля", "мая", "июня",
+    "июля", "августа", "сентября", "октября", "ноября", "декабря"
+  ];
+
+  const [year, month] = dateString.split('-').map(Number);
+  const monthName = months[month - 1];
+
+  return `До конца ${monthName} ${year} года`;
+};
+
 onMounted(() => {
   fetchCategory();
   fetchContact();
@@ -213,6 +231,7 @@ onMounted(() => {
   const containerContent = document.querySelector('.container-content');
   if (containerContent) {
     containerContent.addEventListener('mouseenter', handleContainerClick);
+    containerContent.addEventListener('click', closeSearch);
   }
 });
 onBeforeUnmount(() => {
@@ -223,6 +242,7 @@ onBeforeUnmount(() => {
   const containerContent = document.querySelector('.container-content');
   if (containerContent) {
     containerContent.addEventListener('mouseenter', handleContainerClick);
+    containerContent.addEventListener('click', closeSearch);
   }
 });
 </script>
@@ -321,7 +341,8 @@ onBeforeUnmount(() => {
                                     class="header__menu_item">
                             {{ cat.name }}
                           </NuxtLink>
-                          <IconsArrow v-if="cat.products.length" color="#EF7F1A" @click="toggleSubmenu(blockIndex, menuIndex)"/>
+                          <IconsArrow v-if="cat.products.length" color="#EF7F1A"
+                                      @click="toggleSubmenu(blockIndex, menuIndex)"/>
                         </div>
                         <div
                             class="header__menu_subitem-container"
@@ -335,9 +356,11 @@ onBeforeUnmount(() => {
                           </div>
                         </div>
                       </div>
-                      <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
+                      <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex"
+                           class="header__menu_item-container">
                         <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
-                          <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">
+                          <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`"
+                                    class="header__menu_item">
                             {{ menuItem.name }}
                           </NuxtLink>
                           <!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
@@ -369,26 +392,57 @@ onBeforeUnmount(() => {
         <div class="header__main-search-cont">
           <div class="header__main-search_container">
             <input class="header__main-search_input" v-model="searchQuery" name="search" type="text"
-                   placeholder="Искать"/>
+                   placeholder="Искать" @keydown.enter="handleSearch"/>
             <IconsSearch @click="handleSearch"/>
           </div>
           <IconsCross class="header__main-search_close" color="#cccccc" @click="closeSearch"/>
         </div>
       </div>
-      <div class="header__menu" :style="{ display: isSearchOpen ? 'grid' : 'none'}">
-        <div
-            v-for="(search, index) in searchResult"
-            :key="index"
-            class="header__menu_container-search"
-        >
-          <NuxtLink
-              class="header__menu_container-search"
-              :to="`/card/${search.id}-${generateSlug(search.name)}/`"
-          >
-            <img :src="search.photos[0].photo" alt=""/>
-            <p class="header__menu_name">{{ search.name }}</p>
-          </NuxtLink>
+      <div class="header__menu header__menu_search" :style="{ display: isSearchOpen ? 'grid' : 'none'}">
+        <div class="header__menu_title">
+          <h3>Товары</h3>
+          <p>{{ searchResult?.products?.length }}</p>
         </div>
+        <div class="header__menu_container-search-cont">
+          <div
+              v-if="searchResult?.products"
+              v-for="(search, index) in searchResult?.products"
+              :key="index"
+              class="header__menu_container-search"
+          >
+            <NuxtLink
+                class="header__menu_container-search"
+                :to="`/card/${search.id}-${generateSlug(search.name)}/`"
+            >
+              <img v-if="search.photos.length > 0" :src="search.photos[0].photo" alt=""/>
+              <p class="header__menu_name">{{ search.name }}</p>
+            </NuxtLink>
+          </div>
+        </div>
+        <div class="header__menu_title">
+          <h3>Акции</h3>
+          <p>{{ searchResult?.newPromos?.length }}</p>
+        </div>
+        <div class="header__menu_container-search-cont">
+          <div
+              v-if="searchResult?.newPromos"
+              v-for="(search, index) in searchResult?.newPromos"
+              :key="index"
+              class="header__menu_container-search"
+          >
+            <NuxtLink
+                class="header__menu_container-search"
+                :to="`/stocks`"
+            >
+              <img :src="search.image" alt=""/>
+              <div class="header__menu_container-search-info">
+                <p class="header__menu_name">{{ search.title }}</p>
+                <p class="header__menu_data">{{ convertDateToText(search.end) }}</p>
+              </div>
+            </NuxtLink>
+          </div>
+        </div>
+        <NuxtLink :to="{ path: '/search', query: { q: searchQuery } }" class="main_btn">Найти для "{{searchQuery}}"</NuxtLink>
       </div>
       <div class="header__menu" :style="{ display: isMenuOpen ? 'grid' : 'none'}">
         <div

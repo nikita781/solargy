@@ -92,7 +92,7 @@ $x-big: 1829.98px;
   &__container {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 22px;
+    gap: 50px 22px;
     @media screen and (max-width: $medium){
       grid-template-columns: 1fr 1fr;
     }

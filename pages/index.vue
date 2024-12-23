@@ -4,6 +4,60 @@ import {Swiper, SwiperSlide} from 'swiper/vue';
 import 'swiper/css';
 import {Navigation, Pagination} from 'swiper';
 import axios from 'axios';
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
+import { useAsyncData } from '#app';
+
+const { data: seos, error } = await useAsyncData("fetchSeos", () =>
+    axios.get(`/seos`).then((res) => res.data)
+);
+
+const deliverySeo = ref(null);
+
+const defaultSeo = {
+  title: "SOLARGY SHOP - Световые панели для вашего дома и бизнеса",
+  description: "SOLARGY SHOP предлагает световые панели высокого качества по доступным ценам. Энергосберегающие технологии, широкий ассортимент и доставка по всей России.",
+  keywords: "световые панели, солнечные панели, энергосбережение, купить световые панели, панели для дома, панели для бизнеса, Solargy Shop, солнечные батареи, возобновляемая энергия",
+  author: "Solargy"
+};
+
+if (seos.value) {
+  deliverySeo.value = seos.value.find((seo) => seo.url === "index");
+
+  if (deliverySeo.value) {
+    const seoFields = deliverySeo.value.seos.reduce((acc, item) => {
+      acc[item.name] = item.content;
+      return acc;
+    }, {});
+    useHead({
+      title: seoFields.title || defaultSeo.title,
+      meta: [
+        { name: "description", content: seoFields.description || defaultSeo.description },
+        { name: "keywords", content: seoFields.keywords || defaultSeo.keywords },
+        { name: "author", content: seoFields.author || defaultSeo.author },
+      ],
+    });
+  } else {
+    useHead({
+      title: defaultSeo.title,
+      meta: [
+        { name: "description", content: defaultSeo.description },
+        { name: "keywords", content: defaultSeo.keywords },
+        { name: "author", content: defaultSeo.author },
+      ],
+    });
+  }
+} else {
+  useHead({
+    title: defaultSeo.title,
+    meta: [
+      { name: "description", content: defaultSeo.description },
+      { name: "keywords", content: defaultSeo.keywords },
+      { name: "author", content: defaultSeo.author },
+    ],
+  });
+}
+
 
 const swiperRight = ref(null);
 const swiperLeft = ref(null);
@@ -14,7 +68,7 @@ const swiperConfig = reactive({
   slidesPerView: 1,
   slidesPerGroup: 1,
   speed: 500,
-  loop: false,
+  loop: true,
   watchSlidesProgress: true,
   navigation: {
     nextEl: swiperRight.value,
@@ -136,8 +190,24 @@ const addSuppurt = async () => {
 
       await axios.post(`/support`, formData);
       reset();
+      Toastify({
+        text: "Заявка успешно отправлена!",
+        duration: 3000,
+        gravity: "top", // Позиция: "top" или "bottom"
+        position: "right", // Позиция: "left", "center" или "right"
+        backgroundColor: "#28a745",
+        stopOnFocus: true,
+      }).showToast();
     } catch (error) {
       console.error('Ошибка:', error.response?.data || error);
+      Toastify({
+        text: "Не удалось отправить заявку. Попробуйте снова.",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#ff4545",
+        stopOnFocus: true,
+      }).showToast();
     }
   }
 };
@@ -245,7 +315,7 @@ onUnmounted(() => {
                   class="best-product__item_btn"
                   :to="`/card/${product.id}-${generateSlug(product.name)}/`"
               >
-                Заказать
+                Посмотреть
               </NuxtLink>
             </div>
           </div>
@@ -306,7 +376,7 @@ onUnmounted(() => {
       <div class="questions__container">
         <div class="questions__info">
           <p class="questions__info_description">Напишите нам и менеджер ответит вам в ближайшее время</p>
-          <img class="questions__info_img" src="/a2638c413d54ccc28941e175b45711e1.jpg" alt="">
+          <img class="questions__info_img" src="/583400127_1734363646.png" alt="">
         </div>
         <div class="questions__form">
           <div class="questions__form_container">

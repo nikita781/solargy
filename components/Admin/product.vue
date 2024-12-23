@@ -687,6 +687,11 @@ const resetProductPropertie = () => {
   productTextFile.value.value = ''
   productPreviewPropertie.value = null;
 };
+const resetProductPreviewPropertie = () => {
+  productPhotoPropertie.value = null;
+  productFilePropertie.value.value = '';
+  productPreviewPropertie.value = null;
+};
 const deleteProductPropertie = async (idPropertie) => {
   isLoading.value = true;
   try {
@@ -1230,7 +1235,7 @@ watch(() => currentProductId.value, () => {
   </div>
   <h3 v-if="isEditingProduct">Добавить таб (максимум 2)</h3>
   <form
-      class="admin-panel__content_form"
+      class="admin-panel__content_form admin-panel__content_form-long"
       v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 2"
       @submit.prevent="addProductPropertie"
   >
@@ -1245,14 +1250,17 @@ watch(() => currentProductId.value, () => {
     </select>
     <Editor @export-html="handleExportHtmlPropertie"/>
     <div class="input__wrapper">
-      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file"
+      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file-reset"
              @change="handleFileChangeProductPropertie" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
+      <label for="input__file" class="input__file-button-reset">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreviewPropertie" class="input__file-icon" :src="productPreviewPropertie" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
         <span class="input__file-button-text">Выберите картинку</span>
+        <span class="input__file-icon-reset" @click.prevent="resetProductPreviewPropertie">
+            <IconsCross color="#fff"/>
+          </span>
       </label>
     </div>
     <label class="admin-panel__content_label">Текстовый файл</label>
@@ -1276,7 +1284,7 @@ watch(() => currentProductId.value, () => {
     <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
   </form>
   <form
-      class="admin-panel__content_form" v-if="isEditingProduct && isEditingPropertie"
+      class="admin-panel__content_form admin-panel__content_form-long" v-if="isEditingProduct && isEditingPropertie"
       @submit.prevent="updateProductPropertie"
   >
     <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">

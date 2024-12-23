@@ -2,6 +2,57 @@
 import axios from "axios";
 import {onMounted, ref} from "vue";
 import Editor from '~/components/editor.vue';
+import { useAsyncData } from '#app';
+
+const { data: seos, error } = await useAsyncData("fetchSeos", () =>
+    axios.get(`/seos`).then((res) => res.data)
+);
+
+const deliverySeo = ref(null);
+
+const defaultSeo = {
+  title: "SOLARGY SHOP - Световые панели для вашего дома и бизнеса",
+  description: "SOLARGY SHOP предлагает световые панели высокого качества по доступным ценам. Энергосберегающие технологии, широкий ассортимент и доставка по всей России.",
+  keywords: "световые панели, солнечные панели, энергосбережение, купить световые панели, панели для дома, панели для бизнеса, Solargy Shop, солнечные батареи, возобновляемая энергия",
+  author: "Solargy"
+};
+
+if (seos.value) {
+  deliverySeo.value = seos.value.find((seo) => seo.url === "admin");
+
+  if (deliverySeo.value) {
+    const seoFields = deliverySeo.value.seos.reduce((acc, item) => {
+      acc[item.name] = item.content;
+      return acc;
+    }, {});
+    useHead({
+      title: seoFields.title || defaultSeo.title,
+      meta: [
+        { name: "description", content: seoFields.description || defaultSeo.description },
+        { name: "keywords", content: seoFields.keywords || defaultSeo.keywords },
+        { name: "author", content: seoFields.author || defaultSeo.author },
+      ],
+    });
+  } else {
+    useHead({
+      title: defaultSeo.title,
+      meta: [
+        { name: "description", content: defaultSeo.description },
+        { name: "keywords", content: defaultSeo.keywords },
+        { name: "author", content: defaultSeo.author },
+      ],
+    });
+  }
+} else {
+  useHead({
+    title: defaultSeo.title,
+    meta: [
+      { name: "description", content: defaultSeo.description },
+      { name: "keywords", content: defaultSeo.keywords },
+      { name: "author", content: defaultSeo.author },
+    ],
+  });
+}
 
 const nameUser = ref('');
 const passwordUser = ref('');
@@ -129,6 +180,13 @@ const errors = ref({
           >
             Почты
           </p>
+          <p
+              class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'SEO' }"
+              @click="activeTab = 'SEO'"
+          >
+            SEO
+          </p>
           <button class="main_btn" @click="exitAdmin">Выйти</button>
         </div>
       </div>
@@ -143,6 +201,7 @@ const errors = ref({
       <AdminDelivery v-if="activeTab === 'Доставка'"/>
       <AdminSocial v-if="activeTab === 'Соц сети'"/>
       <AdminEmail v-if="activeTab === 'Почты'"/>
+      <AdminSeo v-if="activeTab === 'SEO'"/>
     </div>
   </div>
 </template>

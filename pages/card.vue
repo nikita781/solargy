@@ -6,6 +6,58 @@ import {ref, reactive, onMounted, nextTick, computed} from "vue";
 import 'swiper/css';
 import axios from "axios";
 import {useBasketStore} from '@/stores/basket';
+import { useAsyncData } from '#app';
+
+const { data: seos, error } = await useAsyncData("fetchSeos", () =>
+    axios.get(`/seos`).then((res) => res.data)
+);
+
+const deliverySeo = ref(null);
+
+const defaultSeo = {
+  title: "SOLARGY SHOP - Световые панели для вашего дома и бизнеса",
+  description: "SOLARGY SHOP предлагает световые панели высокого качества по доступным ценам. Энергосберегающие технологии, широкий ассортимент и доставка по всей России.",
+  keywords: "световые панели, солнечные панели, энергосбережение, купить световые панели, панели для дома, панели для бизнеса, Solargy Shop, солнечные батареи, возобновляемая энергия",
+  author: "Solargy"
+};
+
+if (seos.value) {
+  deliverySeo.value = seos.value.find((seo) => seo.url === "card");
+
+  if (deliverySeo.value) {
+    const seoFields = deliverySeo.value.seos.reduce((acc, item) => {
+      acc[item.name] = item.content;
+      return acc;
+    }, {});
+    useHead({
+      title: seoFields.title || defaultSeo.title,
+      meta: [
+        { name: "description", content: seoFields.description || defaultSeo.description },
+        { name: "keywords", content: seoFields.keywords || defaultSeo.keywords },
+        { name: "author", content: seoFields.author || defaultSeo.author },
+      ],
+    });
+  } else {
+    useHead({
+      title: defaultSeo.title,
+      meta: [
+        { name: "description", content: defaultSeo.description },
+        { name: "keywords", content: defaultSeo.keywords },
+        { name: "author", content: defaultSeo.author },
+      ],
+    });
+  }
+} else {
+  useHead({
+    title: defaultSeo.title,
+    meta: [
+      { name: "description", content: defaultSeo.description },
+      { name: "keywords", content: defaultSeo.keywords },
+      { name: "author", content: defaultSeo.author },
+    ],
+  });
+}
+
 
 const basketStore = useBasketStore();
 const route = useRoute();
@@ -159,9 +211,22 @@ const sliderStyle = computed(() => {
 });
 
 function generateSlug(name) {
-  name = String(name);
-  return name
-      .toLowerCase()
+  const cyrillicToLatinMap = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
+    и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+    с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch',
+    ы: 'y', э: 'e', ю: 'yu', я: 'ya', ъ: '', ь: ''
+  };
+
+  const transliterate = (str) => {
+    return str
+        .toLowerCase()
+        .split('')
+        .map(char => cyrillicToLatinMap[char] || char)
+        .join('');
+  };
+
+  return transliterate(name)
       .replace(/[^\w\s-]/g, '')
       .replace(/\s+/g, '-')
       .trim();
@@ -169,7 +234,7 @@ function generateSlug(name) {
 
 const addToBasket = () => {
   const basketItem = {
-    id: product.value.id,
+    id: basketStore.items.length + 1,
     name: product.value.name,
     photo: product.value.photos[0].photo,
     price: totalPrice,
@@ -182,9 +247,6 @@ const addToBasket = () => {
 
 watch(() => route.fullPath, async () => {
   const productIdURL = route.params.productId;
-  if (!productIdURL) {
-    await router.push('/');
-  }
   productId.value = productIdURL.match(/^\d+/)?.[0] || null;
   await fetchProduct();
   await fetchCategory();
@@ -209,8 +271,9 @@ onMounted(async () => {
   const productIdURL = route.params.productId;
   if (!productIdURL) {
     await router.push('/');
+  } else {
+    productId.value = productIdURL.match(/^\d+/)?.[0] || null;
   }
-  productId.value = productIdURL.match(/^\d+/)?.[0] || null;
   await fetchProduct();
   await fetchCategory();
   await fetchProducts();
@@ -228,6 +291,10 @@ onMounted(async () => {
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');
   });
+  const container = document.querySelector('.container');
+  if (container && menuVisible.value === true) {
+    container.addEventListener('click', closeMenu);
+  }
 });
 
 const indexRef = ref(0);
@@ -288,7 +355,7 @@ const handleDownload = async (fileUrl, file_name) => {
       <div class="card__main_links">
         <NuxtLink to="/catalog" class="card__main_link">Каталог</NuxtLink>
         <IconsSun/>
-        <NuxtLink :to="`/catalog/${category.id}-${generateSlug(category.name)}/`" class="card__main_link">
+        <NuxtLink v-if="category && category.name" :to="`/catalog/${category?.id}-${generateSlug(category?.name)}/`" class="card__main_link">
           {{ category.name }}
         </NuxtLink>
         <IconsSun color="#EF7F1A"/>
@@ -301,16 +368,17 @@ const handleDownload = async (fileUrl, file_name) => {
               <IconsArrow class="card__main_swiper-top" color="#EF7F1A"/>
             </div>
             <client-only>
-              <Swiper v-bind="swiperConfig">
+              <Swiper v-bind="swiperConfig" v-if="product.photos">
                 <SwiperSlide
                     v-for="(slide, index) in product.photos"
                     :key="index"
+                    v-if="selectedSlide"
                 >
                   <div
                       class="swiper__slide"
                       :style="{ 'background-image': `url(${slide.photo})` }"
                       @click="selectSlide(slide, index)"
-
+                      :class="{ active: slide.id === selectedSlide.id }"
                   ></div>
                 </SwiperSlide>
               </Swiper>
@@ -465,12 +533,12 @@ const handleDownload = async (fileUrl, file_name) => {
             <p class="best-product__item_desc">{{ product.description }}</p>
           </div>
           <div class="best-product__item_container">
-            <p class="best-product__item_price">{{ product.price }}</p>
+            <p class="best-product__item_price">от {{ product?.price }} ₽</p>
             <NuxtLink
                 class="best-product__item_btn"
                 :to="`/card/${product.id}-${generateSlug(product.name)}/`"
             >
-              Заказать
+              Посмотреть
             </NuxtLink>
           </div>
         </div>
@@ -511,7 +579,7 @@ $x-big: 1829.98px;
   &__slide {
     height: calc(100% - 2px);
     width: calc(100% - 2px);
-
+    cursor: pointer;
     &.active {
       border: 1px solid #EF7F1A;
     }

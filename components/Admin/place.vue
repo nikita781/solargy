@@ -155,6 +155,11 @@ const resetPlace = () => {
   errors.value.placeSelect = false;
   errors.value.placeImg = false;
 };
+const resetPlacePreview = () => {
+  placePreview.value = null;
+  placeImg.value = null;
+  placeFile.value.value = ''
+};
 </script>
 
 <template>
@@ -191,14 +196,17 @@ const resetPlace = () => {
         placeholder="Введите ссылку"
     />
     <div class="input__wrapper">
-      <input ref="placeFile" type="file" id="input__file" class="input input__file"
+      <input ref="placeFile" type="file" id="input__file" class="input input__file-reset"
              @change="handleFileChangePlace" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
+      <label for="input__file" class="input__file-button-reset">
           <span class="input__file-icon-wrapper">
             <img v-if="placePreview" class="input__file-icon" :src="placePreview" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
         <span class="input__file-button-text">Выберите картинку</span>
+        <span class="input__file-icon-reset" @click.prevent="resetPlacePreview">
+            <IconsCross color="#fff"/>
+          </span>
       </label>
     </div>
     <button

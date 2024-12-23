@@ -15,13 +15,7 @@ export const useBasketStore = defineStore('basket', {
     },
     actions: {
         addToBasket(item) {
-            const existingItem = this.items.find((i) => i.id === item.id);
-
-            if (existingItem) {
-                existingItem.quantity += item.quantity;
-            } else {
-                this.items.push(item);
-            }
+            this.items.push(item);
         },
         removeItem(itemId) {
             this.items = this.items.filter((item) => item.id !== itemId); // Удаление товара
