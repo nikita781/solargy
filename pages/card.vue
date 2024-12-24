@@ -8,11 +8,16 @@ import axios from "axios";
 import {useBasketStore} from '@/stores/basket';
 import { useAsyncData } from '#app';
 
-const { data: seos, error } = await useAsyncData("fetchSeos", () =>
-    axios.get(`/seos`).then((res) => res.data)
-);
+const route = useRoute();
+const router = useRouter();
+const productId = ref();
 
-const deliverySeo = ref(null);
+const productIdURL = route.params.productId;
+if (!productIdURL) {
+  await router.push('/');
+} else {
+  productId.value = productIdURL.match(/^\d+/)?.[0] || null;
+}
 
 const defaultSeo = {
   title: "SOLARGY SHOP - Световые панели для вашего дома и бизнеса",
@@ -21,49 +26,43 @@ const defaultSeo = {
   author: "Solargy"
 };
 
-if (seos.value) {
-  deliverySeo.value = seos.value.find((seo) => seo.url === "card");
+const { data: seos, error } = await useAsyncData("fetchSeos", async () => {
+  if (!productId.value) return null;
+  try {
+    const response = await axios.get(`/products/${productId.value}`);
+    return response.data;
+  } catch (err) {
+    console.error("Ошибка запроса SEO:", err);
+    return null;
+  }
+});
 
-  if (deliverySeo.value) {
-    const seoFields = deliverySeo.value.seos.reduce((acc, item) => {
-      acc[item.name] = item.content;
-      return acc;
-    }, {});
-    useHead({
-      title: seoFields.title || defaultSeo.title,
-      meta: [
-        { name: "description", content: seoFields.description || defaultSeo.description },
-        { name: "keywords", content: seoFields.keywords || defaultSeo.keywords },
-        { name: "author", content: seoFields.author || defaultSeo.author },
-      ],
-    });
-  } else {
-    useHead({
+useHead(() => {
+  const deliverySeo = seos?.value;
+
+  if (!deliverySeo) {
+    return {
       title: defaultSeo.title,
       meta: [
         { name: "description", content: defaultSeo.description },
         { name: "keywords", content: defaultSeo.keywords },
         { name: "author", content: defaultSeo.author },
       ],
-    });
+    };
   }
-} else {
-  useHead({
-    title: defaultSeo.title,
-    meta: [
-      { name: "description", content: defaultSeo.description },
-      { name: "keywords", content: defaultSeo.keywords },
-      { name: "author", content: defaultSeo.author },
-    ],
-  });
-}
 
+  return {
+    title: deliverySeo.name || defaultSeo.title,
+    meta: [
+      { name: "description", content: deliverySeo.description || defaultSeo.description },
+      { name: "keywords", content: deliverySeo.keywords || defaultSeo.keywords },
+      { name: "author", content: deliverySeo.author || defaultSeo.author },
+    ],
+  };
+});
 
 const basketStore = useBasketStore();
-const route = useRoute();
-const router = useRouter();
 
-const productId = ref();
 const product = ref([]);
 const category = ref([]);
 const products = ref([]);
@@ -355,6 +354,11 @@ const handleDownload = async (fileUrl, file_name) => {
   }
 };
 
+function capitalize(text) {
+  if (!text) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+
 function getContentWithoutTables(html) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
@@ -381,10 +385,10 @@ function getTables(html) {
         <NuxtLink to="/catalog" class="card__main_link">Каталог</NuxtLink>
         <IconsSun/>
         <NuxtLink v-if="category && category.name" :to="`/catalog/${category?.id}-${generateSlug(category?.name)}/`" class="card__main_link">
-          {{ category.name }}
+          {{ capitalize(category.name) }}
         </NuxtLink>
         <IconsSun color="#EF7F1A"/>
-        <NuxtLink class="card__main_link card__main_link-active">{{ product.name }}</NuxtLink>
+        <NuxtLink class="card__main_link card__main_link-active">{{ capitalize(product.name) }}</NuxtLink>
       </div>
       <div class="card__main_content">
         <div class="card__main_gallery">
@@ -552,30 +556,30 @@ function getTables(html) {
             v-for="(product, index) in products.slice(0, 4)"
             :key="index"
         >
-          <NuxtLink
-              :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+          <a
+              :href="`/card/${product.id}-${generateSlug(product.name)}/`"
               v-if="product?.photos.length > 0"
           >
             <img class="best-product__item_img" :src="product?.photos[0].photo" alt="">
-          </NuxtLink>
-          <NuxtLink
-              :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+          </a>
+          <a
+              :href="`/card/${product.id}-${generateSlug(product.name)}/`"
               v-else
           >
             <img class="best-product__item_img" src="/S.png" alt="">
-          </NuxtLink>
+          </a>
           <div class="best-product__item_content">
-            <NuxtLink :to="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">{{ product.name }}</NuxtLink>
+            <a :href="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">{{ product.name }}</a>
             <p class="best-product__item_desc">{{ product.description }}</p>
           </div>
           <div class="best-product__item_container">
             <p class="best-product__item_price">от {{ product?.price }} ₽</p>
-            <NuxtLink
+            <a
                 class="best-product__item_btn"
-                :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+                :href="`/card/${product.id}-${generateSlug(product.name)}/`"
             >
               Посмотреть
-            </NuxtLink>
+            </a>
           </div>
         </div>
       </div>

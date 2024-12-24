@@ -178,6 +178,8 @@ const addSuppurt = async () => {
   errors.value.comment = false;
   errors.value.name = !nameUser.value.trim();
   errors.value.email = !email.value.trim();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  errors.value.email = !email.value.trim() || !emailRegex.test(email.value);
   errors.value.comment = !comment.value.trim();
   if (!errors.value.name && !errors.value.email && !errors.value.comment) {
     try {
