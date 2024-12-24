@@ -290,7 +290,7 @@ const resetPlacePreview = () => {
         <td>{{ place.name }}</td>
         <td>{{ place.url }}</td>
         <td>
-          <img :src="place.image" alt="Фото" width="50"/>
+          <img v-if="place.image" :src="place.image" alt="Фото" width="50"/>
         </td>
         <td>
           <button @click="editPlace(place)" class="admin-panel__content_btn">Изменить</button>
@@ -319,7 +319,7 @@ const resetPlacePreview = () => {
         <td>{{ place.name }}</td>
         <td>{{ place.url }}</td>
         <td>
-          <img :src="place.image" alt="Фото" width="50"/>
+          <img v-if="place.image" :src="place.image" alt="Фото" width="50"/>
         </td>
         <td>
           <button @click="editPlace(place)" class="admin-panel__content_btn">Изменить</button>
@@ -348,7 +348,7 @@ const resetPlacePreview = () => {
         <td>{{ place.name }}</td>
         <td>{{ place.url }}</td>
         <td>
-          <img :src="place.image" alt="Фото" width="50"/>
+          <img v-if="place.image" :src="place.image" alt="Фото" width="50"/>
         </td>
         <td>
           <button @click="editPlace(place)" class="admin-panel__content_btn">Изменить</button>
@@ -377,7 +377,7 @@ const resetPlacePreview = () => {
         <td>{{ place.name }}</td>
         <td>{{ place.url }}</td>
         <td>
-          <img :src="place.image" alt="Фото" width="50"/>
+          <img v-if="place.image" :src="place.image" alt="Фото" width="50"/>
         </td>
         <td>
           <button @click="editPlace(place)" class="admin-panel__content_btn">Изменить</button>

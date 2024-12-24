@@ -65,20 +65,19 @@ const swiperLeft = ref(null);
 const swiperConfig = reactive({
   modules: [Navigation, Pagination],
   spaceBetween: 50,
-  slidesPerView: 1,
-  slidesPerGroup: 1,
-  speed: 500,
   loop: true,
-  watchSlidesProgress: true,
+  speed: 500,
   navigation: {
-    nextEl: swiperRight.value,
-    prevEl: swiperLeft.value,
+    nextEl: null, // Будет настроено в onMounted
+    prevEl: null, // Будет настроено в onMounted
   },
   pagination: {
     el: '.swiper__pagination',
     clickable: true,
   },
 });
+
+const swiperInstance = ref(null);
 
 const banners = ref([]);
 
@@ -218,16 +217,21 @@ const reset = () => {
   comment.value = '';
 };
 
+const onSwiperInit = (swiper) => {
+  console.log(123)
+  nextTick(() => {
+    swiper.slideNext(0); // Переходим на следующий слайд
+  });
+};
+
 onMounted(() => {
   fetchBanners();
   fetchTopProducts();
   fetchTypes();
   fetchCategories();
   interval = setInterval(changeSlide, 5000);
-  swiperConfig.navigation = {
-    nextEl: swiperRight.value,
-    prevEl: swiperLeft.value,
-  };
+  swiperConfig.navigation.nextEl = swiperRight.value;
+  swiperConfig.navigation.prevEl = swiperLeft.value;
 });
 
 onUnmounted(() => {
@@ -300,6 +304,7 @@ onUnmounted(() => {
           >
             <NuxtLink
                 :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+                v-if="product?.photos[0]?.photo"
             >
               <img class="best-product__item_img" :src="product?.photos[0]?.photo" alt="">
             </NuxtLink>
@@ -327,8 +332,10 @@ onUnmounted(() => {
       <div class="swiper__container">
         <Swiper
             v-bind="swiperConfig"
+            ref="swiperInstance"
+            @swiper="onSwiperInit"
         >
-          <SwiperSlide v-for="(type, index) in types" :key="index">
+          <SwiperSlide v-for="(type, index) in types" :key="index" ref="swiperInstance">
             <div
                 class="swiper__slide"
                 :style="{ 'background-image': `url(${type.image})` }"

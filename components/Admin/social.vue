@@ -281,10 +281,10 @@ const resetSocial = () => {
       <td>{{ social.platform }}</td>
       <td>{{ social.url }}</td>
       <td>
-        <img :src="social.image" alt="Фото" width="50"/>
+        <img v-if="social.image" :src="social.image" alt="Фото" width="50"/>
       </td>
       <td>
-        <img :src="social.image_footer" alt="Фото" width="50"/>
+        <img v-if="social.image_footer" :src="social.image_footer" alt="Фото" width="50"/>
       </td>
       <td>
         <button @click="editSocial(social)" class="admin-panel__content_btn">Изменить</button>

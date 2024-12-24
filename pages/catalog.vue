@@ -214,6 +214,7 @@ onMounted(() => {
         >
           <NuxtLink
               :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+              v-if="product?.photos[0]?.photo"
           >
             <img
                 class="best-product__item_img"

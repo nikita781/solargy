@@ -64,7 +64,10 @@ const errors = ref({
 });
 
 const totalBasketPrice = computed(() =>
-    basketStore.items.reduce((total, item) => total + item.price * item.quantity, 0)
+    basketStore.items.reduce((total, item) => {
+      const price = parseFloat(item.price._value || item.price);
+      return total + price * item.quantity;
+    }, 0)
 );
 
 function removeFromBasket(itemId) {
@@ -124,6 +127,28 @@ const toggleFormOpen = () => {
   formOpen.value = !formOpen.value;
 }
 
+function generateSlug(name) {
+  const cyrillicToLatinMap = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
+    и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+    с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch',
+    ы: 'y', э: 'e', ю: 'yu', я: 'ya', ъ: '', ь: ''
+  };
+
+  const transliterate = (str) => {
+    return str
+        .toLowerCase()
+        .split('')
+        .map(char => cyrillicToLatinMap[char] || char)
+        .join('');
+  };
+
+  return transliterate(name)
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim();
+}
+
 const addOrder = async () => {
   try {
     const formData = new FormData();
@@ -134,8 +159,10 @@ const addOrder = async () => {
 
     basketStore.items.forEach((item, index) => {
       formData.append(`items[${index}][name]`, item.name);
+      formData.append(`items[${index}][photo]`, item.photo);
       formData.append(`items[${index}][price]`, item.price);
       formData.append(`items[${index}][quantity]`, item.quantity);
+      formData.append(`items[${index}][url]`, item.url);
       item.options.forEach((option, optionIndex) => {
         formData.append(`items[${index}][options][${optionIndex}][name]`, option.name);
         formData.append(`items[${index}][options][${optionIndex}][values][0][value]`, option.values.value);

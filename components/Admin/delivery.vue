@@ -221,7 +221,7 @@ const resetDelivery = () => {
       <td>{{ section.title }}</td>
       <td>{{ section.html }}</td>
       <td>
-        <img :src="section.image" alt="Фото" width="50"/>
+        <img v-if="section.image" :src="section.image" alt="Фото" width="50"/>
       </td>
       <td>
         <button @click="editDelivery(section)" class="admin-panel__content_btn">Изменить</button>

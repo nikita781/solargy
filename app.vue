@@ -20,6 +20,12 @@ import axios from 'axios';
 
 axios.defaults.baseURL = 'https://api.solargy.shop/api';
 // axios.defaults.withCredentials = true;
+
+import {useBasketStore} from '@/stores/basket';
+const basketStore = useBasketStore();
+if (process.client) {
+  basketStore.loadBasketFromStorage();
+}
 </script>
 
 <style lang="scss">

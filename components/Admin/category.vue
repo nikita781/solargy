@@ -247,7 +247,7 @@ const deleteCategory = async (idCategory) => {
       <tr>
         <td>{{ category.name }}</td>
         <td>
-          <img :src="category.photo" alt="Фото" width="50"/>
+          <img v-if="category.photo" :src="category.photo" alt="Фото" width="50"/>
         </td>
         <td>
               <span v-if="category.children.length > 0">

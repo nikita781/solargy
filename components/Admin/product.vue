@@ -1147,7 +1147,7 @@ watch(() => currentProductId.value, () => {
     <tbody>
     <tr v-for="product in oneProd.photos" :key="product.id">
       <td>
-        <img :src="product.photo" alt="Фото" width="100"/>
+        <img v-if="product.photo" :src="product.photo" alt="Фото" width="100"/>
       </td>
       <td>{{ product.order }}</td>
       <td>
@@ -1202,7 +1202,7 @@ watch(() => currentProductId.value, () => {
         <td>{{ value.value }}</td>
         <td>{{ value.price }}</td>
         <td>
-          <img :src="value.image" alt="Фото" width="100"/>
+          <img v-if="value.image" :src="value.image" alt="Фото" width="100"/>
         </td>
         <td>
           <button @click="deleteProductOption(value.id)" class="admin-panel__content_btn">Отвязать</button>
