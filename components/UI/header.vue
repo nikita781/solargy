@@ -60,9 +60,7 @@ const handleSearch = async () => {
   try {
     const response = await axios.get(`/search-fast?q=${searchQuery.value}`);
     searchResult.value = response.data;
-    if (searchResult.value.newPromos.length > 0 || searchResult.value.products.length) {
-      openMenuSearch();
-    }
+    openMenuSearch();
   } catch (error) {
     console.error('Ошибка загрузки категорий:', error.response?.data || error);
   }
@@ -92,6 +90,7 @@ const toggleMenuSearch = () => {
 
 const closeSearch = () => {
   if (isSearch.value) {
+    searchQuery.value = '';
     showSearch.value = false;
     isSearchOpen.value = false;
     setTimeout(() => (isSearch.value = false), 300);
@@ -442,7 +441,7 @@ onBeforeUnmount(() => {
             </NuxtLink>
           </div>
         </div>
-        <NuxtLink :to="{ path: '/search', query: { q: searchQuery } }" class="main_btn">Найти для "{{searchQuery}}"</NuxtLink>
+        <NuxtLink :to="{ path: '/search', query: { q: searchQuery } }" class="main_btn" style="overflow: hidden">Найти для "{{searchQuery}}"</NuxtLink>
       </div>
       <div class="header__menu" :style="{ display: isMenuOpen ? 'grid' : 'none'}">
         <div
@@ -478,11 +477,10 @@ onBeforeUnmount(() => {
               </div>
             </div>
             <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
-              <div class="header__menu_item-arrow" @click="toggleSubmenu(blockIndex, menuIndex)">
+              <div class="header__menu_item-arrow">
                 <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">
                   {{ menuItem.name }}
                 </NuxtLink>
-                <!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
               </div>
             </div>
           </div>

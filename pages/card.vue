@@ -267,6 +267,17 @@ watch(() => route.fullPath, async () => {
   });
 });
 
+watch(() => menuVisible.value, () => {
+  const container = document.querySelector('.container');
+  if (container && menuVisible.value === true) {
+    setTimeout(() => {
+      container.addEventListener('click', closeMenu);
+    }, 0);
+  } else if (container && menuVisible.value === false) {
+    container.removeEventListener('click', closeMenu);
+  }
+});
+
 onMounted(async () => {
   const productIdURL = route.params.productId;
   if (!productIdURL) {
@@ -291,10 +302,6 @@ onMounted(async () => {
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');
   });
-  const container = document.querySelector('.container');
-  if (container && menuVisible.value === true) {
-    container.addEventListener('click', closeMenu);
-  }
 });
 
 const indexRef = ref(0);
@@ -347,6 +354,24 @@ const handleDownload = async (fileUrl, file_name) => {
     alert('Ошибка при скачивании');
   }
 };
+
+function getContentWithoutTables(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  doc.querySelectorAll('table').forEach((table) => table.remove());
+
+  return doc.body.innerHTML;
+}
+
+// Функция для получения только таблиц
+function getTables(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  const tables = Array.from(doc.querySelectorAll('table'));
+  return tables.map((table) => table.outerHTML).join('');
+}
 </script>
 
 <template>
@@ -396,6 +421,9 @@ const handleDownload = async (fileUrl, file_name) => {
                 @hide="onHide"
                 class="card__main_img-full"
             />
+          </div>
+          <div class="card__main_img" v-else>
+            <img class="card__main_img-pict-default" src="/S.png" alt="Selected Image"/>
           </div>
         </div>
         <div class="card__main_info">
@@ -494,13 +522,14 @@ const handleDownload = async (fileUrl, file_name) => {
             class="card__tabs_info"
         >
           <div class="card__tabs_container" v-if="activeTab === index">
+            <div class="editor__content" v-html="getContentWithoutTables(property.html)"></div>
             <img
                 v-if="property.image"
                 :src="property.image"
                 :alt="`Image for ${property.title}`"
                 class="card__tabs_image"
             />
-            <div class="editor__content" v-html="property.html"></div>
+            <div class="editor__content" v-html="getTables(property.html)"></div>
             <a
                 v-if="property.file"
                 @click.prevent="handleDownload(property.file, property.file_name)"
@@ -528,6 +557,12 @@ const handleDownload = async (fileUrl, file_name) => {
               v-if="product?.photos.length > 0"
           >
             <img class="best-product__item_img" :src="product?.photos[0].photo" alt="">
+          </NuxtLink>
+          <NuxtLink
+              :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+              v-else
+          >
+            <img class="best-product__item_img" src="/S.png" alt="">
           </NuxtLink>
           <div class="best-product__item_content">
             <NuxtLink :to="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">{{ product.name }}</NuxtLink>

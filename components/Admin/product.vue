@@ -550,6 +550,20 @@ const fetchOptionsById = async (optionId) => {
     console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
   }
 };
+const deleteProductOptionFull = async (idOption) => {
+  isLoading.value = true;
+  try {
+    // const valueId = await fetchOptionsById(idOption);
+    await axios.delete(`/products/${oneProd.value.id}/options/${idOption}`, {
+      headers: {},
+    });
+    await fetchProductById(currentProductId.value);
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 const deleteProductOption = async (idOption) => {
   isLoading.value = true;
   try {
@@ -578,7 +592,8 @@ const handleFileChangeText = (event) => {
   if (
       file.type === 'text/plain' ||
       file.type === 'application/json' ||
-      file.name.endsWith('.csv')
+      file.name.endsWith('.csv') ||
+      file.type === 'application/pdf'
   ) {
     productTextPropertie.value = file;
   }
@@ -1187,6 +1202,8 @@ watch(() => currentProductId.value, () => {
   >
     <div class="admin-panel__content_info_content">
       <p>{{ option.name }}</p>
+      <div></div>
+      <button @click="deleteProductOptionFull(option.id)" class="admin-panel__content_btn">Отвязать</button>
     </div>
     <table>
       <thead>
@@ -1269,7 +1286,7 @@ watch(() => currentProductId.value, () => {
         ref="productTextFile"
         class="basket__form_input admin-panel__content_input"
         @change="handleFileChangeText"
-        accept="text/plain,.csv,.json"
+        accept="application/pdf"
     />
     <button
         class="main_btn"
@@ -1320,7 +1337,7 @@ watch(() => currentProductId.value, () => {
         ref="productTextFile"
         class="basket__form_input admin-panel__content_input"
         @change="handleFileChangeText"
-        accept="text/plain,.csv,.json"
+        accept="application/pdf"
     />
     <button
         class="main_btn"
