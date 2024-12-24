@@ -25,6 +25,7 @@ onMounted(async () => {
     const { default: Header } = await import('@editorjs/header');
     const { default: List } = await import('@editorjs/list');
     const { default: Table } = await import('@editorjs/table');
+    const { default: ImageTool } = await import('@editorjs/image');
     const { default: EditorJSHTML } = await import('editorjs-html');
 
     const htmlParser = EditorJSHTML({
@@ -45,6 +46,11 @@ onMounted(async () => {
       </div>
     `;
       },
+      // image: (block: any) => `
+      //   <div class="image-block">
+      //     <img src="${block.data.file.url}" alt="" />
+      //   </div>
+      // `,
     });
 
     editorInstance = new EditorJS({
@@ -66,7 +72,14 @@ onMounted(async () => {
             cols: 3,
           },
         },
-        // table: TablePlugin
+        // image: {
+        //   class: ImageTool,
+        //   config: {
+        //     endpoints: {
+        //       byFile: 'http://localhost:8000/uploadFile',
+        //     },
+        //   },
+        // },
       },
       placeholder: 'Начните писать здесь...',
       onReady: () => {

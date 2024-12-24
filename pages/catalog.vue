@@ -222,6 +222,12 @@ onMounted(() => {
                 alt="Product Image"
             />
           </NuxtLink>
+          <NuxtLink
+              :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+              v-else
+          >
+            <img class="best-product__item_img" src="/S.png" alt="">
+          </NuxtLink>
           <div class="best-product__item_content">
             <NuxtLink :to="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">{{ product.name }}</NuxtLink>
             <p class="best-product__item_desc">{{ product.description }}</p>

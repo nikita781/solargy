@@ -514,14 +514,12 @@ const resetTeam = () => {
   <table>
     <thead>
     <tr>
-      <th>ID</th>
       <th>Название</th>
       <th>Удалить</th>
     </tr>
     </thead>
     <tbody>
     <tr v-for="patent in patents" :key="patent.id">
-      <td>{{ patent.id }}</td>
       <td>{{ patent.title }}</td>
       <td>
         <button @click="deletePatents(patent.id)" class="admin-panel__content_btn">Удалить</button>
@@ -636,7 +634,6 @@ const resetTeam = () => {
   <table>
     <thead>
     <tr>
-      <th>ID</th>
       <th>Название</th>
       <th>Описание</th>
       <th>Фото</th>
@@ -648,7 +645,6 @@ const resetTeam = () => {
     </thead>
     <tbody>
     <tr v-for="patent in teams" :key="patent.id">
-      <td>{{ patent.id }}</td>
       <td>{{ patent.name }}</td>
       <td>{{ patent.description }}</td>
       <td>

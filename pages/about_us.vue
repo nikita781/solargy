@@ -168,7 +168,7 @@ function formatDate(dateString) {
       </div>
     </div>
     <div class="about_us__patents">
-      <h2 class="main_title">Наши патенты</h2>
+      <h2 class="main_title">Наши каталоги</h2>
       <div class="about_us__patents_items">
         <div
             v-for="(patent, index) in patents"

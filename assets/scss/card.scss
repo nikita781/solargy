@@ -116,6 +116,17 @@ $x-big: 1829.98px;
         @media screen and (max-width: $x-small){
           height: 300px;
         }
+        &-default {
+          width: 100%;
+          height: 650px;
+          object-fit: contain;
+          @media screen and (max-width: $large){
+            height: 500px;
+          }
+          @media screen and (max-width: $x-small){
+            height: 300px;
+          }
+        }
       }
     }
     &_info {

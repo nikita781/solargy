@@ -162,8 +162,8 @@ onMounted(() => {
             <IconsFond/>
             <IconsMybusiness/>
           </div>
-          <p class="footer__social_info">Сайт разработан в рамках национального проекта «Малое и среднее предпринимательство» при поддержке Центра «МОЙ БИЗНЕС»
-          </p>
+          <a href="https://madeinudmurtia.ru/" target="_blank" class="footer__social_info">Сайт разработан в рамках национального проекта «Малое и среднее предпринимательство» при поддержке Центра «МОЙ БИЗНЕС»
+          </a>
         </div>
       </div>
     </div>

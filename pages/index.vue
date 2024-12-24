@@ -251,7 +251,7 @@ onUnmounted(() => {
       <div class="head__info">
         <h2 class="head__info_title">{{ banners[currentSlideIndex]?.title }}</h2>
         <p class="head__info_subtitle">{{ banners[currentSlideIndex]?.description }}</p>
-        <NuxtLink to="/catalog" class="main_btn head__info_btn">Перейти в каталог</NuxtLink>
+        <NuxtLink v-if="banners[currentSlideIndex]?.product" :to="`/card/${banners[currentSlideIndex]?.product.id}-${generateSlug(banners[currentSlideIndex]?.product.name)}/`" class="main_btn head__info_btn">Перейти в каталог</NuxtLink>
       </div>
       <div class="head__img-container"
            :style="{
@@ -307,6 +307,12 @@ onUnmounted(() => {
                 v-if="product?.photos[0]?.photo"
             >
               <img class="best-product__item_img" :src="product?.photos[0]?.photo" alt="">
+            </NuxtLink>
+            <NuxtLink
+                :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+                v-else
+            >
+              <img class="best-product__item_img" src="/S.png" alt="">
             </NuxtLink>
             <div class="best-product__item_content">
               <NuxtLink :to="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">

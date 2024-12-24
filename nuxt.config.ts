@@ -20,6 +20,7 @@ export default defineNuxtConfig({
         // { name: 'keywords', content: 'световые панели, солнечные панели, энергосбережение, купить световые панели, панели для дома, панели для бизнеса, Solargy Shop, солнечные батареи, возобновляемая энергия' },
         // { name: 'author', content: 'Solargy' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'image', content: '/main_logo.png' },
         { charset: 'utf-8' },
         { name: 'robots', content: 'index, follow' },
       ],
