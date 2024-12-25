@@ -200,7 +200,12 @@ $x-big: 1829.98px;
         color: #171717;
       }
       &.error {
-        border-color: red;
+        border: 1px solid red;
+        background-color: #FEEFEC;
+        &::placeholder {
+          color: red;
+          opacity: 1;
+        }
       }
       &-cont {
         display: flex;

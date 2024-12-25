@@ -722,6 +722,11 @@ $x-big: 1829.98px;
       margin-bottom: 10px;
       &.error {
         border: 1px solid red;
+        background-color: #FEEFEC;
+        &::placeholder {
+          color: red;
+          opacity: 1;
+        }
       }
     }
     &_textarea {
@@ -735,6 +740,11 @@ $x-big: 1829.98px;
       resize: vertical;
       &.error {
         border: 1px solid red;
+        background-color: #FEEFEC;
+        &::placeholder {
+          color: red;
+          opacity: 1;
+        }
       }
     }
     &_btn {

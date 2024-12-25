@@ -134,6 +134,26 @@ watch(isSearchOpen, (newValue) => {
   }
 });
 
+// Состояние раскрытия для каждого блока
+const expandedBlocks = ref([]);
+
+// Инициализируем массив `expandedBlocks` в зависимости от количества категорий
+categories.value.forEach(() => expandedBlocks.value.push(false));
+
+// Возвращаем видимые элементы для каждого блока
+const getVisibleItems = (blockIndex) => {
+  const block = categories.value[blockIndex];
+  if (expandedBlocks.value[blockIndex]) {
+    return block.products;
+  }
+  return block.products.slice(0, 4);
+};
+
+// Переключение состояния меню для конкретного блока
+function toggleMenu(blockIndex) {
+  expandedBlocks.value[blockIndex] = !expandedBlocks.value[blockIndex];
+}
+
 const toggleSubmenu = (blockIndex, menuIndex) => {
   const key = `${blockIndex}-${menuIndex}`;
   const currentState = submenuRefs.value.get(key) || false;
@@ -409,13 +429,13 @@ onBeforeUnmount(() => {
               :key="index"
               class="header__menu_container-search"
           >
-            <NuxtLink
+            <a
                 class="header__menu_container-search"
-                :to="`/card/${search.id}-${generateSlug(search.name)}/`"
+                :href="`/card/${search.id}-${generateSlug(search.name)}/`"
             >
               <img v-if="search.photos.length > 0" :src="search.photos[0].photo" alt=""/>
               <p class="header__menu_name">{{ search.name }}</p>
-            </NuxtLink>
+            </a>
           </div>
         </div>
         <div class="header__menu_title">
@@ -476,13 +496,28 @@ onBeforeUnmount(() => {
                 </div>
               </div>
             </div>
-            <div v-for="(menuItem, menuIndex) in block.products" :key="menuIndex" class="header__menu_item-container">
+            <div
+                v-for="(menuItem, menuIndex) in getVisibleItems(blockIndex)"
+                :key="menuIndex"
+                class="header__menu_item-container"
+            >
               <div class="header__menu_item-arrow">
-                <NuxtLink :to="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`" class="header__menu_item">
+                <a
+                    :href="`/card/${menuItem.id}-${generateSlug(menuItem.name)}/`"
+                    class="header__menu_item"
+                >
                   {{ menuItem.name }}
-                </NuxtLink>
+                </a>
               </div>
             </div>
+            <button
+                v-if="block.products.length > 4"
+                @click="toggleMenu(blockIndex)"
+                class="main_btn"
+                style="padding: 5px 10px"
+            >
+              {{ expandedBlocks[blockIndex] ? 'Скрыть' : 'Ещё' }}
+            </button>
           </div>
         </div>
       </div>

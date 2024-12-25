@@ -68,6 +68,11 @@ function generateSlug(name) {
       .trim();
 }
 
+function capitalize(text) {
+  if (!text) return '';
+  return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+}
+
 onMounted(() => {
   fetchContact();
   fetchSocials();
@@ -139,7 +144,7 @@ onMounted(() => {
               class="footer__catalog_link"
               :to="`/catalog/${tab.id}-${generateSlug(tab.name)}/`"
           >
-            {{ tab.name }}
+            {{ capitalize(tab.name) }}
           </NuxtLink>
         </div>
         <div class="footer__catalog_phone">

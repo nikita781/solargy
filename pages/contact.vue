@@ -130,15 +130,15 @@ const errors = ref({
 const addSuppurt = async () => {
   errors.value.name = false;
   errors.value.phone = false;
-  errors.value.comment = false;
   errors.value.name = !nameUser.value.trim();
   errors.value.phone = !phone.value.trim();
-  errors.value.comment = !comment.value.trim();
   try {
     const formData = new FormData();
     formData.append('name', nameUser.value);
     formData.append('phone', phone.value);
-    formData.append('comment', comment.value);
+    if (comment.value) {
+      formData.append('comment', comment.value);
+    }
     formData.append('email-type', 2);
 
     await axios.post(`/call`, formData);
@@ -273,7 +273,7 @@ onMounted(async () => {
               <p class="questions__form_name">Ваш телефон</p>
               <input class="questions__form_input" type="text" @input="onInput"  v-model="phone" placeholder="Введите телефон" :class="{ error: errors.phone }">
               <p class="questions__form_name">Комментарий</p>
-              <textarea style="min-height: 152px" class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий" :class="{ error: errors.comment }"></textarea>
+              <textarea style="min-height: 152px" class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий"></textarea>
             </div>
             <button class="main_btn questions__form_btn" @click="addSuppurt">Заказать звонок</button>
           </div>
