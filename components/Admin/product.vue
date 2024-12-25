@@ -589,15 +589,15 @@ const handleFileChangeText = (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
-  if (
-      file.type === 'text/plain' ||
-      file.type === 'application/json' ||
-      file.name.endsWith('.csv') ||
-      file.type === 'application/pdf'
-  ) {
+  const allowedExtensions = ['.pdf', '.dwg', '.docx'];
+  const fileExtension = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+
+  if (allowedExtensions.includes(fileExtension)) {
     productTextPropertie.value = file;
+  } else {
+    alert('Недопустимый формат файла. Пожалуйста, загрузите файл в формате PDF, DWG или DOCX.');
   }
-}
+};
 const addProductPropertie = async () => {
   isLoading.value = true;
   try {
@@ -1286,7 +1286,7 @@ watch(() => currentProductId.value, () => {
         ref="productTextFile"
         class="basket__form_input admin-panel__content_input"
         @change="handleFileChangeText"
-        accept="application/pdf"
+        accept=".pdf,.dwg,.docx"
     />
     <button
         class="main_btn"
@@ -1337,7 +1337,7 @@ watch(() => currentProductId.value, () => {
         ref="productTextFile"
         class="basket__form_input admin-panel__content_input"
         @change="handleFileChangeText"
-        accept="application/pdf"
+        accept=".pdf,.dwg,.docx"
     />
     <button
         class="main_btn"

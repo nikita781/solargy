@@ -106,14 +106,14 @@ watch(isMenuOpen, (newValue) => {
       container.classList.remove('active');
     }
   }
-  const containerMain = document.querySelector('.container');
-  if (containerMain) {
-    if (newValue) {
-      containerMain.classList.add('active');
-    } else {
-      containerMain.classList.remove('active');
-    }
-  }
+  // const containerMain = document.querySelector('.container');
+  // if (containerMain) {
+  //   if (newValue) {
+  //     containerMain.classList.add('active');
+  //   } else {
+  //     containerMain.classList.remove('active');
+  //   }
+  // }
 });
 watch(isSearchOpen, (newValue) => {
   const container = document.querySelector('.container-content');
@@ -124,14 +124,14 @@ watch(isSearchOpen, (newValue) => {
       container.classList.remove('active');
     }
   }
-  const containerMain = document.querySelector('.container');
-  if (containerMain) {
-    if (newValue) {
-      containerMain.classList.add('active');
-    } else {
-      containerMain.classList.remove('active');
-    }
-  }
+  // const containerMain = document.querySelector('.container');
+  // if (containerMain) {
+  //   if (newValue) {
+  //     containerMain.classList.add('active');
+  //   } else {
+  //     containerMain.classList.remove('active');
+  //   }
+  // }
 });
 
 // Состояние раскрытия для каждого блока
@@ -285,7 +285,8 @@ onBeforeUnmount(() => {
       <div class="header__main" v-if="!isSearch">
         <div class="header__main_page">
           <NuxtLink to="/">
-            <IconsLogo class="header__main_logo"/>
+            <IconsLogo
+                class="header__main_logo"/>
           </NuxtLink>
           <nav class="header__main_nav">
             <div
@@ -294,7 +295,7 @@ onBeforeUnmount(() => {
                 @mouseenter="openMenuMain"
             >
               <NuxtLink to="/catalog">КАТАЛОГ</NuxtLink>
-              <IconsArrow class="header__main_nav-arrow"
+              <IconsArrowHeader class="header__main_nav-arrow"
                           :style="{ transform: isMenuOpen ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
             </div>
             <NuxtLink

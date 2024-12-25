@@ -241,14 +241,14 @@ const bestProduct = ref([
             <div class="basket__item_cont">
               <div class="card__main_final-cont">
                 <div
-                    class="card__main_final-btn"
+                    class="card__main_final-btn card__main_final-btn-left"
                     @click="quantityMinus(item.id)"
                 >
                   <IconsMinus :color="item.quantity === 1 ? '#cccccc' : '#EF7F1A'"/>
                 </div>
                 <div class="card__main_final-quantity">{{ item.quantity }}</div>
                 <div
-                    class="card__main_final-btn"
+                    class="card__main_final-btn card__main_final-btn-right"
                     @click="quantityPlus(item.id)"
                 >
                   <IconsPlus color="#EF7F1A"/>

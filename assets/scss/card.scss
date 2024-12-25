@@ -263,9 +263,22 @@ $x-big: 1829.98px;
         align-items: center;
         justify-content: center;
         cursor: pointer;
+        transition: 0.3s;
         svg {
           width: 15px;
           height: 15px;
+        }
+        &-left {
+          border-bottom-left-radius: 8px;
+          border-top-left-radius: 8px;
+        }
+        &-right {
+          border-bottom-right-radius: 8px;
+          border-top-right-radius: 8px;
+        }
+        &:hover {
+          background-color: #ededed;
+          transition: 0.3s;
         }
       }
     }

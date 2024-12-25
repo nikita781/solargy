@@ -220,7 +220,6 @@ const reset = () => {
 };
 
 const onSwiperInit = (swiper) => {
-  console.log(123)
   nextTick(() => {
     swiper.slideNext(0); // Переходим на следующий слайд
   });
@@ -353,7 +352,10 @@ onUnmounted(() => {
           </SwiperSlide>
         </Swiper>
 
-        <div ref="swiperRight" class="swiper__right">
+        <div
+            ref="swiperRight"
+            class="swiper__right"
+        >
           <IconsBtnSlide/>
         </div>
         <div ref="swiperLeft" class="swiper__left">
