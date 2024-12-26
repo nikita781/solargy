@@ -480,11 +480,11 @@ function getTables(html) {
           </div>
           <div class="card__main_final">
             <div class="card__main_final-cont">
-              <div class="card__main_final-btn" @click="quantityMinus">
+              <div class="card__main_final-btn card__main_final-btn-left" @click="quantityMinus">
                 <IconsMinus :color='quantity === 1 ? "#cccccc" : "#EF7F1A"'/>
               </div>
               <div class="card__main_final-quantity">{{ quantity }}</div>
-              <div class="card__main_final-btn" @click="quantityPlus">
+              <div class="card__main_final-btn card__main_final-btn-right" @click="quantityPlus">
                 <IconsPlus color="#EF7F1A"/>
               </div>
             </div>

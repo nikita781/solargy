@@ -70,7 +70,6 @@ const updateSeo = async () => {
   errors.value.contentSeo = false;
   errors.value.contentSeo = !contentSeo.value;
   try {
-    console.log(currentSeoValueId.value)
     const formData = new FormData();
     formData.append('page_id', currentSeoId.value);
     formData.append('content', contentSeo.value);

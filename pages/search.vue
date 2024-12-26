@@ -13,7 +13,6 @@ const handleSearchFull = async () => {
   try {
     const response = await axios.get(`/search?q=${searchQueryFull.value}`);
     searchResultFull.value = response.data;
-    console.log(searchResultFull.value);
   } catch (error) {
     console.error("Ошибка:", error.response?.data || error);
   }
@@ -150,7 +149,7 @@ watch(
               class="header__menu_container-search"
               :to="`/card/${search.id}-${generateSlug(search.name)}/`"
           >
-            <img :src="search.photos[0].photo" alt=""/>
+            <img :src="search?.photos[0]?.photo" alt=""/>
             <p class="header__menu_name">{{ search.name }}</p>
           </NuxtLink>
         </div>
