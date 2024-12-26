@@ -46,11 +46,6 @@ onMounted(async () => {
       </div>
     `;
       },
-      // image: (block: any) => `
-      //   <div class="image-block">
-      //     <img src="${block.data.file.url}" alt="" />
-      //   </div>
-      // `,
     });
 
     editorInstance = new EditorJS({
@@ -72,14 +67,6 @@ onMounted(async () => {
             cols: 3,
           },
         },
-        // image: {
-        //   class: ImageTool,
-        //   config: {
-        //     endpoints: {
-        //       byFile: 'http://localhost:8000/uploadFile',
-        //     },
-        //   },
-        // },
       },
       placeholder: 'Начните писать здесь...',
       onReady: () => {
