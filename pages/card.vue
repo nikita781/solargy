@@ -607,12 +607,12 @@ function removeFromBasket(itemId) {
         >
           <div class="card__tabs_container" v-if="activeTab === index">
             <div class="editor__content" v-html="getContentWithoutTables(property.html)"></div>
-            <NuxtImg format="webp" loading="lazy" preload
-                v-if="property.image"
-                :src="property.image"
-                :alt="`Image for ${property.title}`"
-                class="card__tabs_image"
-            />
+<!--            <NuxtImg format="webp" loading="lazy" preload-->
+<!--                v-if="property.image"-->
+<!--                :src="property.image"-->
+<!--                :alt="`Image for ${property.title}`"-->
+<!--                class="card__tabs_image"-->
+<!--            />-->
             <div class="editor__content" v-html="getTables(property.html)"></div>
             <a
                 v-if="property.file"
