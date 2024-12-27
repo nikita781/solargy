@@ -1,7 +1,7 @@
 <script setup>
-import Editor from "~/components/editor.vue";
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import EditorProd from "~/components/UI/editorProd.vue";
 
 onMounted(async () => {
   const token = localStorage.getItem('authToken');
@@ -598,18 +598,12 @@ const handleFileChangeText = (event) => {
     alert('Недопустимый формат файла. Пожалуйста, загрузите файл в формате PDF, DWG или DOCX.');
   }
 };
+
 const addProductPropertie = async () => {
   isLoading.value = true;
   try {
-    const title = ref('');
-    if (productPropertieTitle.value === '1') {
-      title.value = 'property'
-    }
-    if (productPropertieTitle.value === '2') {
-      title.value = 'recommendation'
-    }
     const formData = new FormData();
-    formData.append('properties[0][title]', title.value);
+    formData.append('properties[0][title]', productPropertieTitle.value);
     formData.append('properties[0][html]', productPropertieDescription.value);
     if (productTextPropertie.value) {
       formData.append('properties[0][file]', productTextPropertie.value);
@@ -641,16 +635,9 @@ const addProductPropertie = async () => {
 const updateProductPropertie = async () => {
   isLoading.value = true;
   try {
-    const title = ref('');
-    if (productPropertieTitle.value === '1') {
-      title.value = 'property'
-    }
-    if (productPropertieTitle.value === '2') {
-      title.value = 'recommendation'
-    }
     const formData = new FormData();
     formData.append('properties[0][id]', currentPropertieId.value);
-    formData.append('properties[0][title]', title.value);
+    formData.append('properties[0][title]', productPropertieTitle.value);
     formData.append('properties[0][html]', productPropertieDescription.value);
     if (productTextPropertie.value) {
       formData.append('properties[0][file]', productTextPropertie.value);
@@ -687,6 +674,26 @@ const editProductPropertie = (propertie) => {
     productPropertieTitle.value = '1';
   } else {
     productPropertieTitle.value = '2';
+  }
+  switch (propertie.title) {
+    case 'property':
+      productPropertieTitle.value = 'property';
+      break
+    case 'description':
+      productPropertieTitle.value = 'description';
+      break
+    case 'photo':
+      productPropertieTitle.value = 'photo';
+      break
+    case 'instruction':
+      productPropertieTitle.value = 'instruction';
+      break
+    case 'recommendation':
+      productPropertieTitle.value = 'recommendation';
+      break
+    case 'guaranty':
+      productPropertieTitle.value = 'guaranty';
+      break
   }
   productPropertieDescription.value = propertie.html;
   productPreviewPropertie.value = propertie.image;
@@ -737,6 +744,23 @@ const deleteProduct = async (idOptions) => {
 watch(() => currentProductId.value, () => {
   fetchProductById(currentProductId.value);
 });
+
+function toggleTab(title) {
+  switch (title) {
+    case 'property':
+      return 'Характеристики'
+    case 'description':
+      return 'Описание'
+    case 'photo':
+      return 'Фото товара'
+    case 'instruction':
+      return 'Инструкции'
+    case 'recommendation':
+      return 'Рекомендации'
+    case 'guaranty':
+      return 'Гарантии'
+  }
+}
 </script>
 
 <template>
@@ -1253,33 +1277,45 @@ watch(() => currentProductId.value, () => {
   <h3 v-if="isEditingProduct">Добавить таб (максимум 2)</h3>
   <form
       class="admin-panel__content_form admin-panel__content_form-long"
-      v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 2"
+      v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 6"
       @submit.prevent="addProductPropertie"
   >
     <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
       <option value="" disabled>Выберите категорию</option>
-      <option value='1'>
+      <option value='property'>
         Характеристики
       </option>
-      <option value='2'>
+      <option value='description'>
+        Описание
+      </option>
+      <option value='photo'>
+        Фото товара
+      </option>
+      <option value='instruction'>
+        Инструкции
+      </option>
+      <option value='recommendation'>
         Рекомендации
       </option>
+      <option value='guaranty'>
+        Гарантии
+      </option>
     </select>
-    <Editor @export-html="handleExportHtmlPropertie"/>
-    <div class="input__wrapper">
-      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file-reset"
-             @change="handleFileChangeProductPropertie" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button-reset">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreviewPropertie" class="input__file-icon" :src="productPreviewPropertie" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-        <span class="input__file-icon-reset" @click.prevent="resetProductPreviewPropertie">
-            <IconsCross color="#fff"/>
-          </span>
-      </label>
-    </div>
+    <EditorProd @export-html="handleExportHtmlPropertie"/>
+<!--    <div class="input__wrapper">-->
+<!--      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file-reset"-->
+<!--             @change="handleFileChangeProductPropertie" accept="image/*" multiple>-->
+<!--      <label for="input__file" class="input__file-button-reset">-->
+<!--          <span class="input__file-icon-wrapper">-->
+<!--            <img v-if="productPreviewPropertie" class="input__file-icon" :src="productPreviewPropertie" alt="Выбрать файл"-->
+<!--                 width="50" height="50px">-->
+<!--          </span>-->
+<!--        <span class="input__file-button-text">Выберите картинку</span>-->
+<!--        <span class="input__file-icon-reset" @click.prevent="resetProductPreviewPropertie">-->
+<!--            <IconsCross color="#fff"/>-->
+<!--          </span>-->
+<!--      </label>-->
+<!--    </div>-->
     <label class="admin-panel__content_label">Текстовый файл</label>
     <input
         type="file"
@@ -1306,11 +1342,23 @@ watch(() => currentProductId.value, () => {
   >
     <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
       <option value="" disabled>Выберите категорию</option>
-      <option value='1'>
+      <option value='property'>
         Характеристики
       </option>
-      <option value='2'>
+      <option value='description'>
+        Описание
+      </option>
+      <option value='photo'>
+        Фото товара
+      </option>
+      <option value='instruction'>
+        Инструкции
+      </option>
+      <option value='recommendation'>
         Рекомендации
+      </option>
+      <option value='guaranty'>
+        Гарантии
       </option>
     </select>
     <!--          <textarea-->
@@ -1318,19 +1366,22 @@ watch(() => currentProductId.value, () => {
     <!--              v-model="productPropertieDescription"-->
     <!--              placeholder="Введите описание"-->
     <!--          ></textarea>-->
-    <Editor :initialHtml="productPropertieDescription" @export-html="handleExportHtmlPropertie"/>
+    <EditorProd :initialHtml="productPropertieDescription" @export-html="handleExportHtmlPropertie"/>
     <label class="admin-panel__content_label">Изображение</label>
-    <div class="input__wrapper">
-      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPropertie" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreviewPropertie" class="input__file-icon" :src="productPreviewPropertie" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
+<!--    <div class="input__wrapper">-->
+<!--      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file-reset"-->
+<!--             @change="handleFileChangeProductPropertie" accept="image/*" multiple>-->
+<!--      <label for="input__file" class="input__file-button-reset">-->
+<!--          <span class="input__file-icon-wrapper">-->
+<!--            <img v-if="productPreviewPropertie" class="input__file-icon" :src="productPreviewPropertie" alt="Выбрать файл"-->
+<!--                 width="50" height="50px">-->
+<!--          </span>-->
+<!--        <span class="input__file-button-text">Выберите картинку</span>-->
+<!--        <span class="input__file-icon-reset" @click.prevent="resetProductPreviewPropertie">-->
+<!--            <IconsCross color="#fff"/>-->
+<!--          </span>-->
+<!--      </label>-->
+<!--    </div>-->
     <label class="admin-panel__content_label">Текстовый файл</label>
     <input
         type="file"
@@ -1362,7 +1413,7 @@ watch(() => currentProductId.value, () => {
     </thead>
     <tbody>
     <tr v-for="propertie in oneProd.properties" :key="propertie.id">
-      <td>{{ propertie.title === 'recommendation' ? 'Характеристики' : 'Рекомендации' }}</td>
+      <td>{{ toggleTab(propertie.title) }}</td>
       <td>{{ propertie.html }}</td>
       <td>
         <button @click="editProductPropertie(propertie)" class="admin-panel__content_btn">Изменить</button>

@@ -132,35 +132,38 @@ const addSuppurt = async () => {
   errors.value.phone = false;
   errors.value.name = !nameUser.value.trim();
   errors.value.phone = !phone.value.trim();
-  try {
-    const formData = new FormData();
-    formData.append('name', nameUser.value);
-    formData.append('phone', phone.value);
-    if (comment.value) {
-      formData.append('comment', comment.value);
-    }
-    formData.append('email-type', 2);
+  errors.value.phone = phone.value.replace(/\D/g, '').length !== 11;
+  if (!errors.value.name && !errors.value.phone) {
+    try {
+      const formData = new FormData();
+      formData.append('name', nameUser.value);
+      formData.append('phone', phone.value);
+      if (comment.value) {
+        formData.append('comment', comment.value);
+      }
+      formData.append('email-type', 2);
 
-    await axios.post(`/call`, formData);
-    reset();
-    Toastify({
-      text: "Заявка успешно отправлена!",
-      duration: 3000,
-      gravity: "top", // Позиция: "top" или "bottom"
-      position: "right", // Позиция: "left", "center" или "right"
-      backgroundColor: "#28a745",
-      stopOnFocus: true,
-    }).showToast();
-  } catch (error) {
-    console.error('Ошибка:', error.response?.data || error);
-    Toastify({
-      text: "Не удалось отправить заявку. Попробуйте снова.",
-      duration: 3000,
-      gravity: "top",
-      position: "right",
-      backgroundColor: "#ff4545",
-      stopOnFocus: true,
-    }).showToast();
+      await axios.post(`/call`, formData);
+      reset();
+      Toastify({
+        text: "Заявка успешно отправлена!",
+        duration: 3000,
+        gravity: "top", // Позиция: "top" или "bottom"
+        position: "right", // Позиция: "left", "center" или "right"
+        backgroundColor: "#28a745",
+        stopOnFocus: true,
+      }).showToast();
+    } catch (error) {
+      console.error('Ошибка:', error.response?.data || error);
+      Toastify({
+        text: "Не удалось отправить заявку. Попробуйте снова.",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#ff4545",
+        stopOnFocus: true,
+      }).showToast();
+    }
   }
 };
 

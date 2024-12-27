@@ -62,6 +62,20 @@ useHead(() => {
 });
 
 const basketStore = useBasketStore();
+const basketItems = computed(() => basketStore.items);
+const existingItem = ref([]);
+
+const findItemInBasket = (product, selectedOptions) => {
+  return basketItems.value.find((basketItem) => {
+    if (basketItem.name !== product.name) return false;
+
+    if (basketItem.options.length !== Object.values(selectedOptions).length) return false;
+
+    return basketItem.options.every((opt, index) => {
+      return opt.values.value === Object.values(selectedOptions)[index].values.value;
+    });
+  });
+};
 
 const product = ref([]);
 const category = ref([]);
@@ -84,10 +98,30 @@ const fetchCategory = async () => {
     console.error('Ошибка загрузки продукта:', error.response?.data || error);
   }
 };
+const recommendation = ref(null);
+const property = ref(null);
+
 const fetchProducts = async () => {
   try {
     const response = await axios.get(`/products`);
     products.value = response.data.data;
+
+    for (const product of products.value) {
+      recommendation.value = product.properties.find(
+          (property) => property.title === "recommendation"
+      );
+      if (recommendation.value) {
+        break;
+      }
+    }
+    for (const product of products.value) {
+      property.value = product.properties.find(
+          (property) => property.title === "property"
+      );
+      if (property.value) {
+        break;
+      }
+    }
   } catch (error) {
     console.error('Ошибка загрузки продукта:', error.response?.data || error);
   }
@@ -146,7 +180,8 @@ const selectItem = (item) => {
   };
 
   currentSelectedId.value = item.id;
-
+  existingItem.value = findItemInBasket(product.value, selectedOptions.value);
+  quantity.value = 1;
   closeMenu();
 };
 
@@ -159,6 +194,19 @@ const quantityMinus = () => {
     return;
   }
   quantity.value--;
+}
+
+const quantityPlusBasket = (itemId) => {
+  const item = basketStore.items.find((i) => i.id === itemId);
+  if (item) {
+    basketStore.updateQuantity(itemId, item.quantity + 1);
+  }
+}
+const quantityMinusBasket = (itemId) => {
+  const item = basketStore.items.find((i) => i.id === itemId);
+  if (item && item.quantity > 1) {
+    basketStore.updateQuantity(itemId, item.quantity - 1);
+  }
 }
 
 const selectedSlide = ref(null);
@@ -242,6 +290,7 @@ const addToBasket = () => {
     quantity: quantity.value,
   };
   basketStore.addToBasket(basketItem);
+  existingItem.value = findItemInBasket(product.value, selectedOptions.value);
 };
 
 watch(() => route.fullPath, async () => {
@@ -260,6 +309,7 @@ watch(() => route.fullPath, async () => {
       values: option.values[0],
     };
   });
+  existingItem.value = findItemInBasket(product.value, selectedOptions.value);
   await nextTick();
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');
@@ -297,6 +347,7 @@ onMounted(async () => {
       values: option.values[0],
     };
   });
+  existingItem.value = findItemInBasket(product.value, selectedOptions.value);
   await nextTick();
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');
@@ -368,6 +419,23 @@ function getContentWithoutTables(html) {
   return doc.body.innerHTML;
 }
 
+function toggleTab(title) {
+  switch (title) {
+    case 'property':
+      return 'Характеристики'
+    case 'description':
+      return 'Описание'
+    case 'photo':
+      return 'Фото товара'
+    case 'instruction':
+      return 'Инструкции'
+    case 'recommendation':
+      return 'Рекомендации'
+    case 'guaranty':
+      return 'Гарантии'
+  }
+}
+
 // Функция для получения только таблиц
 function getTables(html) {
   const parser = new DOMParser();
@@ -375,6 +443,12 @@ function getTables(html) {
 
   const tables = Array.from(doc.querySelectorAll('table'));
   return tables.map((table) => table.outerHTML).join('');
+}
+
+function removeFromBasket(itemId) {
+  basketStore.removeItem(itemId);
+  existingItem.value = findItemInBasket(product.value, selectedOptions.value);
+  quantity.value = 1;
 }
 </script>
 
@@ -479,7 +553,7 @@ function getTables(html) {
             </ul>
           </div>
           <div class="card__main_final">
-            <div class="card__main_final-cont">
+            <div v-if="!existingItem" class="card__main_final-cont">
               <div class="card__main_final-btn card__main_final-btn-left" @click="quantityMinus">
                 <IconsMinus :color='quantity === 1 ? "#cccccc" : "#EF7F1A"'/>
               </div>
@@ -488,7 +562,20 @@ function getTables(html) {
                 <IconsPlus color="#EF7F1A"/>
               </div>
             </div>
-            <NuxtLink class="main_btn" @click="addToBasket">Добавить в корзину</NuxtLink>
+            <div v-else class="card__main_final-cont">
+              <div class="card__main_final-btn card__main_final-btn-left" @click="quantityMinusBasket(existingItem.id)">
+                <IconsMinus :color='existingItem.quantity === 1 ? "#cccccc" : "#EF7F1A"'/>
+              </div>
+              <div class="card__main_final-quantity">{{ existingItem.quantity }}</div>
+              <div class="card__main_final-btn card__main_final-btn-right" @click="quantityPlusBasket(existingItem.id)">
+                <IconsPlus color="#EF7F1A"/>
+              </div>
+            </div>
+            <NuxtLink v-if="!existingItem" class="main_btn" @click="addToBasket">Добавить в корзину</NuxtLink>
+            <NuxtLink v-else class="card__main_final-button">
+              <p>В корзине</p>
+              <IconsCross color="#fff" @click="removeFromBasket(existingItem.id)"/>
+            </NuxtLink>
           </div>
         </div>
       </div>
@@ -499,20 +586,13 @@ function getTables(html) {
     >
       <div class="card__tabs_cont">
         <p
+            v-for="(property, index) in product?.properties || []"
+            :key="index"
             class="card__tabs_item"
-            :class="{ active: activeTab === 0 }"
-            @click="setActiveTab(0)"
-            v-if="product?.properties?.[0]"
+            :class="{ active: activeTab === index }"
+            @click="setActiveTab(index)"
         >
-          Характеристики
-        </p>
-        <p
-            class="card__tabs_item"
-            :class="{ active: activeTab === 1 }"
-            @click="setActiveTab(1)"
-            v-if="product?.properties?.[1]"
-        >
-          Требования и рекомендации к монтажу
+          {{ toggleTab(property.title) }}
         </p>
         <div
             class="slider"

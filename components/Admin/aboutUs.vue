@@ -494,7 +494,7 @@ const resetTeam = () => {
     <label class="admin-panel__content_label">PDF файл</label>
     <input
         type="file"
-        ref="patentText"
+        ref="patentFile"
         class="basket__form_input admin-panel__content_input"
         @change="handleFileChangePatent"
         accept="application/pdf"

@@ -258,6 +258,30 @@ $x-big: 1829.98px;
         font-size: 20px;
         user-select: none;
       }
+      &-button {
+        //padding: 18px 50px;
+        border-radius: 8px;
+        outline: none;
+        border: 2px solid #EF7F1A;
+        background-color: #EF7F1A;
+        color: #fff;
+        font-size: 16px;
+        letter-spacing: 1px;
+        display: flex;
+        align-items: center;
+        @media screen and (max-width: $medium){
+          //padding: 15px 35px;
+          font-size: 14px;
+        }
+        p {
+          padding: 18px 25px;
+          border-right: 1px solid #fff;
+        }
+        svg {
+          padding: 18px 25px;
+          cursor: pointer;
+        }
+      }
       &-btn {
         display: flex;
         align-items: center;
@@ -305,7 +329,7 @@ $x-big: 1829.98px;
       border-bottom: 1px solid #cccccc;
       position: relative;
       gap: 15px;
-      @media screen and (max-width: $x-small){
+      @media screen and (max-width: $small){
         border-bottom: unset;
         flex-wrap: wrap;
       }
@@ -313,7 +337,7 @@ $x-big: 1829.98px;
         content: ' ';
         display: table;
         clear: both;
-        @media screen and (max-width: $x-small){
+        @media screen and (max-width: $small){
           display: none;
         }
       }
@@ -325,7 +349,7 @@ $x-big: 1829.98px;
         height: 2px;
         background-color: #EF7F1A;
         transition: left .25s;
-        @media screen and (max-width: $x-small){
+        @media screen and (max-width: $small){
           display: none;
         }
       }
@@ -344,18 +368,18 @@ $x-big: 1829.98px;
     &_item {
       padding: 16px 10px;
       color: #9B9B9B;
-      font-size: 22px;
+      font-size: 20px;
       line-height: 26px;
       font-family: 'Exo 2 Bold', serif;
       letter-spacing: 1px;
       text-transform: uppercase;
       cursor: pointer;
       @media screen and (max-width: $large){
-        font-size: 20px;
+        font-size: 15px;
         line-height: 23px;
       }
-      @media screen and (max-width: $small){
-        font-size: 14px;
+      @media screen and (max-width: $medium){
+        font-size: 10px;
         line-height: 16px;
         padding: 10px 6px;
       }

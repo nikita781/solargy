@@ -118,7 +118,7 @@ const toggleFormOpen = () => {
   errors.value.phone = false;
   errors.value.name = !nameUser.value.trim();
   errors.value.phone = phoneUser.value.replace(/\D/g, '').length !== 11;
-  if (!nameUser.value.trim() || !phoneUser.value.trim()) {
+  if (errors.value.name || errors.value.phone) {
     return;
   }
   basketStore.updateUserInfo(nameUser.value, phoneUser.value);
