@@ -3,12 +3,7 @@ export default defineNuxtConfig({
   ssr: true,
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
-  modules: [
-    'nuxt-swiper',
-    "@qirolab/nuxt-sanctum-authentication",
-    '@pinia/nuxt',
-    'nuxt-easy-lightbox',
-  ],
+  modules: ['nuxt-swiper', "@qirolab/nuxt-sanctum-authentication", '@pinia/nuxt', 'nuxt-easy-lightbox', '@nuxt/image'],
   laravelSanctum: {
     apiUrl: "http://127.0.0.1:8000/",
   },

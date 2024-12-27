@@ -307,13 +307,13 @@ onUnmounted(() => {
                 :to="`/card/${product.id}-${generateSlug(product.name)}/`"
                 v-if="product?.photos[0]?.photo"
             >
-              <img class="best-product__item_img" :src="product?.photos[0]?.photo" alt="">
+              <NuxtImg format="webp" preload loading="lazy" class="best-product__item_img" :src="product?.photos[0]?.photo" alt=""/>
             </NuxtLink>
             <NuxtLink
                 :to="`/card/${product.id}-${generateSlug(product.name)}/`"
                 v-else
             >
-              <img class="best-product__item_img" src="/S.png" alt="">
+              <NuxtImg format="webp" preload loading="lazy" class="best-product__item_img" src="/S.png" alt=""/>
             </NuxtLink>
             <div class="best-product__item_content">
               <NuxtLink :to="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">
@@ -393,7 +393,7 @@ onUnmounted(() => {
       <div class="questions__container">
         <div class="questions__info">
           <p class="questions__info_description">Напишите нам и менеджер ответит вам в ближайшее время</p>
-          <img class="questions__info_img" src="/583400127_1734363646.png" alt="">
+          <NuxtImg format="webp" loading="lazy" preload class="questions__info_img" src="/583400127_1734363646.png" alt=""/>
         </div>
         <div class="questions__form">
           <div class="questions__form_container">

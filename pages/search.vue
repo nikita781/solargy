@@ -129,7 +129,7 @@ watch(
               class="header__menu_container-search"
               :to="`/catalog/${search.id}-${generateSlug(search.name)}/`"
           >
-            <img :src="search.photo" alt=""/>
+            <NuxtImg format="webp" preload :src="search.photo" alt=""/>
             <p class="header__menu_name">{{ search.name }}</p>
           </NuxtLink>
         </div>
@@ -149,7 +149,7 @@ watch(
               class="header__menu_container-search"
               :to="`/card/${search.id}-${generateSlug(search.name)}/`"
           >
-            <img :src="search?.photos[0]?.photo" alt=""/>
+            <NuxtImg format="webp" preload :src="search?.photos[0]?.photo" alt=""/>
             <p class="header__menu_name">{{ search.name }}</p>
           </NuxtLink>
         </div>
@@ -169,7 +169,7 @@ watch(
               class="header__menu_container-search"
               :to="`/${urls[search.page_id]}`"
           >
-            <img :src="search.image" alt=""/>
+            <NuxtImg format="webp" preload :src="search.image" alt=""/>
             <p class="header__menu_name">{{ search.title }}</p>
           </NuxtLink>
         </div>
@@ -189,7 +189,7 @@ watch(
               class="header__menu_container-search"
               :to="`/stocks`"
           >
-            <img :src="search.image" alt=""/>
+            <NuxtImg format="webp" preload :src="search.image" alt=""/>
             <div class="header__menu_container-search-info">
               <p class="header__menu_name">{{ search.title }}</p>
               <p class="header__menu_data">{{ convertDateToText(search.end) }}</p>
@@ -212,7 +212,7 @@ watch(
               class="header__menu_container-search"
               :to="`/stocks`"
           >
-            <img :src="search.image" alt=""/>
+            <NuxtImg format="webp" preload :src="search.image" alt=""/>
             <div class="header__menu_container-search-info">
               <p class="header__menu_name">{{ search.title }}</p>
               <p class="header__menu_data">{{ convertDateToText(search.end) }}</p>

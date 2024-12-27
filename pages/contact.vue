@@ -258,7 +258,7 @@ onMounted(async () => {
                   :key="place.id"
               >
                 <NuxtLink :to="place.url">
-                  <img :src="place.image" alt="">
+                  <NuxtImg format="webp" preload :src="place.image" alt=""/>
                 </NuxtLink>
               </div>
             </div>

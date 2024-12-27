@@ -133,7 +133,7 @@ function formatDate(dateString) {
           <p class="about_us__header_subtitle editor__content" v-html="blocks[0].html"></p>
         </div>
         <div class="about_us__header_img">
-          <img :src="blocks[0].image" alt="Header Image" />
+          <NuxtImg format="webp" preload :src="blocks[0].image" alt="Header Image" />
         </div>
       </div>
     </div>
@@ -199,7 +199,7 @@ function formatDate(dateString) {
       <div class="about_us__team_items">
         <div v-for="team in teams" :key="team.id" class="about_us__team_item">
           <div class="about_us__team_container">
-            <img class="about_us__team_img" :src="team.image" alt="">
+            <NuxtImg format="webp" loading="lazy" preload class="about_us__team_img" :src="team.image" alt=""/>
             <p class="about_us__team_name">{{ team.name }}</p>
             <p class="about_us__team_subtitle">{{ team.description }}</p>
           </div>

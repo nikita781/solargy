@@ -100,7 +100,7 @@ onMounted(() => {
                   :key="place.id"
               >
                 <NuxtLink :to="place.url">
-                  <img :src="place.image_footer" alt="">
+                  <NuxtImg format="webp" loading="lazy" preload :src="place.image_footer" alt=""/>
                 </NuxtLink>
               </div>
             </div>
@@ -115,7 +115,7 @@ onMounted(() => {
                   :key="place.id"
               >
                 <NuxtLink :to="place.url">
-                  <img :src="place.image" alt="">
+                  <NuxtImg format="webp" loading="lazy" preload :src="place.image" alt=""/>
                 </NuxtLink>
               </div>
             </div>

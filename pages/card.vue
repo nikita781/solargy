@@ -491,7 +491,7 @@ function removeFromBasket(itemId) {
             </div>
           </div>
           <div class="card__main_img" v-if="selectedSlide">
-            <img class="card__main_img-pict" :src="selectedSlide?.photo" alt="Selected Image" @click="() => showImg(selectedSlide?.photo)"/>
+            <NuxtImg format="webp" preload class="card__main_img-pict" :src="selectedSlide?.photo" alt="Selected Image" @click="() => showImg(selectedSlide?.photo)"/>
             <VueEasyLightbox
                 :visible="visibleRef"
                 :imgs="imgs"
@@ -501,7 +501,7 @@ function removeFromBasket(itemId) {
             />
           </div>
           <div class="card__main_img" v-else>
-            <img class="card__main_img-pict-default" src="/S.png" alt="Selected Image"/>
+            <NuxtImg format="webp" preload class="card__main_img-pict-default" src="/S.png" alt="Selected Image"/>
           </div>
         </div>
         <div class="card__main_info">
@@ -519,7 +519,7 @@ function removeFromBasket(itemId) {
                 <p class="card__main_select-title">{{ select.name }}</p>
                 <div class="card__main_select-item">
                   <div class="card__main_select-name">
-                    <img v-if="select.values[0]?.image" :src="select.values[0]?.image" alt="">
+                    <NuxtImg format="webp" preload v-if="select.values[0]?.image" :src="select.values[0]?.image" alt=""/>
                     <p>{{ select.values[0]?.value }}</p>
                   </div>
                   <div class="card__main_select-btn">
@@ -547,7 +547,7 @@ function removeFromBasket(itemId) {
                   :class="{ active: item.id === currentSelectedId }"
                   @click="selectItem(item)"
               >
-                <img v-if="item.image" :src="item.image" alt=""/>
+                <NuxtImg format="webp" loading="lazy" preload v-if="item.image" :src="item.image" alt=""/>
                 <span>{{ item.value }}</span>
               </li>
             </ul>
@@ -607,7 +607,7 @@ function removeFromBasket(itemId) {
         >
           <div class="card__tabs_container" v-if="activeTab === index">
             <div class="editor__content" v-html="getContentWithoutTables(property.html)"></div>
-            <img
+            <NuxtImg format="webp" loading="lazy" preload
                 v-if="property.image"
                 :src="property.image"
                 :alt="`Image for ${property.title}`"
@@ -620,7 +620,7 @@ function removeFromBasket(itemId) {
                 download
                 class="card__tabs_file_link main_btn"
             >
-              {{ property.file_name }}
+              Прикрепленный файл
             </a>
           </div>
         </div>
@@ -640,13 +640,13 @@ function removeFromBasket(itemId) {
               :href="`/card/${product.id}-${generateSlug(product.name)}/`"
               v-if="product?.photos.length > 0"
           >
-            <img class="best-product__item_img" :src="product?.photos[0].photo" alt="">
+            <NuxtImg format="webp" loading="lazy" preload class="best-product__item_img" :src="product?.photos[0].photo" alt=""/>
           </a>
           <a
               :href="`/card/${product.id}-${generateSlug(product.name)}/`"
               v-else
           >
-            <img class="best-product__item_img" src="/S.png" alt="">
+            <NuxtImg format="webp" loading="lazy" preload class="best-product__item_img" src="/S.png" alt=""/>
           </a>
           <div class="best-product__item_content">
             <a :href="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">{{ product.name }}</a>
