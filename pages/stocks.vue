@@ -163,7 +163,7 @@ onMounted(async () => {
       <div v-if="activeTab === 0" class="card__tabs_info stocks__container">
         <div v-for="block in blocksNotArchive" :key="block.id" class="stocks__item">
           <div class="stocks__item_img">
-            <img :src="block.image" alt="">
+            <NuxtImg format="webp" loading="lazy" preload :src="block.image" alt=""/>
             <h3 class="stocks__item_title">{{ block.title }}</h3>
           </div>
           <div class="stocks__item_content">
@@ -175,7 +175,7 @@ onMounted(async () => {
       <div v-if="activeTab === 1" class="card__tabs_info stocks__container">
         <div v-for="block in blocksArchive" :key="block.id" class="stocks__item">
           <div class="stocks__item_img">
-            <img :src="block.image" alt="">
+            <NuxtImg format="webp" loading="lazy" preload :src="block.image" alt=""/>
             <h3 class="stocks__item_title">{{ block.title }}</h3>
           </div>
           <div class="stocks__item_content">

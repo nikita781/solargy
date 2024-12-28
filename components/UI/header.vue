@@ -348,7 +348,7 @@ onBeforeUnmount(() => {
                       :key="blockIndex"
                       class="header__menu_container"
                   >
-                    <img :src="block.photo" alt=""/>
+                    <NuxtImg format="webp" loading="lazy" preload :src="block.photo" alt=""/>
                     <div class="header__menu_info">
                       <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{
                           block.name
@@ -434,7 +434,7 @@ onBeforeUnmount(() => {
                 class="header__menu_container-search"
                 :href="`/card/${search.id}-${generateSlug(search.name)}/`"
             >
-              <img v-if="search.photos.length > 0" :src="search.photos[0].photo" alt=""/>
+              <NuxtImg format="webp" loading="lazy" preload v-if="search.photos.length > 0" :src="search.photos[0].photo" alt=""/>
               <p class="header__menu_name">{{ search.name }}</p>
             </a>
           </div>
@@ -454,7 +454,7 @@ onBeforeUnmount(() => {
                 class="header__menu_container-search"
                 :to="`/stocks`"
             >
-              <img :src="search.image" alt=""/>
+              <NuxtImg format="webp" loading="lazy" preload :src="search.image" alt=""/>
               <div class="header__menu_container-search-info">
                 <p class="header__menu_name">{{ search.title }}</p>
                 <p class="header__menu_data">{{ convertDateToText(search.end) }}</p>
@@ -470,7 +470,7 @@ onBeforeUnmount(() => {
             :key="blockIndex"
             class="header__menu_container"
         >
-          <img :src="block.photo" alt=""/>
+          <NuxtImg format="webp" loading="lazy" preload :src="block.photo" alt=""/>
           <div class="header__menu_info">
             <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{
                 block.name

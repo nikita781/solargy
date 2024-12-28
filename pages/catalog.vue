@@ -216,7 +216,7 @@ onMounted(() => {
               :to="`/card/${product.id}-${generateSlug(product.name)}/`"
               v-if="product?.photos[0]?.photo"
           >
-            <img
+            <NuxtImg format="webp" preload
                 class="best-product__item_img"
                 :src="product.photos[0]?.photo"
                 alt="Product Image"
@@ -226,7 +226,7 @@ onMounted(() => {
               :to="`/card/${product.id}-${generateSlug(product.name)}/`"
               v-else
           >
-            <img class="best-product__item_img" src="/S.png" alt="">
+            <NuxtImg format="webp" preload class="best-product__item_img" src="/S.png" alt=""/>
           </NuxtLink>
           <div class="best-product__item_content">
             <NuxtLink :to="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">{{ product.name }}</NuxtLink>

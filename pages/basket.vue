@@ -226,7 +226,7 @@ const bestProduct = ref([
                   </p>
                 </div>
               </div>
-              <img :src="item.photo" alt="">
+              <NuxtImg format="webp" preload :src="item.photo" alt=""/>
               <div class="basket__item_info">
                 <p class="basket__item_title">{{ item.name }}</p>
                 <div class="basket__item_characteristic">
@@ -301,7 +301,7 @@ const bestProduct = ref([
             v-for="(product, index) in bestProduct"
             :key="index"
         >
-          <img class="best-product__item_img" :src="product.image" alt="">
+          <NuxtImg format="webp" preload loading="lazy" class="best-product__item_img" :src="product.image" alt=""/>
           <div class="best-product__item_content">
             <p class="best-product__item_title">{{ product.title }}</p>
             <p class="best-product__item_desc">{{ product.description }}</p>
