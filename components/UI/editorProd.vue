@@ -140,8 +140,8 @@ onMounted(async () => {
       onReady: () => {
         if (props.initialHtml) {
           try {
-            const initialData = JSON.parse(props.initialHtml);
-            editorInstance.blocks.render(initialData);
+            const blocks = parseHtmlToEditorBlocks(props.initialHtml);
+            editorInstance.blocks.render({ blocks });
           } catch {
             editorInstance.blocks.renderFromHTML(props.initialHtml);
           }
@@ -156,7 +156,79 @@ onMounted(async () => {
     editorInstance.htmlParser = htmlParser;
   }
 });
+function parseHtmlToEditorBlocks(html: string): { type: string; data: any }[] {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const blocks: { type: string; data: any }[] = [];
 
+  // Обработка всех дочерних элементов
+  doc.body.childNodes.forEach((node) => {
+    if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
+      // Обработка текстовых узлов
+      blocks.push({
+        type: 'paragraph',
+        data: {
+          text: node.textContent.trim(),
+        },
+      });
+    } else if (node instanceof HTMLElement) {
+      if (node.tagName === 'P') {
+        blocks.push({
+          type: 'paragraph',
+          data: {
+            text: node.innerHTML,
+          },
+        });
+      } else if (node.tagName === 'H2') {
+        blocks.push({
+          type: 'header',
+          data: {
+            text: node.innerHTML,
+            level: 2,
+          },
+        });
+      } else if (node.tagName === 'UL') {
+        const items = Array.from(node.querySelectorAll('li')).map((li) => li.innerHTML.trim());
+        if (items.length > 0) {
+          blocks.push({
+            type: 'list',
+            data: {
+              style: 'unordered',
+              items,
+            },
+          });
+        }
+      } else if (node.tagName === 'DIV' && node.classList.contains('table-container')) {
+        const table = node.querySelector('table');
+        if (table) {
+          const rows = Array.from(table.querySelectorAll('tr')).map((row) =>
+              Array.from(row.querySelectorAll('th, td')).map((cell) => cell.innerHTML.trim())
+          );
+          blocks.push({
+            type: 'table',
+            data: {
+              content: rows,
+            },
+          });
+        }
+      } else if (node.tagName === 'DIV' && node.classList.contains('image-block')) {
+        const img = node.querySelector('img');
+        if (img) {
+          blocks.push({
+            type: 'image',
+            data: {
+              file: {
+                url: img.src,
+              },
+            },
+          });
+        }
+      }
+    }
+  });
+
+  return blocks;
+}
 onBeforeUnmount(() => {
   editorInstance?.destroy();
   editorInstance = null;

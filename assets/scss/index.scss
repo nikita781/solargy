@@ -7,32 +7,36 @@ $big: 1592.98px;
 $x-big: 1829.98px;
 
 .head {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 100px 80px;
-  height: 562px;
   position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 50px;
   overflow: hidden;
   //background-image: url(/a64845b2ddf97aa28ae693147c1cb957.jpg);
   //background-repeat: no-repeat;
   //background-size: cover;
   //background-position: center;
   transition: background-image 0.5s ease;
-  @media screen and (max-width: $medium){
-    height: 400px;
-    padding: 80px 50px;
-  }
-  @media screen and (max-width: $small){
-    height: unset;
-    grid-template-columns: 1fr;
-    gap: 30px;
-    padding: 50px;
-  }
-  @media screen and (max-width: $x-small){
-    padding: 30px;
+  &__content-main {
+    position: relative;
+    padding: 100px 80px;
+    height: 562px;
+    max-width: 1440px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    overflow: hidden;
+    @media screen and (max-width: $medium){
+      height: 400px;
+      padding: 80px 50px;
+    }
+    @media screen and (max-width: $small){
+      height: unset;
+      grid-template-columns: 1fr;
+      gap: 30px;
+      padding: 50px;
+    }
+    @media screen and (max-width: $x-small){
+      padding: 30px;
+    }
   }
   &__pagination {
     position: absolute;

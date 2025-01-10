@@ -249,31 +249,36 @@ onUnmounted(() => {
     >
       <div class="head__background"></div>
       <div class="head__black"></div>
-      <div class="head__info">
-        <h2 class="head__info_title">{{ banners[currentSlideIndex]?.title }}</h2>
-        <p class="head__info_subtitle">{{ banners[currentSlideIndex]?.description }}</p>
-        <NuxtLink v-if="banners[currentSlideIndex]?.product" :to="`/card/${banners[currentSlideIndex]?.product.id}-${generateSlug(banners[currentSlideIndex]?.product.name)}/`" class="main_btn head__info_btn">Перейти в каталог</NuxtLink>
-      </div>
-      <div class="head__img-container"
-           :style="{
-            'background-image': `url(${banners[currentSlideIndex]?.image})`,
-           }"
-      >
-        <div class="head__img-container-black"></div>
-        <h2 class="head__info_title-little">{{ banners[currentSlideIndex]?.product.name }}</h2>
-        <p class="head__info_subtitle">от {{ banners[currentSlideIndex]?.product.price }} р</p>
-      </div>
-      <div class="head__pagination">
-        <div
-            v-for="(slide, index) in banners"
-            :key="slide.id"
-            class="head__pagination-item"
-            :class="{ active: currentSlideIndex === index, inactive: currentSlideIndex !== index }"
-            @click="goToSlide(index)"
+      <div class="head__content-main">
+        <div class="head__info">
+          <h2 class="head__info_title">{{ banners[currentSlideIndex]?.title }}</h2>
+          <p class="head__info_subtitle">{{ banners[currentSlideIndex]?.description }}</p>
+          <NuxtLink v-if="banners[currentSlideIndex]?.product" :to="`/card/${banners[currentSlideIndex]?.product.id}-${generateSlug(banners[currentSlideIndex]?.product.name)}/`" class="main_btn head__info_btn">Перейти к товару</NuxtLink>
+        </div>
+        <NuxtLink
+            class="head__img-container"
+            v-if="banners[currentSlideIndex]?.product"
+            :to="`/card/${banners[currentSlideIndex]?.product.id}-${generateSlug(banners[currentSlideIndex]?.product.name)}/`"
+            :style="{
+              'background-image': `url(${banners[currentSlideIndex]?.image})`,
+            }"
         >
-          <div class="inner"></div>
-          <div class="border"></div>
-          <span>{{ String(index + 1).padStart(2, '0') }}</span>
+          <div class="head__img-container-black"></div>
+          <h2 class="head__info_title-little">{{ banners[currentSlideIndex]?.product.name }}</h2>
+          <p class="head__info_subtitle">от {{ banners[currentSlideIndex]?.product.price }} р</p>
+        </NuxtLink>
+        <div class="head__pagination">
+          <div
+              v-for="(slide, index) in banners"
+              :key="slide.id"
+              class="head__pagination-item"
+              :class="{ active: currentSlideIndex === index, inactive: currentSlideIndex !== index }"
+              @click="goToSlide(index)"
+          >
+            <div class="inner"></div>
+            <div class="border"></div>
+            <span>{{ String(index + 1).padStart(2, '0') }}</span>
+          </div>
         </div>
       </div>
     </div>

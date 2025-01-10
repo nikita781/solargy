@@ -92,6 +92,8 @@ const allProducts = ref([]);
 const allCategories = ref([]);
 const categories = ref([]);
 const options = ref([]);
+const searchQuery = ref('');
+const productProd = ref(null)
 
 const fetchOptions = async () => {
   try {
@@ -99,6 +101,21 @@ const fetchOptions = async () => {
     options.value = response.data;
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const fetchSearchOptions = async (query) => {
+  try {
+    const response = await axios.get(`/search/options?q=${query}`);
+    options.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const handleSearch = async () => {
+  if (searchQuery.value.trim() === '') {
+    await fetchOptions();
+  } else {
+    await fetchSearchOptions(searchQuery.value);
   }
 };
 const fetchAllProducts = async () => {
@@ -632,6 +649,38 @@ const addProductPropertie = async () => {
     isLoading.value = false;
   }
 }
+const addProductProd = async () => {
+  isLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('related_product_ids[0][id]', productProd.value);
+
+    await axios.post(`/products/${oneProd.value.id}/related`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchProductById(currentProductId.value);
+    productProd.value = '';
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+const deleteProductProd = async (idPropertie) => {
+  isLoading.value = true;
+  try {
+    await axios.delete(`/products/${oneProd.value.id}/related/${idPropertie}`, {
+      headers: {},
+    });
+    await fetchProductById(currentProductId.value);
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+  }
+};
 const updateProductPropertie = async () => {
   isLoading.value = true;
   try {
@@ -731,6 +780,19 @@ const deleteProduct = async (idOptions) => {
   isLoading.value = true;
   try {
     await axios.delete(`/products/${idOptions}`, {
+      headers: {},
+    });
+    await fetchAllProducts();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+const copyProduct = async (idOptions) => {
+  isLoading.value = true;
+  try {
+    await axios.post(`/products/${idOptions}/copy`, {
       headers: {},
     });
     await fetchAllProducts();
@@ -1200,6 +1262,13 @@ function toggleTab(title) {
   </table>
   <h3 v-if="isEditingProduct">Добавить параметр</h3>
   <form class="admin-panel__content_form" v-if="isEditingProduct" @submit.prevent="addProductOption">
+    <input
+        v-model="searchQuery"
+        @input="handleSearch"
+        class="basket__form_input admin-panel__content_input"
+        type="text"
+        placeholder="Введите запрос для поиска"
+    />
     <select v-model="productOption" class="basket__form_input admin-panel__content_select">
       <option value="" disabled>Выберите категорию</option>
       <option v-for="option in options" :key="option.id" :value="option.id">
@@ -1274,7 +1343,7 @@ function toggleTab(title) {
       </button>
     </form>
   </div>
-  <h3 v-if="isEditingProduct">Добавить таб (максимум 2)</h3>
+  <h3 v-if="isEditingProduct">Добавить таб (максимум 6)</h3>
   <form
       class="admin-panel__content_form admin-panel__content_form-long"
       v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 6"
@@ -1424,6 +1493,45 @@ function toggleTab(title) {
     </tr>
     </tbody>
   </table>
+  <h3 v-if="isEditingProduct">Добавить сопутствующий товар</h3>
+  <form
+      class="admin-panel__content_form" v-if="isEditingProduct"
+      @submit.prevent="addProductProd"
+  >
+    <select v-model="productProd" class="basket__form_input admin-panel__content_select">
+      <option value="" disabled>Выберите товар</option>
+      <option v-for="prod in allProducts" :key="prod.id" :value="prod.id">
+        {{ prod.name }}
+      </option>
+    </select>
+    <button
+        class="main_btn"
+        type="submit"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Добавить товар</span>
+    </button>
+    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
+  </form>
+  <table v-if="isEditingProduct">
+    <thead>
+    <tr>
+      <th>Название</th>
+      <th>Удалить</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr v-for="prod in oneProd.related_products" :key="prod.id">
+      <td>{{ prod.name }}</td>
+      <td>
+        <button @click="deleteProductProd(prod.id)" class="admin-panel__content_btn">Удалить</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
   <table>
     <thead>
     <tr>
@@ -1433,6 +1541,7 @@ function toggleTab(title) {
       <th>Цена</th>
       <th>Топ</th>
       <th>Изменить</th>
+      <th>Дублирование</th>
       <th>Удалить</th>
     </tr>
     </thead>
@@ -1445,6 +1554,9 @@ function toggleTab(title) {
       <td><input type="checkbox" disabled v-model="product.is_top"/></td>
       <td>
         <button @click="editProduct(product)" class="admin-panel__content_btn">Изменить</button>
+      </td>
+      <td>
+        <button @click="copyProduct(product.id)" class="admin-panel__content_btn">Дублировать</button>
       </td>
       <td>
         <button @click="deleteProduct(product.id)" class="admin-panel__content_btn">Удалить</button>
