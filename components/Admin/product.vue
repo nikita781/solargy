@@ -1436,7 +1436,7 @@ function toggleTab(title) {
     <!--              placeholder="Введите описание"-->
     <!--          ></textarea>-->
     <EditorProd :initialHtml="productPropertieDescription" @export-html="handleExportHtmlPropertie"/>
-    <label class="admin-panel__content_label">Изображение</label>
+<!--    <label class="admin-panel__content_label">Изображение</label>-->
 <!--    <div class="input__wrapper">-->
 <!--      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file-reset"-->
 <!--             @change="handleFileChangeProductPropertie" accept="image/*" multiple>-->
