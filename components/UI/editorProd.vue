@@ -1,7 +1,7 @@
 <template>
   <client-only>
     <div ref="editor" class="editor"></div>
-    <!--    <button @click="exportHtml" type="button" class="main_btn">Применить редактор</button>-->
+    <!-- <button @click="exportHtml" type="button" class="main_btn">Применить редактор</button> -->
   </client-only>
 </template>
 
@@ -31,6 +31,7 @@ onMounted(async () => {
     const { default: List } = await import('@editorjs/list');
     const { default: Table } = await import('@editorjs/table');
     const { default: ImageTool } = await import('@editorjs/image');
+    const { default: Columns } = await import('@calumk/editorjs-columns');
     const { default: EditorJSHTML } = await import('editorjs-html');
 
     const htmlParser = EditorJSHTML({
@@ -48,23 +49,87 @@ onMounted(async () => {
         return `<div class="table-container"><table>${rows}</table></div>`;
       },
       image: (block: any, previousBlock: any) => {
-        // Проверяем, является ли это изображение и предыдущий блок тоже изображением
         const isConsecutiveImage = previousBlock && previousBlock.type === 'image';
-
-        // Если это первое изображение или оно не идет подряд с другим изображением
         if (!isConsecutiveImage) {
-          return `<div class="image-block">
-                <img src="${block.data.file.url}" alt="" />
-              </div>`;
+          return `<div class="image-block"><img src="${block.data.file.url}" alt="" /></div>`;
+        }
+        return `<div class="image-block-group"><img src="${block.data.file.url}" alt="" /></div>`;
+      },
+      columns: (block: any) => {
+        if (!block.data || !block.data.cols || !Array.isArray(block.data.cols)) {
+          console.error('Invalid columns block structure:', block);
+          return '<div class="columns">Invalid columns data</div>';
         }
 
-        // Если изображения идут подряд, оборачиваем их в один контейнер
-        return `<div class="image-block-group">
-              <img src="${block.data.file.url}" alt="" />
-            </div>`;
+        const columnsHtml = block.data.cols
+            .map((column: any) => {
+              if (!column.blocks || !Array.isArray(column.blocks)) {
+                console.error('Invalid column structure:', column);
+                return '<div class="column">Invalid column data</div>';
+              }
+
+              const columnContent = column.blocks
+                  .map((innerBlock: any) => htmlParser.parseBlock(innerBlock))
+                  .join('');
+              return `<div class="column">${columnContent}</div>`;
+            })
+            .join('');
+
+        return `<div class="columns">${columnsHtml}</div>`;
       },
     });
 
+    // Конфигурация инструментов
+    const column_tools = {
+      header: Header,
+      image: {
+        class: ImageTool,
+        config: {
+          endpoints: {
+            byFile: 'http://127.0.0.1:8000/api/upload-image',
+          },
+          uploader: {
+            uploadByFile: async (file: File) => {
+              const token = localStorage.getItem('authToken');
+              const formData = new FormData();
+              formData.append('image', file);
+
+              try {
+                const response = await fetch('http://127.0.0.1:8000/api/upload-image', {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${token || ''}`,
+                  },
+                  body: formData,
+                });
+
+                if (!response.ok) {
+                  console.error('Ошибка загрузки:', await response.text());
+                  throw new Error('Загрузка изображения не удалась');
+                }
+
+                const result = await response.json();
+
+                if (!result.success || !result.file?.url) {
+                  console.error('Неверный ответ от API:', result);
+                  throw new Error('Некорректный формат ответа от API');
+                }
+
+                return {
+                  success: 1,
+                  file: { url: result.file.url },
+                };
+              } catch (error) {
+                console.error('Ошибка при загрузке изображения:', error);
+                return { success: 0 };
+              }
+            },
+          },
+        },
+      },
+    };
+
+    // Главные инструменты
     editorInstance = new EditorJS({
       holder: editor.value!,
       tools: {
@@ -93,7 +158,6 @@ onMounted(async () => {
             uploader: {
               uploadByFile: async (file: File) => {
                 const token = localStorage.getItem('authToken');
-
                 const formData = new FormData();
                 formData.append('image', file);
 
@@ -113,26 +177,28 @@ onMounted(async () => {
 
                   const result = await response.json();
 
-                  // Условие проверки формата ответа
                   if (!result.success || !result.file?.url) {
                     console.error('Неверный ответ от API:', result);
                     throw new Error('Некорректный формат ответа от API');
                   }
 
                   return {
-                    success: 1, // Редактор ожидает 1, а не true
-                    file: {
-                      url: result.file.url,
-                    },
+                    success: 1,
+                    file: { url: result.file.url },
                   };
                 } catch (error) {
                   console.error('Ошибка при загрузке изображения:', error);
-                  return {
-                    success: 0,
-                  };
+                  return { success: 0 };
                 }
               },
             },
+          },
+        },
+        columns: {
+          class: Columns,
+          config: {
+            EditorJsLibrary: EditorJS,
+            tools: column_tools,
           },
         },
       },
@@ -156,46 +222,35 @@ onMounted(async () => {
     editorInstance.htmlParser = htmlParser;
   }
 });
+
 function parseHtmlToEditorBlocks(html: string): { type: string; data: any }[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const blocks: { type: string; data: any }[] = [];
 
-  // Обработка всех дочерних элементов
   doc.body.childNodes.forEach((node) => {
     if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
-      // Обработка текстовых узлов
       blocks.push({
         type: 'paragraph',
-        data: {
-          text: node.textContent.trim(),
-        },
+        data: { text: node.textContent.trim() },
       });
     } else if (node instanceof HTMLElement) {
       if (node.tagName === 'P') {
         blocks.push({
           type: 'paragraph',
-          data: {
-            text: node.innerHTML,
-          },
+          data: { text: node.innerHTML },
         });
       } else if (node.tagName === 'H2') {
         blocks.push({
           type: 'header',
-          data: {
-            text: node.innerHTML,
-            level: 2,
-          },
+          data: { text: node.innerHTML, level: 2 },
         });
       } else if (node.tagName === 'UL') {
         const items = Array.from(node.querySelectorAll('li')).map((li) => li.innerHTML.trim());
         if (items.length > 0) {
           blocks.push({
             type: 'list',
-            data: {
-              style: 'unordered',
-              items,
-            },
+            data: { style: 'unordered', items },
           });
         }
       } else if (node.tagName === 'DIV' && node.classList.contains('table-container')) {
@@ -206,9 +261,7 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any }[] {
           );
           blocks.push({
             type: 'table',
-            data: {
-              content: rows,
-            },
+            data: { content: rows },
           });
         }
       } else if (node.tagName === 'DIV' && node.classList.contains('image-block')) {
@@ -216,19 +269,28 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any }[] {
         if (img) {
           blocks.push({
             type: 'image',
-            data: {
-              file: {
-                url: img.src,
-              },
-            },
+            data: { file: { url: img.src } },
           });
         }
+      } else if (node.tagName === 'DIV' && node.classList.contains('columns')) {
+        const columns = Array.from(node.querySelectorAll('.column')).map((column) => {
+          const blocksInColumn = parseHtmlToEditorBlocks(column.innerHTML);
+          return {
+            blocks: blocksInColumn,
+          };
+        });
+
+        blocks.push({
+          type: 'columns',
+          data: { cols: columns },
+        });
       }
     }
   });
 
   return blocks;
 }
+
 onBeforeUnmount(() => {
   editorInstance?.destroy();
   editorInstance = null;

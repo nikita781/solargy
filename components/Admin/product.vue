@@ -542,6 +542,7 @@ const addProductOption = async () => {
     const valueId = await fetchOptionsById(productOption.value);
     const formData = new FormData();
     formData.append('options[0][id]', productOption.value);
+    // formData.append('options[0][id]', productOption.value?.id);
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
@@ -823,6 +824,13 @@ function toggleTab(title) {
       return 'Гарантии'
   }
 }
+
+const filteredOptions = computed(() => {
+  if (!searchQuery.value.trim()) return options.value
+  return options.value.filter((option) =>
+      option.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
 </script>
 
 <template>
@@ -1275,6 +1283,16 @@ function toggleTab(title) {
         {{ option.name }}
       </option>
     </select>
+<!--    <Dropdown-->
+<!--        v-model="productOption"-->
+<!--        :options="filteredOptions"-->
+<!--        optionLabel="name"-->
+<!--        filter-->
+<!--        filterPlaceholder="Введите запрос для поиска"-->
+<!--        emptyFilterMessage="Ничего не найдено"-->
+<!--        class="basket__form_input admin-panel__content_select"-->
+<!--        placeholder="Выберите категорию"-->
+<!--    />-->
     <button
         class="main_btn"
         type="submit"
