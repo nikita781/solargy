@@ -131,10 +131,14 @@ $x-big: 1829.98px;
       height: 30px;
       transition: 0.3s;
       @media screen and (max-width: $small) {
-        width: 180px;
+        svg {
+          width: 180px;
+        }
       }
       @media screen and (max-width: $x-small) {
-        width: 150px;
+        svg {
+          width: 150px;
+        }
       }
     }
     &_nav {

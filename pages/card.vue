@@ -6,7 +6,7 @@ import {ref, reactive, onMounted, nextTick, computed} from "vue";
 import 'swiper/css';
 import axios from "axios";
 import {useBasketStore} from '@/stores/basket';
-import { useAsyncData } from '#app';
+import {useAsyncData} from '#app';
 
 const route = useRoute();
 const router = useRouter();
@@ -26,7 +26,7 @@ const defaultSeo = {
   author: "Solargy"
 };
 
-const { data: seos, error } = await useAsyncData("fetchSeos", async () => {
+const {data: seos, error} = await useAsyncData("fetchSeos", async () => {
   if (!productId.value) return null;
   try {
     const response = await axios.get(`/products/${productId.value}`);
@@ -44,9 +44,9 @@ useHead(() => {
     return {
       title: defaultSeo.title,
       meta: [
-        { name: "description", content: defaultSeo.description },
-        { name: "keywords", content: defaultSeo.keywords },
-        { name: "author", content: defaultSeo.author },
+        {name: "description", content: defaultSeo.description},
+        {name: "keywords", content: defaultSeo.keywords},
+        {name: "author", content: defaultSeo.author},
       ],
     };
   }
@@ -54,9 +54,9 @@ useHead(() => {
   return {
     title: deliverySeo.name || defaultSeo.title,
     meta: [
-      { name: "description", content: deliverySeo.description || defaultSeo.description },
-      { name: "keywords", content: deliverySeo.keywords || defaultSeo.keywords },
-      { name: "author", content: deliverySeo.author || defaultSeo.author },
+      {name: "description", content: deliverySeo.description || defaultSeo.description},
+      {name: "keywords", content: deliverySeo.keywords || defaultSeo.keywords},
+      {name: "author", content: deliverySeo.author || defaultSeo.author},
     ],
   };
 });
@@ -458,7 +458,8 @@ function removeFromBasket(itemId) {
       <div class="card__main_links">
         <NuxtLink to="/catalog" class="card__main_link">Каталог</NuxtLink>
         <IconsSun/>
-        <NuxtLink v-if="category && category.name" :to="`/catalog/${category?.id}-${generateSlug(category?.name)}/`" class="card__main_link">
+        <NuxtLink v-if="category && category.name" :to="`/catalog/${category?.id}-${generateSlug(category?.name)}/`"
+                  class="card__main_link">
           {{ capitalize(category.name) }}
         </NuxtLink>
         <IconsSun color="#EF7F1A"/>
@@ -491,7 +492,8 @@ function removeFromBasket(itemId) {
             </div>
           </div>
           <div class="card__main_img" v-if="selectedSlide">
-            <NuxtImg format="webp" preload class="card__main_img-pict" :src="selectedSlide?.photo" alt="Selected Image" @click="() => showImg(selectedSlide?.photo)"/>
+            <NuxtImg format="webp" preload class="card__main_img-pict" :src="selectedSlide?.photo" alt="Selected Image"
+                     @click="() => showImg(selectedSlide?.photo)"/>
             <VueEasyLightbox
                 :visible="visibleRef"
                 :imgs="imgs"
@@ -519,7 +521,8 @@ function removeFromBasket(itemId) {
                 <p class="card__main_select-title">{{ select.name }}</p>
                 <div class="card__main_select-item">
                   <div class="card__main_select-name">
-                    <NuxtImg format="webp" preload v-if="select.values[0]?.image" :src="select.values[0]?.image" alt=""/>
+                    <NuxtImg format="webp" preload v-if="select.values[0]?.image" :src="select.values[0]?.image"
+                             alt=""/>
                     <p>{{ select.values[0]?.value }}</p>
                   </div>
                   <div class="card__main_select-btn">
@@ -606,14 +609,13 @@ function removeFromBasket(itemId) {
             class="card__tabs_info"
         >
           <div class="card__tabs_container" v-if="activeTab === index">
-            <div class="editor__content" v-html="getContentWithoutTables(property.html)"></div>
-<!--            <NuxtImg format="webp" loading="lazy" preload-->
-<!--                v-if="property.image"-->
-<!--                :src="property.image"-->
-<!--                :alt="`Image for ${property.title}`"-->
-<!--                class="card__tabs_image"-->
-<!--            />-->
-            <div class="editor__content" v-html="getTables(property.html)"></div>
+            <div class="editor__content" v-html="property.html"></div>
+            <!--            <NuxtImg format="webp" loading="lazy" preload-->
+            <!--                v-if="property.image"-->
+            <!--                :src="property.image"-->
+            <!--                :alt="`Image for ${property.title}`"-->
+            <!--                class="card__tabs_image"-->
+            <!--            />-->
             <a
                 v-if="property.file"
                 @click.prevent="handleDownload(property.file, property.file_name)"
@@ -626,40 +628,45 @@ function removeFromBasket(itemId) {
         </div>
       </div>
     </div>
-    <div class="card__product">
-      <div class="card__product__header">
-        <h2 class="main_title">Сопутствующие товары</h2>
-      </div>
-      <div class="best-product__items">
-        <div
-            class="best-product__item"
-            v-for="(product, index) in products.slice(0, 4)"
-            :key="index"
-        >
-          <a
-              :href="`/card/${product.id}-${generateSlug(product.name)}/`"
-              v-if="product?.photos.length > 0"
+    <div class="card__product__cont" v-if="product.related_products">
+      <div class="card__product" v-if="product.related_products.length > 0">
+        <div class="card__product__header">
+          <h2 class="main_title">Сопутствующие товары</h2>
+        </div>
+        <div class="best-product__items">
+          <div
+              class="best-product__item"
+              v-for="(product, index) in product.related_products"
+              :key="index"
           >
-            <NuxtImg format="webp" loading="lazy" preload class="best-product__item_img" :src="product?.photos[0].photo" alt=""/>
-          </a>
-          <a
-              :href="`/card/${product.id}-${generateSlug(product.name)}/`"
-              v-else
-          >
-            <NuxtImg format="webp" loading="lazy" preload class="best-product__item_img" src="/S.png" alt=""/>
-          </a>
-          <div class="best-product__item_content">
-            <a :href="`/card/${product.id}-${generateSlug(product.name)}/`" class="best-product__item_title">{{ product.name }}</a>
-            <p class="best-product__item_desc">{{ product.description }}</p>
-          </div>
-          <div class="best-product__item_container">
-            <p class="best-product__item_price">от {{ product?.price }} ₽</p>
             <a
-                class="best-product__item_btn"
                 :href="`/card/${product.id}-${generateSlug(product.name)}/`"
+                v-if="product?.photo"
             >
-              Посмотреть
+              <NuxtImg format="webp" loading="lazy" preload class="best-product__item_img"
+                       :src="product?.photo"
+                       alt=""/>
             </a>
+            <a
+                :href="`/card/${product.id}-${generateSlug(product.name)}/`"
+                v-else
+            >
+              <NuxtImg format="webp" loading="lazy" preload class="best-product__item_img" src="/S.png" alt=""/>
+            </a>
+            <div class="best-product__item_content">
+              <a :href="`/card/${product.id}-${generateSlug(product.name)}/`"
+                 class="best-product__item_title">{{ product.name }}</a>
+              <p class="best-product__item_desc">{{ product.description }}</p>
+            </div>
+            <div class="best-product__item_container">
+              <p class="best-product__item_price">от {{ product?.price }} ₽</p>
+              <a
+                  class="best-product__item_btn"
+                  :href="`/card/${product.id}-${generateSlug(product.name)}/`"
+              >
+                Посмотреть
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -678,6 +685,7 @@ $x-big: 1829.98px;
 .vel-img {
   object-fit: contain;
 }
+
 .swiper {
   margin-top: unset;
   width: 100%;
@@ -700,6 +708,7 @@ $x-big: 1829.98px;
     height: calc(100% - 2px);
     width: calc(100% - 2px);
     cursor: pointer;
+
     &.active {
       border: 1px solid #EF7F1A;
     }

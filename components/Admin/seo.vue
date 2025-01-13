@@ -123,6 +123,18 @@ const resetSeo = () => {
   errors.value.contentSeo = false;
 };
 
+function toggleTab(title) {
+  switch (title) {
+    case 'title':
+      return 'Название'
+    case 'description':
+      return 'Описание'
+    case 'keywords':
+      return 'Ключевые слова'
+    case 'author':
+      return 'Автор'
+  }
+}
 </script>
 
 <template>
@@ -210,7 +222,7 @@ const resetSeo = () => {
         </thead>
         <tbody>
         <tr v-for="value in seo?.seos" :key="value.id">
-          <td>{{ value.name }}</td>
+          <td>{{ toggleTab(value.name) }}</td>
           <td>{{ value.content }}</td>
           <td>
             <button @click="editSeo(value, seo.id)" class="admin-panel__content_btn">Изменить</button>

@@ -291,7 +291,7 @@ onBeforeUnmount(() => {
           <nav class="header__main_nav">
             <div
                 class="header__main_nav-container"
-                :class="{ active: route.name === 'catalog' }"
+                :class="{ active: route.name === 'catalog' || route.fullPath.includes('card') }"
                 @mouseenter="openMenuMain"
             >
               <NuxtLink to="/catalog">КАТАЛОГ</NuxtLink>
@@ -513,7 +513,7 @@ onBeforeUnmount(() => {
             </div>
             <button
                 v-if="block.products.length > 4"
-                @click="toggleMenu(blockIndex)"
+                @click.stop="toggleMenu(blockIndex)"
                 class="main_btn"
                 style="padding: 5px 10px"
             >
