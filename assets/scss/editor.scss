@@ -47,4 +47,14 @@
       object-fit: contain;
     }
   }
+  .columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
 }
