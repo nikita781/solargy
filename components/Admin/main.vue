@@ -408,8 +408,8 @@ const resetSubBanners = () => {
         <th>Описание</th>
         <th>Фото</th>
         <th>Продукт</th>
-        <th>Изменить</th>
-        <th>Удалить</th>
+        <th style="width: 100px">Изменить</th>
+        <th style="width: 100px">Удалить</th>
       </tr>
       </thead>
       <tbody>
@@ -506,8 +506,8 @@ const resetSubBanners = () => {
         <th>Название</th>
         <th>Порядок</th>
         <th>Фото</th>
-        <th>Изменить</th>
-        <th>Удалить</th>
+        <th style="width: 100px">Изменить</th>
+        <th style="width: 100px">Удалить</th>
       </tr>
       </thead>
       <tbody>

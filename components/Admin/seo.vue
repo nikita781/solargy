@@ -216,8 +216,8 @@ function toggleTab(title) {
         <tr>
           <th>Название</th>
           <th>Контент</th>
-          <th>Изменить</th>
-          <th>Удалить</th>
+          <th style="width: 100px">Изменить</th>
+          <th style="width: 100px">Удалить</th>
         </tr>
         </thead>
         <tbody>

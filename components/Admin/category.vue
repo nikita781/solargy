@@ -236,11 +236,11 @@ const deleteCategory = async (idCategory) => {
     <table v-for="category in categories" :key="category.id">
       <thead>
       <tr>
-        <th>Название</th>
+        <th style="width: 50%">Название</th>
         <th>Фото</th>
         <th>Дочерние элементы</th>
-        <th>Изменить</th>
-        <th>Удалить</th>
+        <th style="width: 100px">Изменить</th>
+        <th style="width: 100px">Удалить</th>
       </tr>
       </thead>
       <tbody>

@@ -21,9 +21,12 @@ const errors = ref({
 });
 
 const options = ref([]);
+const optionsSearch = ref([]);
 const nameOptions = ref('');
 const isEditingOptions = ref(false);
 const currentOptionsId = ref(null);
+const optionSearch = ref('');
+const isSearch = ref(false);
 
 const createOptions = async () => {
   isLoading.value = true;
@@ -34,6 +37,20 @@ const createOptions = async () => {
     formData.append('name', nameOptions.value);
 
     await axios.post(`/options`, formData, {
+      headers: {},
+    });
+    await fetchOptions();
+    resetOptions();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+const cloneOption = async (optionId) => {
+  isLoading.value = true;
+  try {
+    await axios.post(`/values/${optionId}/copy`, {
       headers: {},
     });
     await fetchOptions();
@@ -67,6 +84,14 @@ const fetchOptions = async () => {
   try {
     const response = await axios.get('/options');
     options.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const fetchSearchOption = async () => {
+  try {
+    const response = await axios.get(`/search/options?q=${optionSearch.value}`);
+    optionsSearch.value = response.data;
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -212,6 +237,15 @@ const resetOptionPreview = () => {
   optionFile.value.value = ''
   optionPreview.value = null
 };
+
+function searchOption() {
+  if (optionSearch.value.trim() !== '') {
+    fetchSearchOption()
+    isSearch.value = true
+  } else {
+    isSearch.value = false
+  }
+}
 </script>
 
 <template>
@@ -351,9 +385,17 @@ const resetOptionPreview = () => {
       </button>
       <button class="main_btn" type="button" @click="resetOptionValue" v-if="!isLoading">Отмена</button>
     </form>
+    <input
+        type="text"
+        class="basket__form_input admin-panel__content_input"
+        v-model="optionSearch"
+        placeholder="Поиск"
+        @input="searchOption"
+    />
     <div
         class="admin-panel__content_info_item"
         v-for="option in options" :key="option.id"
+        v-if="!isSearch"
     >
       <div class="admin-panel__content_info_content">
         <p>{{ option.name }}</p>
@@ -366,8 +408,9 @@ const resetOptionPreview = () => {
           <th>Название</th>
           <th>Цена</th>
           <th>Фото</th>
-          <th>Изменить</th>
-          <th>Удалить</th>
+          <th style="width: 100px">Изменить</th>
+          <th style="width: 100px">Дублировать</th>
+          <th style="width: 100px">Удалить</th>
         </tr>
         </thead>
         <tbody>
@@ -379,6 +422,51 @@ const resetOptionPreview = () => {
           </td>
           <td>
             <button @click="editOptionValue(option.id, value)" class="admin-panel__content_btn">Изменить</button>
+          </td>
+          <td>
+            <button @click="cloneOption(value.id)" class="admin-panel__content_btn">Дублировать</button>
+          </td>
+          <td>
+            <button @click="deleteOptionValue(option.id, value.id)" class="admin-panel__content_btn">Удалить
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div
+        class="admin-panel__content_info_item"
+        v-for="option in optionsSearch" :key="option.id"
+        v-if="isSearch"
+    >
+      <div class="admin-panel__content_info_content">
+        <p>{{ option.name }}</p>
+        <button @click="editOptions(option)" class="admin-panel__content_btn">Изменить</button>
+        <button @click="deleteOptions(option.id)" class="admin-panel__content_btn">Удалить</button>
+      </div>
+      <table>
+        <thead>
+        <tr>
+          <th>Название</th>
+          <th>Цена</th>
+          <th>Фото</th>
+          <th style="width: 100px">Изменить</th>
+          <th style="width: 100px">Дублировать</th>
+          <th style="width: 100px">Удалить</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="value in option.values" :key="value.id">
+          <td>{{ value.value }}</td>
+          <td>{{ value.price }}</td>
+          <td>
+            <img v-if="value.image" :src="value.image" alt="Фото" width="50"/>
+          </td>
+          <td>
+            <button @click="editOptionValue(option.id, value)" class="admin-panel__content_btn">Изменить</button>
+          </td>
+          <td>
+            <button @click="cloneOption(value.id)" class="admin-panel__content_btn">Дублировать</button>
           </td>
           <td>
             <button @click="deleteOptionValue(option.id, value.id)" class="admin-panel__content_btn">Удалить

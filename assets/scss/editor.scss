@@ -45,6 +45,7 @@
       width: 100%;
       max-width: 300px;
       object-fit: contain;
+      cursor: pointer;
     }
   }
   .columns {
@@ -57,4 +58,24 @@
     flex-direction: column;
     gap: 15px;
   }
+}
+
+.custom-table-wrapper {
+  overflow-x: auto;
+}
+
+.custom-table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.custom-table-wrapper th,
+.custom-table-wrapper td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  vertical-align: top;
+}
+
+.cell-editor {
+  min-height: 50px;
 }

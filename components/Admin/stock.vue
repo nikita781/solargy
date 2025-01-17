@@ -370,8 +370,8 @@ const resetStock = () => {
       <th>Название</th>
       <th>Описание</th>
       <th>Фото</th>
-      <th>Изменить</th>
-      <th>Удалить</th>
+      <th style="width: 100px">Изменить</th>
+      <th style="width: 100px">Удалить</th>
     </tr>
     </thead>
     <tbody>
@@ -517,8 +517,8 @@ const resetStock = () => {
       <th>Дата старта</th>
       <th>Дата окончания</th>
       <th>В архиве</th>
-      <th>Изменить</th>
-      <th>Удалить</th>
+      <th style="width: 100px">Изменить</th>
+      <th style="width: 100px">Удалить</th>
     </tr>
     </thead>
     <tbody>

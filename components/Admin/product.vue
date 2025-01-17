@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import {computed, onMounted, ref} from "vue";
 import axios from "axios";
 import EditorProd from "~/components/UI/editorProd.vue";
 
@@ -89,11 +89,18 @@ const currentPropertieId = ref(null)
 const isEditingProductPhoto = ref(false)
 const currentProductPhotoId = ref(null)
 const allProducts = ref([]);
+const allProductsSearch = ref([]);
 const allCategories = ref([]);
 const categories = ref([]);
 const options = ref([]);
 const searchQuery = ref('');
 const productProd = ref(null)
+const productSearch = ref('')
+const isSearch = ref(false);
+
+const page = ref(1);
+const totalPages = ref(0);
+const itemsPerPage = 10;
 
 const fetchOptions = async () => {
   try {
@@ -120,10 +127,19 @@ const handleSearch = async () => {
 };
 const fetchAllProducts = async () => {
   try {
-    const response = await axios.get('/all-products');
-    allProducts.value = response.data;
+    const response = await axios.get(`/all-products?page=${page.value}`);
+    totalPages.value = response.data.meta.last_page || 0;
+    allProducts.value = response.data.data || [];
   } catch (error) {
     console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
+  }
+};
+const fetchSearchProduct = async () => {
+  try {
+    const response = await axios.get(`/search-fast?q=${productSearch.value}`);
+    allProductsSearch.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
   }
 };
 const flattenCategories = (categories) => {
@@ -539,10 +555,11 @@ const editProductPhoto = async (photo) => {
 const addProductOption = async () => {
   isLoading.value = true;
   try {
-    const valueId = await fetchOptionsById(productOption.value);
+    const valueId = await getIdByName(productOption.value);
+    console.log(productOption.value)
     const formData = new FormData();
-    formData.append('options[0][id]', productOption.value);
-    // formData.append('options[0][id]', productOption.value?.id);
+    // formData.append('options[0][id]', productOption.value);
+    formData.append('options[0][id]',valueId);
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
@@ -825,12 +842,34 @@ function toggleTab(title) {
   }
 }
 
-const filteredOptions = computed(() => {
-  if (!searchQuery.value.trim()) return options.value
-  return options.value.filter((option) =>
-      option.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-})
+const paginatedProducts = computed(() => allProducts.value.slice(0, itemsPerPage));
+
+const goToPage = (newPage) => {
+  if (newPage >= 1 && newPage <= totalPages.value) {
+    page.value = newPage;
+    fetchAllProducts();
+  }
+};
+const pagesInRange = computed(() => {
+  const range = [];
+  const start = Math.max(2, page.value - 4);
+  const end = Math.min(totalPages.value - 1, page.value + 4);
+
+  for (let i = start; i <= end; i++) {
+    range.push(i);
+  }
+
+  return range;
+});
+
+function searchProduct() {
+  if (productSearch.value.trim() !== '') {
+    fetchSearchProduct()
+    isSearch.value = true
+  } else {
+    isSearch.value = false
+  }
+}
 </script>
 
 <template>
@@ -1249,8 +1288,8 @@ const filteredOptions = computed(() => {
     <tr>
       <th>Фото</th>
       <th>Порядок</th>
-      <th>Изменить</th>
-      <th>Удалить</th>
+      <th style="width: 100px">Изменить</th>
+      <th style="width: 100px">Удалить</th>
     </tr>
     </thead>
     <tbody>
@@ -1270,29 +1309,25 @@ const filteredOptions = computed(() => {
   </table>
   <h3 v-if="isEditingProduct">Добавить параметр</h3>
   <form class="admin-panel__content_form" v-if="isEditingProduct" @submit.prevent="addProductOption">
-    <input
-        v-model="searchQuery"
-        @input="handleSearch"
-        class="basket__form_input admin-panel__content_input"
-        type="text"
-        placeholder="Введите запрос для поиска"
-    />
-    <select v-model="productOption" class="basket__form_input admin-panel__content_select">
-      <option value="" disabled>Выберите категорию</option>
-      <option v-for="option in options" :key="option.id" :value="option.id">
-        {{ option.name }}
-      </option>
-    </select>
-<!--    <Dropdown-->
-<!--        v-model="productOption"-->
-<!--        :options="filteredOptions"-->
-<!--        optionLabel="name"-->
-<!--        filter-->
-<!--        filterPlaceholder="Введите запрос для поиска"-->
-<!--        emptyFilterMessage="Ничего не найдено"-->
-<!--        class="basket__form_input admin-panel__content_select"-->
-<!--        placeholder="Выберите категорию"-->
+<!--    <input-->
+<!--        v-model="searchQuery"-->
+<!--        @input="handleSearch"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        type="text"-->
+<!--        placeholder="Введите запрос для поиска"-->
 <!--    />-->
+<!--    <select v-model="productOption" class="basket__form_input admin-panel__content_select">-->
+<!--      <option value="" disabled>Выберите категорию</option>-->
+<!--      <option v-for="option in options" :key="option.id" :value="option.id">-->
+<!--        {{ option.name }}-->
+<!--      </option>-->
+<!--    </select>-->
+    <input list="test" placeholder="Введите запрос для поиска" class="basket__form_input admin-panel__content_input" v-model="productOption">
+
+    <datalist id="test">
+      <option v-for="option in options" :key="option.id" :value="option.name">
+      </option>
+    </datalist>
     <button
         class="main_btn"
         type="submit"
@@ -1322,7 +1357,7 @@ const filteredOptions = computed(() => {
         <th>Параметр</th>
         <th>Цена</th>
         <th>Фото</th>
-        <th>Отвязка</th>
+        <th style="width: 100px">Отвязка</th>
       </tr>
       </thead>
       <tbody>
@@ -1494,8 +1529,8 @@ const filteredOptions = computed(() => {
     <tr>
       <th>Название</th>
       <th>Контент</th>
-      <th>Изменить</th>
-      <th>Удалить</th>
+      <th style="width: 100px">Изменить</th>
+      <th style="width: 100px">Удалить</th>
     </tr>
     </thead>
     <tbody>
@@ -1538,7 +1573,7 @@ const filteredOptions = computed(() => {
     <thead>
     <tr>
       <th>Название</th>
-      <th>Удалить</th>
+      <th style="width: 100px">Удалить</th>
     </tr>
     </thead>
     <tbody>
@@ -1550,7 +1585,14 @@ const filteredOptions = computed(() => {
     </tr>
     </tbody>
   </table>
-  <table>
+  <input
+      type="text"
+      class="basket__form_input admin-panel__content_input"
+      v-model="productSearch"
+      placeholder="Поиск"
+      @input="searchProduct"
+  />
+  <table v-if="!isSearch">
     <thead>
     <tr>
       <th>Название</th>
@@ -1558,13 +1600,13 @@ const filteredOptions = computed(() => {
       <th>Описание</th>
       <th>Цена</th>
       <th>Топ</th>
-      <th>Изменить</th>
-      <th>Дублирование</th>
-      <th>Удалить</th>
+      <th style="width: 100px">Изменить</th>
+      <th style="width: 100px">Дублирование</th>
+      <th style="width: 100px">Удалить</th>
     </tr>
     </thead>
     <tbody>
-    <tr v-for="product in allProducts" :key="product.id">
+    <tr v-for="product in paginatedProducts" :key="product.id">
       <td>{{ product.name }}</td>
       <td>{{ product.category_id.name }}</td>
       <td>{{ product.description }}</td>
@@ -1582,9 +1624,188 @@ const filteredOptions = computed(() => {
     </tr>
     </tbody>
   </table>
+  <table v-if="isSearch">
+    <thead v-if="allProductsSearch.products.length > 0">
+    <tr>
+      <th>Название</th>
+      <th>Категория</th>
+      <th>Описание</th>
+      <th>Цена</th>
+      <th>Топ</th>
+      <th style="width: 100px">Изменить</th>
+      <th style="width: 100px">Дублирование</th>
+      <th style="width: 100px">Удалить</th>
+    </tr>
+    </thead>
+    <tbody v-if="allProductsSearch.products.length > 0">
+    <tr v-for="product in allProductsSearch.products" :key="product.id">
+      <td>{{ product.name }}</td>
+      <td>{{ product.category_id.name }}</td>
+      <td>{{ product.description }}</td>
+      <td>{{ product.price }}</td>
+      <td><input type="checkbox" disabled v-model="product.is_top"/></td>
+      <td>
+        <button @click="editProduct(product)" class="admin-panel__content_btn">Изменить</button>
+      </td>
+      <td>
+        <button @click="copyProduct(product.id)" class="admin-panel__content_btn">Дублировать</button>
+      </td>
+      <td>
+        <button @click="deleteProduct(product.id)" class="admin-panel__content_btn">Удалить</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+  <div class="pagination" v-if="totalPages > 1 && !isSearch">
+    <button
+        class="arrow-left"
+        @click="goToPage(page - 1)"
+        :disabled="page === 1"
+    >
+    </button>
+    <span
+        class="pagination__number"
+        :class="{ active: page === 1 }"
+        @click="goToPage(1)"
+    >
+        1
+      </span>
+    <span v-if="page > 6">...</span>
+    <span
+        v-for="pageNum in pagesInRange"
+        :key="pageNum"
+        class="pagination__number"
+        :class="{ active: pageNum === page }"
+        @click="goToPage(pageNum)"
+    >
+        {{ pageNum }}
+      </span>
+    <span v-if="page < totalPages - 5">...</span>
+    <span
+        class="pagination__number"
+        :class="{ active: page === totalPages }"
+        @click="goToPage(totalPages)"
+    >
+        {{ totalPages }}
+      </span>
+    <button
+        class="arrow-right"
+        @click="goToPage(page + 1)"
+        :disabled="page === totalPages"
+    >
+    </button>
+  </div>
 </div>
 </template>
 
 <style scoped lang="scss">
+$x-small: 575.98px;
+$small: 767.98px;
+$medium: 991.98px;
+$large: 1199.98px;
+$x-large: 1399.98px;
+$big: 1592.98px;
+$x-big: 1829.98px;
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 70px;
+  @media screen and (max-width: $medium) {
+    margin-bottom: 40px;
+  }
+  @media screen and (max-width: $small) {
+    gap: 6px;
+  }
 
+  .arrow-left {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    width: 15px;
+    height: 19px;
+    outline: none;
+    border: none;
+    transform: rotate(90deg);
+    background-color: transparent;
+    margin-right: 10px;
+    @media screen and (max-width: $small) {
+      transform: rotate(90deg) scale(0.8);
+    }
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      width: 3px;
+      height: 100%;
+      background-color: #EF7F1A;
+    }
+
+    &::before {
+      transform: rotate(-45deg);
+      left: 0;
+      top: 0;
+    }
+
+    &::after {
+      transform: rotate(45deg);
+      right: 0;
+      top: 0;
+    }
+  }
+
+  .arrow-right {
+    cursor: pointer;
+    position: relative;
+    display: inline-block;
+    width: 15px;
+    height: 19px;
+    outline: none;
+    border: none;
+    transform: rotate(-90deg);
+    background-color: transparent;
+    margin-left: 10px;
+    @media screen and (max-width: $small) {
+      transform: rotate(-90deg) scale(0.8);
+    }
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      width: 3px;
+      height: 100%;
+      background-color: #EF7F1A;
+    }
+
+    &::before {
+      transform: rotate(-45deg);
+      left: 0;
+      top: 0;
+    }
+
+    &::after {
+      transform: rotate(45deg);
+      right: 0;
+      top: 0;
+    }
+  }
+
+  &__number {
+    font-size: 20px;
+    margin: 0 5px;
+    cursor: pointer;
+    color: #9B9B9B;
+    @media screen and (max-width: $small) {
+      font-size: 16px;
+    }
+
+    &.active {
+      color: #EF7F1A;
+    }
+  }
+}
 </style>
