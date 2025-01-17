@@ -272,8 +272,8 @@ const resetSocial = () => {
       <th>Ссылка</th>
       <th>Фото</th>
       <th>Фото подвал</th>
-      <th>Изменить</th>
-      <th>Удалить</th>
+      <th style="width: 100px">Изменить</th>
+      <th style="width: 100px">Удалить</th>
     </tr>
     </thead>
     <tbody>

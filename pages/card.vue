@@ -291,6 +291,7 @@ const addToBasket = () => {
   };
   basketStore.addToBasket(basketItem);
   existingItem.value = findItemInBasket(product.value, selectedOptions.value);
+  window.location.reload();
 };
 
 watch(() => route.fullPath, async () => {
@@ -380,6 +381,17 @@ const showImg = (index) => {
 };
 const onHide = () => (visibleRef.value = false);
 
+const visibleRefHtml = ref(false);
+const imgsHtml = ref([]);
+const indexRefHtml = ref(0);
+const showImgHtml = (index) => {
+  visibleRefHtml.value = true;
+  indexRefHtml.value = index;
+};
+const onHideHtml = () => {
+  visibleRefHtml.value = false;
+};
+
 const handleDownload = async (fileUrl, file_name) => {
   try {
     const fileName = fileUrl.split('/').pop();
@@ -450,6 +462,21 @@ function removeFromBasket(itemId) {
   existingItem.value = findItemInBasket(product.value, selectedOptions.value);
   quantity.value = 1;
 }
+
+const handleImageClickHtml = (event) => {
+  const target = event.target;
+
+  if (target.tagName === 'IMG' && target.closest('.image-block')) {
+    const imgElements = Array.from(
+        document.querySelectorAll('.editor__content .image-block img')
+    );
+    imgsHtml.value = imgElements.map((img) => img.src);
+    const clickedIndex = imgElements.findIndex((img) => img === target);
+    if (clickedIndex !== -1) {
+      showImgHtml(clickedIndex);
+    }
+  }
+};
 </script>
 
 <template>
@@ -609,13 +636,18 @@ function removeFromBasket(itemId) {
             class="card__tabs_info"
         >
           <div class="card__tabs_container" v-if="activeTab === index">
-            <div class="editor__content" v-html="property.html"></div>
-            <!--            <NuxtImg format="webp" loading="lazy" preload-->
-            <!--                v-if="property.image"-->
-            <!--                :src="property.image"-->
-            <!--                :alt="`Image for ${property.title}`"-->
-            <!--                class="card__tabs_image"-->
-            <!--            />-->
+            <div
+                class="editor__content"
+                v-html="property.html"
+                @click="handleImageClickHtml"
+            ></div>
+            <VueEasyLightbox
+                :visible="visibleRefHtml"
+                :imgs="imgsHtml"
+                :index="indexRefHtml"
+                @hide="onHideHtml"
+                class="card__main_img-full"
+            />
             <a
                 v-if="property.file"
                 @click.prevent="handleDownload(property.file, property.file_name)"

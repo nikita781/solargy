@@ -151,7 +151,7 @@ const deleteEmailValue = async (idEmail, idType) => {
     <thead>
     <tr>
       <th>Почта</th>
-      <th>Изменить</th>
+      <th style="width: 100px">Изменить</th>
     </tr>
     </thead>
     <tbody>
@@ -205,7 +205,7 @@ const deleteEmailValue = async (idEmail, idType) => {
       <thead>
       <tr>
         <th>Почта</th>
-        <th>Изменить</th>
+        <th style="width: 100px">Изменить</th>
       </tr>
       </thead>
       <tbody>
@@ -224,7 +224,7 @@ const deleteEmailValue = async (idEmail, idType) => {
       <thead>
       <tr>
         <th>Почта</th>
-        <th>Изменить</th>
+        <th style="width: 100px">Изменить</th>
       </tr>
       </thead>
       <tbody>
@@ -243,7 +243,7 @@ const deleteEmailValue = async (idEmail, idType) => {
       <thead>
       <tr>
         <th>Почта</th>
-        <th>Изменить</th>
+        <th style="width: 100px">Изменить</th>
       </tr>
       </thead>
       <tbody>

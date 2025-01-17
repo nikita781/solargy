@@ -30,8 +30,10 @@ onMounted(async () => {
     const { default: Header } = await import('@editorjs/header');
     const { default: List } = await import('@editorjs/list');
     const { default: Table } = await import('@editorjs/table');
+    const { default: MyCustomTableTool  } = await import('./CustomTableTool');
     const { default: ImageTool } = await import('@editorjs/image');
     const { default: Columns } = await import('@calumk/editorjs-columns');
+    const { default: AlignmentTune  } = await import('editor-js-alignment-tune');
     const { default: EditorJSHTML } = await import('editorjs-html');
 
     const htmlParser = EditorJSHTML({
@@ -133,22 +135,47 @@ onMounted(async () => {
     editorInstance = new EditorJS({
       holder: editor.value!,
       tools: {
+        paragraph: {
+          inlineToolbar: true,
+          // tunes: ['alignmentTune'],
+        },
         header: {
           class: Header,
           inlineToolbar: ['bold', 'italic'],
+          // tunes: ['alignmentTune']
         },
         list: {
           class: List,
           inlineToolbar: true,
+          // tunes: ['alignmentTune']
         },
         table: {
           class: Table,
           inlineToolbar: true,
+          // tunes: ['alignmentTune'],
           config: {
-            rows: 2,
-            cols: 3,
+            // Конфигурация
           },
         },
+        // myTable: {
+        //   class: MyCustomTableTool,
+        //   // Можно задать настройки:
+        //   config: {
+        //     rows: 3,
+        //     cols: 3,
+        //   },
+        // },
+        // alignmentTune: {
+        //   class: AlignmentTune,
+        //   config: {
+        //     default: 'left',
+        //     blocks: {
+        //       header: {
+        //         availableAlignments: ['left', 'center', 'right']
+        //       },
+        //     }
+        //   }
+        // },
         image: {
           class: ImageTool,
           config: {
@@ -196,6 +223,7 @@ onMounted(async () => {
         },
         columns: {
           class: Columns,
+          // tunes: ['alignmentTune'],
           config: {
             EditorJsLibrary: EditorJS,
             tools: column_tools,

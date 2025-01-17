@@ -291,24 +291,26 @@ const bestProduct = ref([
       <p class="basket__successfully_subtitle">Скоро с вами свяжется наш менеджер для уточнения<br>деталей заявки</p>
       <NuxtLink to="/" class="main_btn basket__successfully_btn">На главную</NuxtLink>
     </div>
-    <div class="card__product" style="padding-top: unset" v-if="!application">
-      <div class="card__product__header">
-        <h2 class="main_title">Дополнительные услуги</h2>
-      </div>
-      <div class="best-product__items">
-        <div
-            class="best-product__item"
-            v-for="(product, index) in bestProduct"
-            :key="index"
-        >
-          <NuxtImg format="webp" preload loading="lazy" class="best-product__item_img" :src="product.image" alt=""/>
-          <div class="best-product__item_content">
-            <p class="best-product__item_title">{{ product.title }}</p>
-            <p class="best-product__item_desc">{{ product.description }}</p>
-          </div>
-          <div class="best-product__item_container">
-            <p class="best-product__item_price">{{ product.price }}</p>
-            <NuxtLink to="/card" class="best-product__item_btn">Посмотреть</NuxtLink>
+    <div class="card__product__cont" v-if="!application">
+      <div class="card__product" style="padding-top: unset">
+        <div class="card__product__header">
+          <h2 class="main_title">Дополнительные услуги</h2>
+        </div>
+        <div class="best-product__items">
+          <div
+              class="best-product__item"
+              v-for="(product, index) in bestProduct"
+              :key="index"
+          >
+            <NuxtImg format="webp" preload loading="lazy" class="best-product__item_img" :src="product.image" alt=""/>
+            <div class="best-product__item_content">
+              <p class="best-product__item_title">{{ product.title }}</p>
+              <p class="best-product__item_desc">{{ product.description }}</p>
+            </div>
+            <div class="best-product__item_container">
+              <p class="best-product__item_price">{{ product.price }}</p>
+              <NuxtLink to="/card" class="best-product__item_btn">Посмотреть</NuxtLink>
+            </div>
           </div>
         </div>
       </div>
