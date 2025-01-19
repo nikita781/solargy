@@ -46,7 +46,7 @@ const handleFileChangeMainBanner = (event) => {
 };
 const fetchAllProducts = async () => {
   try {
-    const response = await axios.get('/all-products');
+    const response = await axios.get('/products-for-select');
     allProducts.value = response.data;
   } catch (error) {
     console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
