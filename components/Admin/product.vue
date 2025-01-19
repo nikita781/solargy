@@ -1778,7 +1778,7 @@ const resetPhoto = () => {
   </div>
   <div class="admin__dialog" v-if="visibleDialog" @click="closeDialog">
     <div class="admin__dialog_container" @click.stop>
-      <h4>Библиотека изображений</h4>
+      <h4>Библиотека файлов</h4>
       <div class="admin__dialog_form-file">
         <input
             type="file"
