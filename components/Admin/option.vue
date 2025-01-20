@@ -8,6 +8,7 @@ onMounted(async () => {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
     await fetchOptions();
+    await fetchImgs();
   }
 });
 
@@ -27,6 +28,69 @@ const isEditingOptions = ref(false);
 const currentOptionsId = ref(null);
 const optionSearch = ref('');
 const isSearch = ref(false);
+
+const visibleDialog = ref(false);
+const dialogPhoto = ref(null);
+const dialogFile = ref(null);
+const dialogPreview = ref(null);
+const imgs = ref([]);
+const openDialog = () => {
+  visibleDialog.value = true;
+};
+const closeDialog = () => {
+  visibleDialog.value = false;
+};
+const handleFileChangeDialog = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    dialogPhoto.value = file;
+    dialogPreview.value = URL.createObjectURL(file);
+  }
+};
+const resetDialogPreview = () => {
+  dialogPhoto.value = null;
+  dialogFile.value.value = ''
+  dialogPreview.value = null
+};
+const fetchImgs = async () => {
+  try {
+    const response = await axios.get('/library-images');
+    imgs.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const addImage = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('image', dialogPhoto.value);
+
+    await axios.post(`/library-images`, formData, {
+      headers: {},
+    });
+    await fetchImgs();
+    resetDialogPreview();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const deleteImg = async (imgId) => {
+  try {
+    await axios.delete(`/library-images/${imgId}`, {
+      headers: {},
+    });
+    await fetchImgs();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const selectPhoto = (image) => {
+  optionPhotoImg.value = image;
+  visibleDialog.value = false;
+};
+const resetPhoto = () => {
+  optionPhotoImg.value = null;
+};
 
 const createOptions = async () => {
   isLoading.value = true;
@@ -126,6 +190,7 @@ const resetOptions = () => {
 const optionValue = ref('')
 const optionPrice = ref(null)
 const optionPhoto = ref(null);
+const optionPhotoImg = ref(null);
 const optionFile = ref(null);
 const optionPreview = ref(null);
 const optionId = ref(null)
@@ -149,7 +214,10 @@ const createOptionValue = async () => {
     const formData = new FormData();
     formData.append('values[0][value]', optionValue.value);
     formData.append('values[0][price]', optionPrice.value);
-    if (optionPhoto.value) {
+    if (optionPhotoImg.value) {
+      formData.append('values[0][from-library]', true);
+      formData.append('values[0][image-library]', optionPhotoImg.value);
+    } else if (optionPhoto.value) {
       formData.append('values[0][image]', optionPhoto.value);
     }
 
@@ -165,6 +233,7 @@ const createOptionValue = async () => {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
     isLoading.value = false;
+    resetPhoto();
   }
 };
 const updateOptionValue = async () => {
@@ -178,7 +247,10 @@ const updateOptionValue = async () => {
     formData.append('values[0][id]', currentOptionValueId.value);
     formData.append('values[0][value]', optionValue.value);
     formData.append('values[0][price]', optionPrice.value);
-    if (optionPhoto.value) {
+    if (optionPhotoImg.value) {
+      formData.append('values[0][from-library]', true);
+      formData.append('values[0][image-library]', optionPhotoImg.value);
+    } else if (optionPhoto.value) {
       formData.append('values[0][image]', optionPhoto.value);
     }
 
@@ -194,6 +266,8 @@ const updateOptionValue = async () => {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
     isLoading.value = false;
+    resetPhoto();
+    resetOptionPreview()
   }
 };
 const deleteOptionValue = async (idOptions, idValue) => {
@@ -229,6 +303,7 @@ const resetOptionValue = () => {
   optionId.value = null;
   optionFile.value.value = ''
   optionPreview.value = null
+  optionPhotoImg.value = null
   errors.value.optionValue = false;
   errors.value.optionPrice = false;
 };
@@ -308,7 +383,9 @@ function searchOption() {
           placeholder="Введите цену пункта"
           :class="{ error: errors.optionPrice }"
       />
-      <div class="input__wrapper">
+      <button type="button" class="main_btn" @click="openDialog">Библиотека изображений</button>
+      <button v-if="optionPhotoImg" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
+      <div class="input__wrapper" v-if="!optionPhotoImg">
         <input ref="optionFile" type="file" id="input__file" class="input input__file-reset"
                @change="handleFileChangeOption" accept="image/*" multiple>
         <label for="input__file" class="input__file-button-reset">
@@ -355,7 +432,9 @@ function searchOption() {
           placeholder="Введите цену пункта"
           :class="{ error: errors.optionPrice }"
       />
-      <div class="input__wrapper">
+      <button type="button" class="main_btn" @click="openDialog">Библиотека изображений</button>
+      <button v-if="optionPhotoImg" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
+      <div class="input__wrapper" v-if="!optionPhotoImg">
         <input ref="optionFile" type="file" id="input__file" class="input input__file"
                @change="handleFileChangeOption" accept="image/*" multiple>
         <label for="input__file" class="input__file-button">
@@ -475,6 +554,39 @@ function searchOption() {
         </tr>
         </tbody>
       </table>
+    </div>
+    <div class="admin__dialog" v-if="visibleDialog" @click="closeDialog">
+      <div class="admin__dialog_container" @click.stop>
+        <h4>Библиотека изображений</h4>
+        <div class="admin__dialog_form">
+          <div class="input__wrapper">
+            <input ref="dialogFile" type="file" id="input__file" class="input input__file-reset"
+                   @change="handleFileChangeDialog" accept="image/*" multiple>
+            <label for="input__file" class="input__file-button-reset">
+            <span class="input__file-icon-wrapper">
+              <img v-if="dialogPreview" class="input__file-icon" :src="dialogPreview" alt="Выбрать файл"
+                   width="50" height="50px">
+            </span>
+              <span class="input__file-button-text">Выберите картинку</span>
+              <span class="input__file-icon-reset" @click.prevent="resetDialogPreview">
+              <IconsCross color="#fff"/>
+            </span>
+            </label>
+          </div>
+          <button class="main_btn" @click="addImage">Добавить изображение</button>
+        </div>
+        <div class="admin__dialog_imgs">
+          <div
+              v-for="img in imgs" :key="img.id"
+              class="admin__dialog_img"
+          >
+            <img @click="selectPhoto(img.image)" :src="img.image" alt="">
+            <div @click="deleteImg(img.id)" class="admin__dialog_trash">
+              <IconsTrash color="#fff"/>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

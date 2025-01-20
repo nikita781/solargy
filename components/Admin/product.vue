@@ -1,6 +1,6 @@
 <script setup>
 import {computed, onMounted, ref} from "vue";
-import axios from "axios";
+import axios, {all} from "axios";
 import EditorProd from "~/components/UI/editorProd.vue";
 
 onMounted(async () => {
@@ -11,6 +11,7 @@ onMounted(async () => {
     await fetchAllProducts();
     await fetchCategory();
     await fetchOptions();
+    await fetchImgs();
   }
 });
 
@@ -552,11 +553,14 @@ const editProductPhoto = async (photo) => {
   productOrder.value = photo.order;
   productPreview.value = photo.photo;
 }
+function getIdByName(name) {
+  const foundOption = options.value.find(option => option.name === name);
+  return foundOption ? foundOption.id : null;
+}
 const addProductOption = async () => {
   isLoading.value = true;
   try {
     const valueId = await getIdByName(productOption.value);
-    console.log(productOption.value)
     const formData = new FormData();
     // formData.append('options[0][id]', productOption.value);
     formData.append('options[0][id]',valueId);
@@ -582,7 +586,7 @@ const fetchOptionsById = async (optionId) => {
     });
     return response.data.values[0].id;
   } catch (error) {
-    console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
+    console.error('Ошибка:', error.response?.data || error);
   }
 };
 const deleteProductOptionFull = async (idOption) => {
@@ -640,8 +644,10 @@ const addProductPropertie = async () => {
     const formData = new FormData();
     formData.append('properties[0][title]', productPropertieTitle.value);
     formData.append('properties[0][html]', productPropertieDescription.value);
-    if (productTextPropertie.value) {
-      formData.append('properties[0][file]', productTextPropertie.value);
+    if (optionFile.value) {
+      formData.append('properties[0][from-library]', true);
+      formData.append('properties[0][file-library]', optionFile.value);
+      formData.append('properties[0][filename]', optionFileName.value);
     }
     if (productPhotoPropertie.value) {
       formData.append('properties[0][image]', productPhotoPropertie.value);
@@ -654,6 +660,8 @@ const addProductPropertie = async () => {
       },
     });
     await fetchProductById(currentProductId.value);
+    optionFile.value = null;
+    optionFileName.value = null;
     productPropertieTitle.value = '';
     productPropertieDescription.value = '';
     productTextPropertie.value = null;
@@ -706,8 +714,10 @@ const updateProductPropertie = async () => {
     formData.append('properties[0][id]', currentPropertieId.value);
     formData.append('properties[0][title]', productPropertieTitle.value);
     formData.append('properties[0][html]', productPropertieDescription.value);
-    if (productTextPropertie.value) {
-      formData.append('properties[0][file]', productTextPropertie.value);
+    if (optionFile.value) {
+      formData.append('properties[0][from-library]', true);
+      formData.append('properties[0][file-library]', optionFile.value);
+      formData.append('properties[0][filename]', optionFileName.value);
     }
     if (productPhotoPropertie.value) {
       formData.append('properties[0][image]', productPhotoPropertie.value);
@@ -720,6 +730,8 @@ const updateProductPropertie = async () => {
       },
     });
     await fetchProductById(currentProductId.value);
+    optionFile.value = null;
+    optionFileName.value = null;
     isEditingPropertie.value = false;
     productPropertieTitle.value = '';
     productPropertieDescription.value = '';
@@ -870,6 +882,72 @@ function searchProduct() {
     isSearch.value = false
   }
 }
+
+const visibleDialog = ref(false);
+const files = ref([]);
+const productTextFileName = ref(null);
+const optionFile = ref(null);
+const optionFileName = ref('');
+const openDialog = () => {
+  visibleDialog.value = true;
+};
+const closeDialog = () => {
+  visibleDialog.value = false;
+};
+const fetchImgs = async () => {
+  try {
+    const response = await axios.get('/library-files');
+    files.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const resetDialogPreview = () => {
+  productFilePropertie.value.value = '';
+  productTextFile.value.value = ''
+  productTextFileName.value = null
+};
+const addImage = async () => {
+  try {
+    const formData = new FormData();
+    formData.append('file', productTextPropertie.value);
+    formData.append('file_name', productTextFileName.value);
+
+    await axios.post(`/library-files`, formData, {
+      headers: {},
+    });
+    await fetchImgs();
+    resetDialogPreview();
+    productFilePropertie.value.value = '';
+    productTextFile.value.value = ''
+    productTextFileName.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    productFilePropertie.value.value = '';
+    productTextFile.value.value = ''
+    productTextFileName.value = ''
+  }
+};
+const deleteImg = async (imgId) => {
+  try {
+    await axios.delete(`/library-files/${imgId}`, {
+      headers: {},
+    });
+    await fetchImgs();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const selectPhoto = (file) => {
+  optionFile.value = file.file;
+  optionFileName.value = file.file_name;
+  closeDialog()
+};
+const resetPhoto = () => {
+  optionFile.value = null;
+  optionFileName.value = null;
+};
 </script>
 
 <template>
@@ -1323,7 +1401,6 @@ function searchProduct() {
 <!--      </option>-->
 <!--    </select>-->
     <input list="test" placeholder="Введите запрос для поиска" class="basket__form_input admin-panel__content_input" v-model="productOption">
-
     <datalist id="test">
       <option v-for="option in options" :key="option.id" :value="option.name">
       </option>
@@ -1438,14 +1515,16 @@ function searchProduct() {
 <!--          </span>-->
 <!--      </label>-->
 <!--    </div>-->
-    <label class="admin-panel__content_label">Текстовый файл</label>
-    <input
-        type="file"
-        ref="productTextFile"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeText"
-        accept=".pdf,.dwg,.docx"
-    />
+    <button type="button" class="main_btn" @click="openDialog">Библиотека файлов</button>
+    <button v-if="optionFile || optionFileName" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
+<!--    <label class="admin-panel__content_label">Текстовый файл</label>-->
+<!--    <input-->
+<!--        type="file"-->
+<!--        ref="productTextFile"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeText"-->
+<!--        accept=".pdf,.dwg,.docx"-->
+<!--    />-->
     <button
         class="main_btn"
         type="submit"
@@ -1504,14 +1583,16 @@ function searchProduct() {
 <!--          </span>-->
 <!--      </label>-->
 <!--    </div>-->
-    <label class="admin-panel__content_label">Текстовый файл</label>
-    <input
-        type="file"
-        ref="productTextFile"
-        class="basket__form_input admin-panel__content_input"
-        @change="handleFileChangeText"
-        accept=".pdf,.dwg,.docx"
-    />
+    <button type="button" class="main_btn" @click="openDialog">Библиотека файлов</button>
+    <button v-if="optionFile || optionFileName" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
+<!--    <label class="admin-panel__content_label">Текстовый файл</label>-->
+<!--    <input-->
+<!--        type="file"-->
+<!--        ref="productTextFile"-->
+<!--        class="basket__form_input admin-panel__content_input"-->
+<!--        @change="handleFileChangeText"-->
+<!--        accept=".pdf,.dwg,.docx"-->
+<!--    />-->
     <button
         class="main_btn"
         type="submit"
@@ -1694,6 +1775,39 @@ function searchProduct() {
         :disabled="page === totalPages"
     >
     </button>
+  </div>
+  <div class="admin__dialog" v-if="visibleDialog" @click="closeDialog">
+    <div class="admin__dialog_container" @click.stop>
+      <h4>Библиотека файлов</h4>
+      <div class="admin__dialog_form-file">
+        <input
+            type="file"
+            ref="productTextFile"
+            class="basket__form_input admin-panel__content_input"
+            @change="handleFileChangeText"
+            accept=".pdf,.dwg,.docx"
+        />
+        <input
+            type="text"
+            class="basket__form_input admin-panel__content_input"
+            v-model="productTextFileName"
+            placeholder="Введите название"
+        />
+        <button class="main_btn" @click="addImage">Добавить файл</button>
+      </div>
+      <div class="admin__dialog_imgs">
+        <div
+            v-for="file in files" :key="file.id"
+            @click="selectPhoto(file)"
+            class="admin__dialog_file"
+        >
+          <p>{{file.file_name}}</p>
+          <div @click.stop="deleteImg(file.id)" class="admin__dialog_trash">
+            <IconsTrash color="#fff"/>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 </template>
