@@ -272,7 +272,7 @@ onBeforeUnmount(() => {
       <div class="header__info">
         <div class="header__info_page">
           <div class="header__info_container-text">
-            <NuxtLink to="/stocks" :class="{ active: route.name === 'stocks' }">Акции</NuxtLink>
+<!--            <NuxtLink to="/stocks" :class="{ active: route.name === 'stocks' }">Акции</NuxtLink>-->
             <NuxtLink to="/order" :class="{ active: route.name === 'order' }">Где купить?</NuxtLink>
             <NuxtLink to="/delivery" :class="{ active: route.name === 'delivery' }">Доставка</NuxtLink>
           </div>
@@ -328,7 +328,7 @@ onBeforeUnmount(() => {
               <IconsCross @click="closeMenu"/>
             </div>
             <div class="header__info_container-text-phone">
-              <NuxtLink to="/stocks" :class="{ active: route.name === 'stocks' }">Акция</NuxtLink>
+<!--              <NuxtLink to="/stocks" :class="{ active: route.name === 'stocks' }">Акции</NuxtLink>-->
               <NuxtLink to="/order" :class="{ active: route.name === 'order' }">Где купить?</NuxtLink>
               <NuxtLink to="/delivery" :class="{ active: route.name === 'delivery' }">Доставка</NuxtLink>
             </div>

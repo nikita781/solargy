@@ -12,6 +12,7 @@ onMounted(async () => {
     await fetchCategory();
     await fetchOptions();
     await fetchImgs();
+    await fetchProductPrice();
   }
 });
 
@@ -294,6 +295,8 @@ const resetProduct = () => {
   productCategory.value = null;
   productPrice.value = null;
   productTop.value = false;
+  formattedOptions.value = null;
+  selectedValues.value = null
   errors.value.productCategory = false;
   errors.value.productName = false;
   errors.value.productDescription = false;
@@ -948,6 +951,69 @@ const resetPhoto = () => {
   optionFile.value = null;
   optionFileName.value = null;
 };
+
+
+
+const selectedValues = ref({});
+const totalPrice = ref(null);
+const filteredProducts = ref([]);
+
+const formattedOptions = computed(() => {
+  const result = {};
+  for (const [optionId, valueId] of Object.entries(selectedValues.value)) {
+    result[optionId] = valueId;
+  }
+  return result;
+});
+const fetchProductPrice = async () => {
+  try {
+    const response = await axios.get('/product-option-prices');
+    filteredProducts.value = response.data.filter(item => item.product_id === oneProd.value.id);
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const addProductPrice = async () => {
+  isLoading.value = true;
+  try {
+    console.log(formattedOptions.value);
+
+    // Формируем объект JSON вместо FormData
+    const payload = {
+      product_id: oneProd.value.id,
+      price: totalPrice.value,
+      options: formattedOptions.value, // Должен быть объект типа {6: 40, 24: 48}
+    };
+
+    console.log(payload);
+
+    // Отправка данных с Content-Type: application/json
+    await axios.post(`/product-option-prices`, payload, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    await fetchProductById(currentProductId.value)
+    // Сбрасываем значения после успешной отправки
+    formattedOptions.value = null;
+    selectedValues.value = {};
+    totalPrice.value = '';
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+const deleteProductPrice = async (imgId) => {
+  try {
+    await axios.delete(`/product-option-prices/${imgId}`, {
+      headers: {},
+    });
+    await fetchProductById(currentProductId.value);
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
 </script>
 
 <template>
@@ -1473,6 +1539,71 @@ const resetPhoto = () => {
       </button>
     </form>
   </div>
+  <h3 v-if="isEditingProduct">Добавить кастомную цену</h3>
+  <form class="admin-panel__content_form" v-if="isEditingProduct">
+    <input
+        v-model="totalPrice"
+        class="basket__form_input admin-panel__content_input"
+        type="number"
+        placeholder="Цена"
+    />
+    <div v-for="option in oneProd.options" :key="option.id" class="option-block">
+      <label :for="`select-${option.id}`">{{ option.name }}</label>
+      <select
+          :id="`select-${option.id}`"
+          v-model="selectedValues[option.id]"
+          class="basket__form_input admin-panel__content_select"
+      >
+        <option value="" disabled>Выберите значение</option>
+        <option
+            v-for="value in option.values"
+            :key="value.id"
+            :value="value.id"
+        >
+          {{ value.value }}
+        </option>
+      </select>
+    </div>
+    <button
+        class="main_btn"
+        @click="addProductPrice"
+        :disabled="isLoading"
+        :class="{ 'loading': isLoading }"
+        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+    >
+      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+      <span v-else>Добавить цену</span>
+    </button>
+    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
+  </form>
+  <div
+      v-if="isEditingProduct"
+      class="admin-panel__content_info_item"
+      v-for="option in oneProd.option_prices"
+      :key="option.id"
+  >
+    <div class="admin-panel__content_info_content">
+      <p>{{ option.price }}</p>
+      <div></div>
+      <button @click="deleteProductPrice(option.id)" class="admin-panel__content_btn">Удалить</button>
+    </div>
+    <div>
+      <table>
+        <thead>
+        <tr>
+          <th>Параметр</th>
+          <th>Значение</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(value, key) in option.options_details" :key="key">
+          <td>{{ value.option }}</td>
+          <td>{{ value.value }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
   <h3 v-if="isEditingProduct">Добавить таб (максимум 6)</h3>
   <form
       class="admin-panel__content_form admin-panel__content_form-long"
@@ -1820,6 +1951,12 @@ $large: 1199.98px;
 $x-large: 1399.98px;
 $big: 1592.98px;
 $x-big: 1829.98px;
+
+.option-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 .pagination {
   display: flex;
   flex-wrap: wrap;
