@@ -138,15 +138,22 @@ const currentSelectedId = ref(null);
 const openMenu = async (select, index) => {
   currentSelect.value = select;
   currentIndex.value = index;
-  currentSelectedId.value = select.values[0].id;
 
+  // Проверяем, есть ли уже выбранный элемент. Если нет, устанавливаем текущий выбранный элемент
+  if (!currentSelectedId.value || currentSelect.value.id !== select.id) {
+    currentSelectedId.value = select.values[0].id;
+  }
+
+  // Если в меню только один элемент, просто выходим
   if (select.values.length <= 1) {
     return;
   }
 
+  // Делаем меню видимым
   menuVisible.value = true;
   await nextTick();
 
+  // Добавляем CSS-класс с небольшой задержкой
   setTimeout(() => {
     const menu = document.querySelector(".slide-out-menu");
     if (menu) {
@@ -169,20 +176,32 @@ const closeMenu = () => {
 };
 
 const selectItem = (item) => {
-  const optionIndex = product.value.options.findIndex(option => option.id === currentSelect.value.id);
+  const optionIndex = product.value.options.findIndex(
+      (option) => option.id === currentSelect.value.id
+  );
 
   if (optionIndex >= 0) {
-    product.value.options[optionIndex].values = [item, ...product.value.options[optionIndex].values.filter(i => i.id !== item.id)];
+    selectedOptions.value[product.value.options[currentIndex.value].id] = {
+      name: product.value.options[currentIndex.value].name,
+      values: item,
+    };
   }
-  selectedOptions.value[product.value.options[currentIndex.value].id] = {
-    name: product.value.options[currentIndex.value].name,
-    values: item,
-  };
 
   currentSelectedId.value = item.id;
+
   existingItem.value = findItemInBasket(product.value, selectedOptions.value);
+
   quantity.value = 1;
+
   closeMenu();
+};
+
+const getSelectedValue = (select) => {
+  const selectedOption = selectedOptions.value[select.id];
+  if (selectedOption) {
+    return selectedOption.values;
+  }
+  return select.values[0]; // Фоллбэк, если ничего не выбрано
 };
 
 const quantity = ref(1);
@@ -365,13 +384,46 @@ const totalPrice = computed(() => {
   let basePrice = parseFloat(product.value?.price || 0);
 
   if (product.value?.options?.length) {
-    product.value.options.forEach(option => {
-      if (option.values?.length) {
-        basePrice += parseFloat(option.values[0]?.price || 0);
+    // Собираем выбранные значения для каждой опции
+    const selectedOptionsArray = Object.keys(selectedOptions.value).map(optionId => ({
+      optionId,
+      value: selectedOptions.value[optionId]?.values?.value || null,
+    }));
+
+    let priceFromOptions = 0; // Для суммы всех добавленных цен опций
+
+    // Перебираем все цены в option_prices
+    let matchedPriceFound = false;
+    product.value.option_prices.forEach(optionPrice => {
+      // Проверяем, совпадают ли выбранные пункты с options_details
+      const matches = optionPrice.options_details.every(detail => {
+        return selectedOptionsArray.some(
+            selected => selected.optionId == detail.option_id && selected.value == detail.value
+        );
+      });
+
+      if (matches) {
+        basePrice = parseFloat(optionPrice.price || basePrice);
+        matchedPriceFound = true; // Совпадение найдено
       }
     });
-  }
 
+    // Если совпадений не было, добавляем цены выбранных опций
+    if (!matchedPriceFound) {
+      selectedOptionsArray.forEach(selected => {
+        // Находим опцию с таким же ID и добавляем цену
+        const option = product.value.options.find(opt => opt.id == selected.optionId);
+        if (option) {
+          const selectedValue = option.values.find(value => value.value == selected.value);
+          if (selectedValue && selectedValue.price) {
+            priceFromOptions += parseFloat(selectedValue.price);
+          }
+        }
+      });
+    }
+
+    basePrice += priceFromOptions; // Добавляем цену от опций
+  }
   return basePrice;
 });
 
@@ -548,9 +600,14 @@ const handleImageClickHtml = (event) => {
                 <p class="card__main_select-title">{{ select.name }}</p>
                 <div class="card__main_select-item">
                   <div class="card__main_select-name">
-                    <NuxtImg format="webp" preload v-if="select.values[0]?.image" :src="select.values[0]?.image"
-                             alt=""/>
-                    <p>{{ select.values[0]?.value }}</p>
+                    <NuxtImg
+                        format="webp"
+                        preload
+                        v-if="getSelectedValue(select)?.image"
+                        :src="getSelectedValue(select)?.image"
+                        alt=""
+                    />
+                    <p>{{ getSelectedValue(select)?.value }}</p>
                   </div>
                   <div class="card__main_select-btn">
                     <p
@@ -654,7 +711,7 @@ const handleImageClickHtml = (event) => {
                 download
                 class="card__tabs_file_link main_btn"
             >
-              Прикрепленный файл
+              {{ property.file_name }}
             </a>
           </div>
         </div>

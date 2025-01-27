@@ -37,17 +37,25 @@ onMounted(async () => {
     const { default: EditorJSHTML } = await import('editorjs-html');
 
     const htmlParser = EditorJSHTML({
-      table: (block: any) => {
-        const rows = block.data.content.map((row: string[], rowIndex: number) => {
-          const cells = row
-              .map((cell: string) => {
-                return rowIndex === 0
-                    ? `<th>${cell}</th>`
-                    : `<td>${cell}</td>`;
-              })
-              .join('');
+      table: (block) => {
+        // Если alignments отсутствует, заполняем его значением из alignmentTune
+        const alignments =
+            block.data.alignments && block.data.alignments.length > 0
+                ? block.data.alignments
+                : block.data.content.map((row) =>
+                    row.map(() => block.tunes?.alignmentTune?.alignment || 'left')
+                );
+
+        const rows = block.data.content.map((row, rowIndex) => {
+          const cells = row.map((cell, cellIndex) => {
+            const alignment = alignments?.[rowIndex]?.[cellIndex] || 'left';
+            return rowIndex === 0
+                ? `<th class="align-${alignment}">${cell}</th>`
+                : `<td class="align-${alignment}">${cell}</td>`;
+          }).join('');
           return `<tr>${cells}</tr>`;
         }).join('');
+
         return `<div class="table-container"><table>${rows}</table></div>`;
       },
       image: (block: any, previousBlock: any) => {
@@ -152,7 +160,7 @@ onMounted(async () => {
         table: {
           class: Table,
           inlineToolbar: true,
-          // tunes: ['alignmentTune'],
+          tunes: ['alignmentTune'],
           config: {
             // Конфигурация
           },
@@ -165,17 +173,17 @@ onMounted(async () => {
         //     cols: 3,
         //   },
         // },
-        // alignmentTune: {
-        //   class: AlignmentTune,
-        //   config: {
-        //     default: 'left',
-        //     blocks: {
-        //       header: {
-        //         availableAlignments: ['left', 'center', 'right']
-        //       },
-        //     }
-        //   }
-        // },
+        alignmentTune: {
+          class: AlignmentTune,
+          config: {
+            default: 'left',
+            blocks: {
+              header: {
+                availableAlignments: ['left', 'center', 'right']
+              },
+            }
+          }
+        },
         image: {
           class: ImageTool,
           config: {
@@ -281,15 +289,39 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any }[] {
             data: { style: 'unordered', items },
           });
         }
-      } else if (node.tagName === 'DIV' && node.classList.contains('table-container')) {
+      } else if (node instanceof HTMLElement && node.tagName === 'DIV' && node.classList.contains('table-container')) {
         const table = node.querySelector('table');
         if (table) {
-          const rows = Array.from(table.querySelectorAll('tr')).map((row) =>
-              Array.from(row.querySelectorAll('th, td')).map((cell) => cell.innerHTML.trim())
+          // Считаем количество различных классов выравнивания среди всех ячеек таблицы
+          const alignmentCounts = { left: 0, center: 0, right: 0 };
+
+          Array.from(table.querySelectorAll('th, td')).forEach((cell) => {
+            if (cell.classList.contains('align-left')) alignmentCounts.left++;
+            if (cell.classList.contains('align-center')) alignmentCounts.center++;
+            if (cell.classList.contains('align-right')) alignmentCounts.right++;
+          });
+
+          // Определяем глобальное выравнивание как наиболее частый класс
+          const tableAlignment = Object.keys(alignmentCounts).reduce((a, b) =>
+              alignmentCounts[a] > alignmentCounts[b] ? a : b
           );
+
+          // Извлекаем строки таблицы
+          const rows = Array.from(table.querySelectorAll('tr')).map((row) => {
+            return Array.from(row.querySelectorAll('th, td')).map((cell) => cell.innerHTML.trim());
+          });
+
+          // Добавляем блок таблицы с глобальным выравниванием
           blocks.push({
             type: 'table',
-            data: { content: rows },
+            data: {
+              content: rows, // Контент таблицы
+            },
+            tunes: {
+              alignmentTune: {
+                alignment: tableAlignment, // Сохраняем выравнивание в tunes
+              },
+            },
           });
         }
       } else if (node.tagName === 'DIV' && node.classList.contains('image-block')) {
