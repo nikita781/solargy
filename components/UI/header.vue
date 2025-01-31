@@ -20,37 +20,45 @@ const isSearch = ref(false);
 const showSearch = ref(false);
 const searchQuery = ref('');
 const searchResult = ref([]);
-const categories = ref([])
+// const categories = ref([])
+//
+// const fetchCategory = async () => {
+//   try {
+//     const response = await axios.get('/categories');
+//     categories.value = response.data;
+//   } catch (error) {
+//     console.error('Ошибка:', error.response?.data || error);
+//   }
+// };
 
-const fetchCategory = async () => {
-  try {
-    const response = await axios.get('/categories');
-    categories.value = response.data;
-  } catch (error) {
-    console.error('Ошибка:', error.response?.data || error);
-  }
-};
+const { data: categories } = await useAsyncData("categories", async () => {
+  const response = await axios.get(`/categories`);
+  return response.data;
+});
+const { data: contacts } = await useAsyncData("contacts", async () => {
+  const response = await axios.get(`/contacts`);
+  return response.data[0];
+});
+// const contacts = ref([]);
+// const fetchContact = async () => {
+//   try {
+//     const response = await axios.get(`/contacts`);
+//     contacts.value = response.data[0];
+//   } catch (error) {
+//     console.error('Ошибка:', error.response?.data || error);
+//   }
+// };
 
-const contacts = ref([]);
-const fetchContact = async () => {
-  try {
-    const response = await axios.get(`/contacts`);
-    contacts.value = response.data[0];
-  } catch (error) {
-    console.error('Ошибка:', error.response?.data || error);
-  }
-};
-
-const tabs = ref([]);
-const fetchTabs = async () => {
-  try {
-    const response = await axios.get('/categories');
-    tabs.value = response.data;
-    // console.log(tabs.value)
-  } catch (error) {
-    console.error('Ошибка загрузки категорий:', error.response?.data || error);
-  }
-};
+// const tabs = ref([]);
+// const fetchTabs = async () => {
+//   try {
+//     const response = await axios.get('/categories');
+//     tabs.value = response.data;
+//     // console.log(tabs.value)
+//   } catch (error) {
+//     console.error('Ошибка загрузки категорий:', error.response?.data || error);
+//   }
+// };
 
 const handleSearch = async () => {
   if (!searchQuery.value.trim()) {
@@ -240,9 +248,9 @@ const convertDateToText = (dateString) => {
 };
 
 onMounted(() => {
-  fetchCategory();
-  fetchContact();
-  fetchTabs();
+  // fetchCategory();
+  // fetchContact();
+  // fetchTabs();
   // const container = document.querySelector('.container');
   // if (container) {
   //   container.addEventListener('click', handleContainerClick);

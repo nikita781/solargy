@@ -912,6 +912,7 @@ const resetDialogPreview = () => {
 };
 const addImage = async () => {
   try {
+    isLoading.value = true;
     const formData = new FormData();
     formData.append('file', productTextPropertie.value);
     formData.append('file_name', productTextFileName.value);
@@ -927,6 +928,7 @@ const addImage = async () => {
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
+    isLoading.value = false;
     productFilePropertie.value.value = '';
     productTextFile.value.value = ''
     productTextFileName.value = ''
@@ -985,7 +987,7 @@ const addProductPrice = async () => {
       options: formattedOptions.value, // Должен быть объект типа {6: 40, 24: 48}
     };
 
-    console.log(payload);
+    // console.log(payload);
 
     // Отправка данных с Content-Type: application/json
     await axios.post(`/product-option-prices`, payload, {
@@ -1647,7 +1649,7 @@ const deleteProductPrice = async (imgId) => {
 <!--      </label>-->
 <!--    </div>-->
     <button type="button" class="main_btn" @click="openDialog">Библиотека файлов</button>
-    <button v-if="optionFile || optionFileName" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
+    <button v-if="optionFile || optionFileName" type="button" class="main_btn" @click="resetPhoto">{{optionFileName}} / Отменить выбор</button>
 <!--    <label class="admin-panel__content_label">Текстовый файл</label>-->
 <!--    <input-->
 <!--        type="file"-->
@@ -1715,7 +1717,7 @@ const deleteProductPrice = async (imgId) => {
 <!--      </label>-->
 <!--    </div>-->
     <button type="button" class="main_btn" @click="openDialog">Библиотека файлов</button>
-    <button v-if="optionFile || optionFileName" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
+    <button v-if="optionFile || optionFileName" type="button" class="main_btn" @click="resetPhoto">{{optionFileName}} / Отменить выбор</button>
 <!--    <label class="admin-panel__content_label">Текстовый файл</label>-->
 <!--    <input-->
 <!--        type="file"-->
@@ -1924,7 +1926,16 @@ const deleteProductPrice = async (imgId) => {
             v-model="productTextFileName"
             placeholder="Введите название"
         />
-        <button class="main_btn" @click="addImage">Добавить файл</button>
+        <button
+            class="main_btn"
+            @click="addImage"
+            :disabled="isLoading"
+            :class="{ 'loading': isLoading }"
+            :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+        >
+          <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+          <span v-else>Добавить файл</span>
+        </button>
       </div>
       <div class="admin__dialog_imgs">
         <div
