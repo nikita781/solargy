@@ -79,18 +79,6 @@ const swiperConfig = reactive({
 
 const swiperInstance = ref(null);
 
-const banners = ref([]);
-
-const fetchBanners = async () => {
-  try {
-    const response = await axios.get('/main-banners');
-    banners.value = response.data;
-  } catch (error) {
-    console.error('Ошибка с сервера:', error.response.data);
-    console.error('Ошибка загрузки баннеров:', error);
-  }
-};
-
 function generateSlug(name) {
   const cyrillicToLatinMap = {
     а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
@@ -113,41 +101,66 @@ function generateSlug(name) {
       .trim();
 }
 
-const topProduct = ref([]);
-
-const fetchTopProducts = async () => {
-  try {
-    const response = await axios.get('/products?top=1');
-    topProduct.value = response.data;
-  } catch (error) {
-    console.error('Ошибка с сервера:', error.response.data);
-    console.error('Ошибка загрузки баннеров:', error);
-  }
-};
-
-const types = ref([]);
-
-const fetchTypes = async () => {
-  try {
-    const response = await axios.get('/sub-banners');
-    types.value = response.data;
-  } catch (error) {
-    console.error('Ошибка с сервера:', error.response.data);
-    console.error('Ошибка загрузки баннеров:', error);
-  }
-};
-
-const categories = ref([]);
-
-const fetchCategories = async () => {
-  try {
-    const response = await axios.get('/categories');
-    categories.value = response.data;
-  } catch (error) {
-    console.error('Ошибка с сервера:', error.response.data);
-    console.error('Ошибка загрузки баннеров:', error);
-  }
-};
+const { data: banners } = await useAsyncData("banners", async () => {
+  const response = await axios.get(`/main-banners`);
+  return response.data;
+});
+// const banners = ref([]);
+//
+// const fetchBanners = async () => {
+//   try {
+//     const response = await axios.get('/main-banners');
+//     banners.value = response.data;
+//   } catch (error) {
+//     console.error('Ошибка с сервера:', error.response.data);
+//     console.error('Ошибка загрузки баннеров:', error);
+//   }
+// };
+const { data: topProduct } = await useAsyncData("topProduct", async () => {
+  const response = await axios.get(`/products?top=1`);
+  return response.data;
+});
+// const topProduct = ref([]);
+//
+// const fetchTopProducts = async () => {
+//   try {
+//     const response = await axios.get('/products?top=1');
+//     topProduct.value = response.data;
+//   } catch (error) {
+//     console.error('Ошибка с сервера:', error.response.data);
+//     console.error('Ошибка загрузки баннеров:', error);
+//   }
+// };
+const { data: types } = await useAsyncData("types", async () => {
+  const response = await axios.get(`/sub-banners`);
+  return response.data;
+});
+// const types = ref([]);
+//
+// const fetchTypes = async () => {
+//   try {
+//     const response = await axios.get('/sub-banners');
+//     types.value = response.data;
+//   } catch (error) {
+//     console.error('Ошибка с сервера:', error.response.data);
+//     console.error('Ошибка загрузки баннеров:', error);
+//   }
+// };
+const { data: categories } = await useAsyncData("categories", async () => {
+  const response = await axios.get(`/categories`);
+  return response.data;
+});
+// const categories = ref([]);
+//
+// const fetchCategories = async () => {
+//   try {
+//     const response = await axios.get('/categories');
+//     categories.value = response.data;
+//   } catch (error) {
+//     console.error('Ошибка с сервера:', error.response.data);
+//     console.error('Ошибка загрузки баннеров:', error);
+//   }
+// };
 
 const currentSlideIndex = ref(0);
 
@@ -219,17 +232,17 @@ const reset = () => {
   comment.value = '';
 };
 
-const onSwiperInit = (swiper) => {
-  nextTick(() => {
-    swiper.slideNext(0); // Переходим на следующий слайд
-  });
-};
+// const onSwiperInit = (swiper) => {
+//   nextTick(() => {
+//     swiper.slideNext(0); // Переходим на следующий слайд
+//   });
+// };
 
 onMounted(() => {
-  fetchBanners();
-  fetchTopProducts();
-  fetchTypes();
-  fetchCategories();
+  // fetchBanners();
+  // fetchTopProducts();
+  // fetchTypes();
+  // fetchCategories();
   interval = setInterval(changeSlide, 5000);
   swiperConfig.navigation.nextEl = swiperRight.value;
   swiperConfig.navigation.prevEl = swiperLeft.value;
