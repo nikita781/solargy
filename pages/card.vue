@@ -448,7 +448,7 @@ const handleDownload = async (fileUrl, file_name) => {
   try {
     const fileName = fileUrl.split('/').pop();
 
-    const response = await axios.get(`/download/productPropertyFiles/${fileName}`, {
+    const response = await axios.get(`/download/fileLibrary/${fileName}`, {
       responseType: 'blob',
     });
 
