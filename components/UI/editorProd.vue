@@ -33,6 +33,7 @@ onMounted(async () => {
     const { default: MyCustomTableTool  } = await import('./CustomTableTool');
     const { default: ImageTool } = await import('@editorjs/image');
     const { default: Columns } = await import('@calumk/editorjs-columns');
+    const { default: ImageGallery } = await import('@kiberpro/editorjs-gallery');
     const { default: AlignmentTune  } = await import('editor-js-alignment-tune');
     const { default: EditorJSHTML } = await import('editorjs-html');
 
@@ -86,6 +87,21 @@ onMounted(async () => {
             .join('');
 
         return `<div class="columns">${columnsHtml}</div>`;
+      },
+      gallery: (block: any) => {
+        // console.log("📌 Gallery Block Data:", block);
+
+        if (!block.data || !block.data.files || !Array.isArray(block.data.files)) {
+          console.error("❌ Invalid gallery block structure:", block);
+          return '<div class="gallery">Invalid gallery data</div>';
+        }
+
+        // Генерация HTML для изображений в галерее
+        const imagesHtml = block.data.files
+            .map((img: any) => `<img src="${img.url}" alt="Gallery Image" class="gallery-img">`)
+            .join("");
+
+        return `<div class="gallery">${imagesHtml}</div>`;
       },
     });
 
@@ -237,6 +253,59 @@ onMounted(async () => {
             tools: column_tools,
           },
         },
+        // column: {
+        //   class: Column,
+        //   // tunes: ['alignmentTune'],
+        //   config: {
+        //     EditorJsLibrary: EditorJS,
+        //     tools: column_tools,
+        //   },
+        // },
+        gallery: {
+          class: ImageGallery,
+          config: {
+            endpoints: {
+              byFile: 'http://127.0.0.1:8000/api/upload-image',
+            },
+            uploader: {
+              uploadByFile: async (file: File) => {
+                const token = localStorage.getItem('authToken');
+                const formData = new FormData();
+                formData.append('image', file);
+
+                try {
+                  const response = await fetch('http://127.0.0.1:8000/api/upload-image', {
+                    method: 'POST',
+                    headers: {
+                      Authorization: `Bearer ${token || ''}`,
+                    },
+                    body: formData,
+                  });
+
+                  if (!response.ok) {
+                    console.error('Ошибка загрузки:', await response.text());
+                    throw new Error('Загрузка изображения не удалась');
+                  }
+
+                  const result = await response.json();
+
+                  if (!result.success || !result.file?.url) {
+                    console.error('Неверный ответ от API:', result);
+                    throw new Error('Некорректный формат ответа от API');
+                  }
+
+                  return {
+                    success: 1,
+                    file: { url: result.file.url },
+                  };
+                } catch (error) {
+                  console.error('Ошибка при загрузке изображения:', error);
+                  return { success: 0 };
+                }
+              },
+            },
+          },
+        },
       },
       placeholder: 'Начните писать здесь...',
       onReady: () => {
@@ -343,6 +412,20 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any }[] {
         blocks.push({
           type: 'columns',
           data: { cols: columns },
+        });
+      } else if (node.tagName === 'DIV' && node.classList.contains('gallery')) {
+        // Собираем все <img> внутри .gallery
+        const images = Array.from(node.querySelectorAll('img')).map((img) => ({
+          url: img.src,
+        }));
+
+        // Пример: style берем "slider" по умолчанию, если нужно
+        blocks.push({
+          type: 'gallery',
+          data: {
+            files: images,
+            style: 'slider', // или 'grid' — настройте как вам нужно
+          },
         });
       }
     }

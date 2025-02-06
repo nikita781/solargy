@@ -361,6 +361,11 @@ $x-big: 1829.98px;
       display: flex;
       flex-direction: column;
       gap: 30px;
+      &-files {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+      }
     }
     &_file_link {
       max-width: 300px;

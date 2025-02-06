@@ -517,15 +517,28 @@ function removeFromBasket(itemId) {
 
 const handleImageClickHtml = (event) => {
   const target = event.target;
+  // Проверяем, кликнули ли по IMG
+  if (target.tagName === 'IMG') {
+    // Ищем ближайший контейнер .image-block ИЛИ .gallery
+    const parent = target.closest('.image-block, .gallery');
+    if (parent) {
+      // Собираем ВСЕ изображения из .image-block и .gallery
+      const imgElements = Array.from(
+          document.querySelectorAll(
+              '.editor__content .image-block img, .editor__content .gallery img'
+          )
+      );
 
-  if (target.tagName === 'IMG' && target.closest('.image-block')) {
-    const imgElements = Array.from(
-        document.querySelectorAll('.editor__content .image-block img')
-    );
-    imgsHtml.value = imgElements.map((img) => img.src);
-    const clickedIndex = imgElements.findIndex((img) => img === target);
-    if (clickedIndex !== -1) {
-      showImgHtml(clickedIndex);
+      // Формируем массив src для лайтбокса
+      imgsHtml.value = imgElements.map((img) => img.src);
+
+      // Находим индекс кликнутого изображения
+      const clickedIndex = imgElements.findIndex((img) => img === target);
+
+      // Если индекс найден, показываем изображение в лайтбоксе
+      if (clickedIndex !== -1) {
+        showImgHtml(clickedIndex);
+      }
     }
   }
 };
@@ -705,14 +718,17 @@ const handleImageClickHtml = (event) => {
                 @hide="onHideHtml"
                 class="card__main_img-full"
             />
-            <a
-                v-if="property.file"
-                @click.prevent="handleDownload(property.file, property.file_name)"
-                download
-                class="card__tabs_file_link main_btn"
-            >
-              {{ property.file_name }}
-            </a>
+            <div class="card__tabs_container-files">
+              <a
+                  v-if="property.files"
+                  v-for="file in property.files"
+                  @click.prevent="handleDownload(file.file, file.filename)"
+                  download
+                  class="card__tabs_file_link main_btn"
+              >
+                {{ file.filename }}
+              </a>
+            </div>
           </div>
         </div>
       </div>

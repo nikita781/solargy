@@ -346,7 +346,7 @@ onBeforeUnmount(() => {
                   :class="{ active: route.name === 'catalog' }"
               >
                 <NuxtLink to="/catalog">КАТАЛОГ</NuxtLink>
-                <IconsArrow @click="toggleMenuPhone" class="header__main_nav-arrow"
+                <IconsArrowHeader @click="toggleMenuPhone" class="header__main_nav-arrow"
                             :style="{ transform: isMenuOpenPhone ? 'rotate(180deg)' : 'rotate(0deg)' }"/>
               </div>
               <div v-if="isMenuOpenPhone" class="header__menu-phone">

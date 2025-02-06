@@ -647,13 +647,20 @@ const addProductPropertie = async () => {
     const formData = new FormData();
     formData.append('properties[0][title]', productPropertieTitle.value);
     formData.append('properties[0][html]', productPropertieDescription.value);
-    if (optionFile.value) {
-      formData.append('properties[0][from-library]', true);
-      formData.append('properties[0][file-library]', optionFile.value);
-      formData.append('properties[0][filename]', optionFileName.value);
+    if (selectedFiles.value.length > 0) {
+      selectedFiles.value.forEach((file, index) => {
+        formData.append(`properties[0][files][${index}][file_path]`, file.file_path);
+        formData.append(`properties[0][files][${index}][file_name]`, file.file_name);
+      });
     }
     if (productPhotoPropertie.value) {
       formData.append('properties[0][image]', productPhotoPropertie.value);
+    }
+
+    console.log("📌 FormData содержимое:");
+
+    for (let pair of formData.entries()) {
+      console.log(pair[0], ":", pair[1]);
     }
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
@@ -663,6 +670,7 @@ const addProductPropertie = async () => {
       },
     });
     await fetchProductById(currentProductId.value);
+    selectedFiles.value = [];
     optionFile.value = null;
     optionFileName.value = null;
     productPropertieTitle.value = '';
@@ -717,13 +725,19 @@ const updateProductPropertie = async () => {
     formData.append('properties[0][id]', currentPropertieId.value);
     formData.append('properties[0][title]', productPropertieTitle.value);
     formData.append('properties[0][html]', productPropertieDescription.value);
-    if (optionFile.value) {
-      formData.append('properties[0][from-library]', true);
-      formData.append('properties[0][file-library]', optionFile.value);
-      formData.append('properties[0][filename]', optionFileName.value);
+    if (selectedFiles.value.length > 0) {
+      selectedFiles.value.forEach((file, index) => {
+        formData.append(`properties[0][files][${index}][file_path]`, file.file_path);
+        formData.append(`properties[0][files][${index}][file_name]`, file.file_name);
+      });
     }
     if (productPhotoPropertie.value) {
       formData.append('properties[0][image]', productPhotoPropertie.value);
+    }
+    console.log("📌 FormData содержимое:");
+
+    for (let pair of formData.entries()) {
+      console.log(pair[0], ":", pair[1]);
     }
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
@@ -733,6 +747,7 @@ const updateProductPropertie = async () => {
       },
     });
     await fetchProductById(currentProductId.value);
+    selectedFiles.value = [];
     optionFile.value = null;
     optionFileName.value = null;
     isEditingPropertie.value = false;
@@ -779,8 +794,13 @@ const editProductPropertie = (propertie) => {
   }
   productPropertieDescription.value = propertie.html;
   productPreviewPropertie.value = propertie.image;
+  selectedFiles.value = propertie.files.map(file => ({
+    file_path: file.file,
+    file_name: file.filename
+  }));
 };
 const resetProductPropertie = () => {
+  selectedFiles.value = [];
   isEditingPropertie.value = false;
   currentPropertieId.value = null;
   productPropertieTitle.value = '';
@@ -944,14 +964,17 @@ const deleteImg = async (imgId) => {
     console.error('Ошибка:', error.response?.data || error);
   }
 };
-const selectPhoto = (file) => {
-  optionFile.value = file.file;
-  optionFileName.value = file.file_name;
-  closeDialog()
+const selectedFiles = ref([]);
+
+const selectFiles = (file) => {
+  selectedFiles.value.push({
+    file_path: file.file,
+    file_name: file.file_name
+  });
+  closeDialog();
 };
-const resetPhoto = () => {
-  optionFile.value = null;
-  optionFileName.value = null;
+const resetFiles = (index) => {
+  selectedFiles.value.splice(index, 1);
 };
 
 
@@ -1649,7 +1672,18 @@ const deleteProductPrice = async (imgId) => {
 <!--      </label>-->
 <!--    </div>-->
     <button type="button" class="main_btn" @click="openDialog">Библиотека файлов</button>
-    <button v-if="optionFile || optionFileName" type="button" class="main_btn" @click="resetPhoto">{{optionFileName}} / Отменить выбор</button>
+<!--    {{selectedFiles}}-->
+    <div v-if="selectedFiles[0]" class="admin-panel__content_grid">
+      <div
+          class="admin-panel__content_grid-item"
+          v-for="(file, index) in selectedFiles"
+          :key="index"
+          @click="resetFiles(index)"
+      >
+        {{ file.file_name }}
+      </div>
+    </div>
+<!--    <button v-if="selectedFiles[0]" type="button" class="main_btn" @click="resetFiles">{{optionFileName}} / Отменить выбор</button>-->
 <!--    <label class="admin-panel__content_label">Текстовый файл</label>-->
 <!--    <input-->
 <!--        type="file"-->
@@ -1717,7 +1751,17 @@ const deleteProductPrice = async (imgId) => {
 <!--      </label>-->
 <!--    </div>-->
     <button type="button" class="main_btn" @click="openDialog">Библиотека файлов</button>
-    <button v-if="optionFile || optionFileName" type="button" class="main_btn" @click="resetPhoto">{{optionFileName}} / Отменить выбор</button>
+    <div v-if="selectedFiles[0]" class="admin-panel__content_grid">
+      <div
+          class="admin-panel__content_grid-item"
+          v-for="(file, index) in selectedFiles"
+          :key="index"
+          @click="resetFiles(index)"
+      >
+        {{ file.file_name }}
+      </div>
+    </div>
+<!--    <button v-if="optionFile || optionFileName" type="button" class="main_btn" @click="resetFiles">{{optionFileName}} / Отменить выбор</button>-->
 <!--    <label class="admin-panel__content_label">Текстовый файл</label>-->
 <!--    <input-->
 <!--        type="file"-->
@@ -1940,7 +1984,7 @@ const deleteProductPrice = async (imgId) => {
       <div class="admin__dialog_imgs">
         <div
             v-for="file in files" :key="file.id"
-            @click="selectPhoto(file)"
+            @click="selectFiles(file)"
             class="admin__dialog_file"
         >
           <p>{{file.file_name}}</p>

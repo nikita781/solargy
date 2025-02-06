@@ -112,6 +112,25 @@ $x-big: 1829.98px;
           transition: 0.3s;
         }
       }
+      &_grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin: 20px 0;
+        &-item {
+          background-color: #EF7F1A;
+          border-radius: 8px;
+          text-align: center;
+          padding: 20px;
+          transition: 0.3s;
+          color: white;
+          &:hover {
+            background-color: #ff4545;
+            transition: 0.3s;
+            cursor: pointer;
+          }
+        }
+      }
     }
   }
   &__dialog {
