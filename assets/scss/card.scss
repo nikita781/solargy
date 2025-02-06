@@ -369,6 +369,22 @@ $x-big: 1829.98px;
     }
     &_file_link {
       max-width: 300px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      svg {
+        path {
+          transition: 0.3s;
+        }
+      }
+      &:hover {
+        svg {
+          path {
+            fill: #EF7F1A;
+            transition: 0.3s;
+          }
+        }
+      }
     }
     &_item {
       padding: 16px 10px;

@@ -726,6 +726,9 @@ const handleImageClickHtml = (event) => {
                   download
                   class="card__tabs_file_link main_btn"
               >
+                <div class="card__tabs_file_link">
+                  <IconsDownload color="#fff"/>
+                </div>
                 {{ file.filename }}
               </a>
             </div>
