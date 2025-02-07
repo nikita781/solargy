@@ -297,7 +297,7 @@ const resetProduct = () => {
   productPrice.value = null;
   productTop.value = false;
   formattedOptions.value = null;
-  selectedValues.value = null
+  selectedValues.value = {}
   errors.value.productCategory = false;
   errors.value.productName = false;
   errors.value.productDescription = false;
