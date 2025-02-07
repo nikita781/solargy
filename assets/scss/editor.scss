@@ -1,3 +1,10 @@
+$x-small: 575.98px;
+$small: 767.98px;
+$medium: 991.98px;
+$large: 1199.98px;
+$x-large: 1399.98px;
+$big: 1592.98px;
+$x-big: 1829.98px;
 .editor__content {
   display: flex;
   flex-direction: column;
@@ -15,12 +22,22 @@
     gap: 5px;
     li {
       line-height: 23px;
+      @media (max-width: $x-small) {
+        letter-spacing: unset;
+        font-size: 14px;
+        line-height: unset;
+      }
     }
   }
   p {
     line-height: 25px;
     font-size: 20px;
     letter-spacing: 1px;
+    @media (max-width: $x-small) {
+      letter-spacing: unset;
+      font-size: 14px;
+      line-height: unset;
+    }
   }
   .table-container {
     overflow-x: auto;
@@ -53,11 +70,23 @@
   .image-block {
     img {
       width: 100%;
-      max-width: 300px;
-      height: 300px;
+      max-width: 276px;
+      height: 276px;
       object-fit: cover;
       cursor: pointer;
     }
+  }
+  .gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  .gallery-img {
+    width: 100%;
+    max-width: 276px;
+    height: 276px;
+    object-fit: cover;
+    cursor: pointer;
   }
   .columns {
     display: flex;
@@ -68,6 +97,8 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    max-width: 276px;
+    width: 100%;
   }
 }
 
