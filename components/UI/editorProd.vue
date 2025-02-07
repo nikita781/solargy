@@ -265,7 +265,7 @@ onMounted(async () => {
           class: ImageGallery,
           config: {
             endpoints: {
-              byFile: 'http://127.0.0.1:8000/api/upload-image',
+              byFile: 'https://api.solargy.shop/api/upload-image',
             },
             uploader: {
               uploadByFile: async (file: File) => {
@@ -274,7 +274,7 @@ onMounted(async () => {
                 formData.append('image', file);
 
                 try {
-                  const response = await fetch('http://127.0.0.1:8000/api/upload-image', {
+                  const response = await fetch('https://api.solargy.shop/api/upload-image', {
                     method: 'POST',
                     headers: {
                       Authorization: `Bearer ${token || ''}`,
