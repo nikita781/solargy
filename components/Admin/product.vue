@@ -288,6 +288,7 @@ const editProduct = (product) => {
   errors.value.productPrice = false;
 };
 const resetProduct = () => {
+  oneProd.value = [];
   isEditingProduct.value = false;
   currentProductId.value = null;
   productName.value = '';
@@ -857,7 +858,9 @@ const copyProduct = async (idOptions) => {
 };
 
 watch(() => currentProductId.value, () => {
-  fetchProductById(currentProductId.value);
+  if (currentProductId.value) {
+    fetchProductById(currentProductId.value);
+  }
 });
 
 function toggleTab(title) {
@@ -1792,7 +1795,7 @@ const deleteProductPrice = async (imgId) => {
     </tr>
     </thead>
     <tbody>
-    <tr v-for="propertie in oneProd.properties" :key="propertie.id">
+    <tr v-for="propertie in oneProd?.properties" :key="propertie.id">
       <td>{{ toggleTab(propertie.title) }}</td>
       <td>{{ propertie.html }}</td>
       <td>
