@@ -194,6 +194,7 @@ const optionPhotoImg = ref(null);
 const optionFile = ref(null);
 const optionPreview = ref(null);
 const optionId = ref(null)
+const optionOrder = ref(null);
 const idEditingOptionValue = ref(false);
 const currentOptionValueId = ref(null);
 
@@ -219,6 +220,9 @@ const createOptionValue = async () => {
       formData.append('values[0][image-library]', optionPhotoImg.value);
     } else if (optionPhoto.value) {
       formData.append('values[0][image]', optionPhoto.value);
+    }
+    if (optionOrder.value) {
+      formData.append('values[0][order]', optionOrder.value);
     }
 
     await axios.post(`/options/${optionId.value}?_method=patch`, formData, {
@@ -252,6 +256,9 @@ const updateOptionValue = async () => {
       formData.append('values[0][image-library]', optionPhotoImg.value);
     } else if (optionPhoto.value) {
       formData.append('values[0][image]', optionPhoto.value);
+    }
+    if (optionOrder.value) {
+      formData.append('values[0][order]', optionOrder.value);
     }
 
     await axios.post(`/options/${optionId.value}?_method=patch`, formData, {
@@ -291,6 +298,7 @@ const editOptionValue = (idOptions, options) => {
   optionPhoto.value = null;
   optionPreview.value = options.image
   optionId.value = idOptions;
+  optionOrder.value = options.order
   errors.value.optionValue = false;
   errors.value.optionPrice = false;
 };
@@ -304,6 +312,7 @@ const resetOptionValue = () => {
   optionFile.value.value = ''
   optionPreview.value = null
   optionPhotoImg.value = null
+  optionOrder.value = null
   errors.value.optionValue = false;
   errors.value.optionPrice = false;
 };
@@ -406,6 +415,12 @@ function searchOption() {
           {{ option.name }}
         </option>
       </select>
+      <input
+          type="number"
+          class="basket__form_input admin-panel__content_input"
+          v-model="optionOrder"
+          placeholder="Введите порядковый номер"
+      />
       <button
           class="main_btn"
           type="submit"
@@ -452,6 +467,12 @@ function searchOption() {
           {{ option.name }}
         </option>
       </select>
+      <input
+          type="number"
+          class="basket__form_input admin-panel__content_input"
+          v-model="optionOrder"
+          placeholder="Введите порядковый номер"
+      />
       <button
           class="main_btn"
           type="submit"
@@ -487,6 +508,7 @@ function searchOption() {
           <th>Название</th>
           <th>Цена</th>
           <th>Фото</th>
+          <th>Порядок</th>
           <th style="width: 100px">Изменить</th>
           <th style="width: 100px">Дублировать</th>
           <th style="width: 100px">Удалить</th>
@@ -499,6 +521,7 @@ function searchOption() {
           <td>
             <img v-if="value.image" :src="value.image" alt="Фото" width="50"/>
           </td>
+          <td>{{ value.order }}</td>
           <td>
             <button @click="editOptionValue(option.id, value)" class="admin-panel__content_btn">Изменить</button>
           </td>
