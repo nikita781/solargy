@@ -243,6 +243,8 @@ onMounted(async () => {
                 }
               },
             },
+            captionPlaceholder: '', // Убирает текстовое поле caption
+            caption: false, // Отключает поддержку caption
           },
         },
         columns: {

@@ -568,7 +568,7 @@ const closeDialogUpdateValue = () => {
               :class="{ error: errors.optionValue }"
           />
           <input
-              type="number"
+              type="number" :min="0"
               class="basket__form_input admin-panel__content_input"
               v-model="optionPrice"
               placeholder="Введите цену пункта"
@@ -598,7 +598,7 @@ const closeDialogUpdateValue = () => {
             </option>
           </select>
           <input
-              type="number"
+              type="number" :min="0"
               class="basket__form_input admin-panel__content_input"
               v-model="optionOrder"
               placeholder="Введите порядковый номер"
@@ -628,7 +628,7 @@ const closeDialogUpdateValue = () => {
               :class="{ error: errors.optionValue }"
           />
           <input
-              type="number"
+              type="number" :min="0"
               class="basket__form_input admin-panel__content_input"
               v-model="optionPrice"
               placeholder="Введите цену пункта"
@@ -655,7 +655,7 @@ const closeDialogUpdateValue = () => {
             </option>
           </select>
           <input
-              type="number"
+              type="number" :min="0"
               class="basket__form_input admin-panel__content_input"
               v-model="optionOrder"
               placeholder="Введите порядковый номер"

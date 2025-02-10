@@ -138,6 +138,14 @@ $x-big: 1829.98px;
           color: #FFF;
           transition: 0.3s;
         }
+        &.disabled-btn {
+          cursor: not-allowed;
+          &:hover {
+            background-color: #ff4545;
+            color: #FFF;
+            transition: 0.3s;
+          }
+        }
       }
       &_grid {
         display: grid;
