@@ -174,6 +174,7 @@ const deleteOptions = async (idOptions) => {
   }
 };
 const editOptions = (options) => {
+  openDialogUpdate();
   isEditingOptions.value = true;
   currentOptionsId.value = options.id;
   nameOptions.value = options.name;
@@ -184,6 +185,8 @@ const resetOptions = () => {
   currentOptionsId.value = null;
   nameOptions.value = '';
   errors.value.nameOptions = false;
+  closeDialogAdd();
+  closeDialogUpdate();
 };
 
 
@@ -194,6 +197,7 @@ const optionPhotoImg = ref(null);
 const optionFile = ref(null);
 const optionPreview = ref(null);
 const optionId = ref(null)
+const optionOrder = ref(null);
 const idEditingOptionValue = ref(false);
 const currentOptionValueId = ref(null);
 
@@ -220,6 +224,9 @@ const createOptionValue = async () => {
     } else if (optionPhoto.value) {
       formData.append('values[0][image]', optionPhoto.value);
     }
+    if (optionOrder.value) {
+      formData.append('values[0][order]', optionOrder.value);
+    }
 
     await axios.post(`/options/${optionId.value}?_method=patch`, formData, {
       headers: {
@@ -234,6 +241,7 @@ const createOptionValue = async () => {
   } finally {
     isLoading.value = false;
     resetPhoto();
+    closeDialogAddValue();
   }
 };
 const updateOptionValue = async () => {
@@ -253,6 +261,9 @@ const updateOptionValue = async () => {
     } else if (optionPhoto.value) {
       formData.append('values[0][image]', optionPhoto.value);
     }
+    if (optionOrder.value) {
+      formData.append('values[0][order]', optionOrder.value);
+    }
 
     await axios.post(`/options/${optionId.value}?_method=patch`, formData, {
       headers: {
@@ -268,6 +279,7 @@ const updateOptionValue = async () => {
     isLoading.value = false;
     resetPhoto();
     resetOptionPreview()
+    closeDialogUpdateValue();
   }
 };
 const deleteOptionValue = async (idOptions, idValue) => {
@@ -284,6 +296,7 @@ const deleteOptionValue = async (idOptions, idValue) => {
   }
 };
 const editOptionValue = (idOptions, options) => {
+  openDialogUpdateValue()
   idEditingOptionValue.value = true;
   currentOptionValueId.value = options.id;
   optionValue.value = options.value;
@@ -291,6 +304,7 @@ const editOptionValue = (idOptions, options) => {
   optionPhoto.value = null;
   optionPreview.value = options.image
   optionId.value = idOptions;
+  optionOrder.value = options.order
   errors.value.optionValue = false;
   errors.value.optionPrice = false;
 };
@@ -304,8 +318,11 @@ const resetOptionValue = () => {
   optionFile.value.value = ''
   optionPreview.value = null
   optionPhotoImg.value = null
+  optionOrder.value = null
   errors.value.optionValue = false;
   errors.value.optionPrice = false;
+  closeDialogAddValue();
+  closeDialogUpdateValue();
 };
 const resetOptionPreview = () => {
   optionPhoto.value = null;
@@ -321,149 +338,50 @@ function searchOption() {
     isSearch.value = false
   }
 }
+
+
+const visibleDialogAdd = ref(false);
+const openDialogAdd = () => {
+  visibleDialogAdd.value = true;
+};
+const closeDialogAdd = () => {
+  visibleDialogAdd.value = false;
+};
+
+const visibleDialogUpdate = ref(false);
+const openDialogUpdate = () => {
+  visibleDialogUpdate.value = true;
+};
+const closeDialogUpdate = () => {
+  visibleDialogUpdate.value = false;
+  resetOptions();
+};
+
+
+const visibleDialogAddValue = ref(false);
+const openDialogAddValue = () => {
+  visibleDialogAddValue.value = true;
+};
+const closeDialogAddValue = () => {
+  visibleDialogAddValue.value = false;
+};
+
+const visibleDialogUpdateValue = ref(false);
+const openDialogUpdateValue = () => {
+  visibleDialogUpdateValue.value = true;
+};
+const closeDialogUpdateValue = () => {
+  visibleDialogUpdateValue.value = false;
+  resetOptionValue();
+};
 </script>
 
 <template>
-<div class="admin-panel__content">
+<div class="admin-panel__content admin-panel__content-prod">
   <h2>Управление параметрами товара</h2>
-  <h3>Параметры</h3>
   <div class="admin-panel__content_info">
-    <form class="admin-panel__content_form" v-if="!isEditingOptions" @submit.prevent="createOptions">
-      <input
-          type="text"
-          class="basket__form_input admin-panel__content_input"
-          v-model="nameOptions"
-          placeholder="Введите имя параметра"
-          :class="{ error: errors.nameOptions }"
-      />
-      <button
-          class="main_btn"
-          type="submit"
-          :disabled="isLoading"
-          :class="{ 'loading': isLoading }"
-          :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-      >
-        <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-        <span v-else>Создать параметр</span>
-      </button>
-    </form>
-    <form class="admin-panel__content_form" v-if="isEditingOptions" @submit.prevent="updateOptions">
-      <input
-          type="text"
-          class="basket__form_input admin-panel__content_input"
-          v-model="nameOptions"
-          placeholder="Введите имя параметра"
-          :class="{ error: errors.nameOptions }"
-      />
-      <button
-          class="main_btn"
-          type="submit"
-          :disabled="isLoading"
-          :class="{ 'loading': isLoading }"
-          :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-      >
-        <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-        <span v-else>Изменить параметр</span>
-      </button>
-      <button class="main_btn" type="button" @click="resetOptions" v-if="!isLoading">Отмена</button>
-    </form>
-    <h3>Пункт</h3>
-    <form class="admin-panel__content_form" v-if="!idEditingOptionValue" @submit.prevent="createOptionValue">
-      <input
-          type="text"
-          class="basket__form_input admin-panel__content_input"
-          v-model="optionValue"
-          placeholder="Введите имя пункта"
-          :class="{ error: errors.optionValue }"
-      />
-      <input
-          type="number"
-          class="basket__form_input admin-panel__content_input"
-          v-model="optionPrice"
-          placeholder="Введите цену пункта"
-          :class="{ error: errors.optionPrice }"
-      />
-      <button type="button" class="main_btn" @click="openDialog">Библиотека изображений</button>
-      <button v-if="optionPhotoImg" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
-      <div class="input__wrapper" v-if="!optionPhotoImg">
-        <input ref="optionFile" type="file" id="input__file" class="input input__file-reset"
-               @change="handleFileChangeOption" accept="image/*" multiple>
-        <label for="input__file" class="input__file-button-reset">
-          <span class="input__file-icon-wrapper">
-            <img v-if="optionPreview" class="input__file-icon" :src="optionPreview" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-          <span class="input__file-button-text">Выберите картинку</span>
-          <span class="input__file-icon-reset" @click.prevent="resetOptionPreview">
-            <IconsCross color="#fff"/>
-          </span>
-        </label>
-      </div>
-      Параметр
-      <select v-model="optionId" class="basket__form_input admin-panel__content_select">
-        <option value="" disabled>Выберите продукт</option>
-        <option v-for="option in options" :key="option.id" :value="option.id">
-          {{ option.name }}
-        </option>
-      </select>
-      <button
-          class="main_btn"
-          type="submit"
-          :disabled="isLoading"
-          :class="{ 'loading': isLoading }"
-          :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-      >
-        <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-        <span v-else>Создать пункт</span>
-      </button>
-    </form>
-    <form class="admin-panel__content_form" v-if="idEditingOptionValue" @submit.prevent="updateOptionValue">
-      <input
-          type="text"
-          class="basket__form_input admin-panel__content_input"
-          v-model="optionValue"
-          placeholder="Введите имя пункта"
-          :class="{ error: errors.optionValue }"
-      />
-      <input
-          type="number"
-          class="basket__form_input admin-panel__content_input"
-          v-model="optionPrice"
-          placeholder="Введите цену пункта"
-          :class="{ error: errors.optionPrice }"
-      />
-      <button type="button" class="main_btn" @click="openDialog">Библиотека изображений</button>
-      <button v-if="optionPhotoImg" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
-      <div class="input__wrapper" v-if="!optionPhotoImg">
-        <input ref="optionFile" type="file" id="input__file" class="input input__file"
-               @change="handleFileChangeOption" accept="image/*" multiple>
-        <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="optionPreview" class="input__file-icon" :src="optionPreview" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-          <span class="input__file-button-text">Выберите картинку</span>
-        </label>
-      </div>
-      Параметр
-      <select v-model="optionId" class="basket__form_input admin-panel__content_select">
-        <option value="" disabled>Выберите продукт</option>
-        <option v-for="option in options" :key="option.id" :value="option.id">
-          {{ option.name }}
-        </option>
-      </select>
-      <button
-          class="main_btn"
-          type="submit"
-          :disabled="isLoading"
-          :class="{ 'loading': isLoading }"
-          :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-      >
-        <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-        <span v-else>Изменить пункт</span>
-      </button>
-      <button class="main_btn" type="button" @click="resetOptionValue" v-if="!isLoading">Отмена</button>
-    </form>
+    <button class="main_btn" @click="openDialogAdd" style="width: fit-content">Создать параметр</button>
+    <button class="main_btn" @click="openDialogAddValue" style="width: fit-content">Создать пункт</button>
     <input
         type="text"
         class="basket__form_input admin-panel__content_input"
@@ -487,6 +405,7 @@ function searchOption() {
           <th>Название</th>
           <th>Цена</th>
           <th>Фото</th>
+          <th>Порядок</th>
           <th style="width: 100px">Изменить</th>
           <th style="width: 100px">Дублировать</th>
           <th style="width: 100px">Удалить</th>
@@ -499,6 +418,7 @@ function searchOption() {
           <td>
             <img v-if="value.image" :src="value.image" alt="Фото" width="50"/>
           </td>
+          <td>{{ value.order }}</td>
           <td>
             <button @click="editOptionValue(option.id, value)" class="admin-panel__content_btn">Изменить</button>
           </td>
@@ -555,7 +475,7 @@ function searchOption() {
         </tbody>
       </table>
     </div>
-    <div class="admin__dialog" v-if="visibleDialog" @click="closeDialog">
+    <div class="admin__dialog" v-if="visibleDialog" @click="closeDialog" style="z-index: 1">
       <div class="admin__dialog_container" @click.stop>
         <h4>Библиотека изображений</h4>
         <div class="admin__dialog_form">
@@ -586,6 +506,171 @@ function searchOption() {
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="admin__dialog" v-if="visibleDialogAdd" @click="closeDialogAdd">
+      <div class="admin__dialog_container admin__dialog_container-small" @click.stop>
+        <h3 style="margin: 0">Создание параметра</h3>
+        <form class="admin-panel__content_form-dialog" @submit.prevent="createOptions">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="nameOptions"
+              placeholder="Введите имя параметра"
+              :class="{ error: errors.nameOptions }"
+          />
+          <button
+              class="main_btn"
+              type="submit"
+              :disabled="isLoading"
+              :class="{ 'loading': isLoading }"
+              :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+          >
+            <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+            <span v-else>Создать параметр</span>
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="admin__dialog" v-if="visibleDialogUpdate" @click="closeDialogUpdate">
+      <div class="admin__dialog_container admin__dialog_container-small" @click.stop>
+        <h3 style="margin: 0">Изменение параметра</h3>
+        <form class="admin-panel__content_form-dialog" @submit.prevent="updateOptions">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="nameOptions"
+              placeholder="Введите имя параметра"
+              :class="{ error: errors.nameOptions }"
+          />
+          <button
+              class="main_btn"
+              type="submit"
+              :disabled="isLoading"
+              :class="{ 'loading': isLoading }"
+              :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+          >
+            <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+            <span v-else>Изменить параметр</span>
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="admin__dialog" v-if="visibleDialogAddValue" @click="closeDialogAddValue">
+      <div class="admin__dialog_container admin__dialog_container-small" @click.stop>
+        <h3 style="margin: 0">Создание пункта</h3>
+        <form class="admin-panel__content_form-dialog" @submit.prevent="createOptionValue">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="optionValue"
+              placeholder="Введите имя пункта"
+              :class="{ error: errors.optionValue }"
+          />
+          <input
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="optionPrice"
+              placeholder="Введите цену пункта"
+              :class="{ error: errors.optionPrice }"
+          />
+          <button type="button" class="main_btn" @click="openDialog">Библиотека изображений</button>
+          <button v-if="optionPhotoImg" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
+          <div class="input__wrapper" v-if="!optionPhotoImg">
+            <input ref="optionFile" type="file" id="input__file" class="input input__file-reset"
+                   @change="handleFileChangeOption" accept="image/*" multiple>
+            <label for="input__file" class="input__file-button-reset">
+          <span class="input__file-icon-wrapper">
+            <img v-if="optionPreview" class="input__file-icon" :src="optionPreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+              <span class="input__file-button-text">Выберите картинку</span>
+              <span class="input__file-icon-reset" @click.prevent="resetOptionPreview">
+            <IconsCross color="#fff"/>
+          </span>
+            </label>
+          </div>
+          Параметр
+          <select v-model="optionId" class="basket__form_input admin-panel__content_select">
+            <option value="" disabled>Выберите продукт</option>
+            <option v-for="option in options" :key="option.id" :value="option.id">
+              {{ option.name }}
+            </option>
+          </select>
+          <input
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="optionOrder"
+              placeholder="Введите порядковый номер"
+          />
+          <button
+              class="main_btn"
+              type="submit"
+              :disabled="isLoading"
+              :class="{ 'loading': isLoading }"
+              :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+          >
+            <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+            <span v-else>Создать пункт</span>
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="admin__dialog" v-if="visibleDialogUpdateValue" @click="closeDialogUpdateValue">
+      <div class="admin__dialog_container admin__dialog_container-small" @click.stop>
+        <h3 style="margin: 0">Изменение пункта</h3>
+        <form class="admin-panel__content_form-dialog" @submit.prevent="updateOptionValue">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="optionValue"
+              placeholder="Введите имя пункта"
+              :class="{ error: errors.optionValue }"
+          />
+          <input
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="optionPrice"
+              placeholder="Введите цену пункта"
+              :class="{ error: errors.optionPrice }"
+          />
+          <button type="button" class="main_btn" @click="openDialog">Библиотека изображений</button>
+          <button v-if="optionPhotoImg" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
+          <div class="input__wrapper" v-if="!optionPhotoImg">
+            <input ref="optionFile" type="file" id="input__file" class="input input__file"
+                   @change="handleFileChangeOption" accept="image/*" multiple>
+            <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="optionPreview" class="input__file-icon" :src="optionPreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+              <span class="input__file-button-text">Выберите картинку</span>
+            </label>
+          </div>
+          Параметр
+          <select v-model="optionId" class="basket__form_input admin-panel__content_select">
+            <option value="" disabled>Выберите продукт</option>
+            <option v-for="option in options" :key="option.id" :value="option.id">
+              {{ option.name }}
+            </option>
+          </select>
+          <input
+              type="number"
+              class="basket__form_input admin-panel__content_input"
+              v-model="optionOrder"
+              placeholder="Введите порядковый номер"
+          />
+          <button
+              class="main_btn"
+              type="submit"
+              :disabled="isLoading"
+              :class="{ 'loading': isLoading }"
+              :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+          >
+            <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+            <span v-else>Изменить пункт</span>
+          </button>
+        </form>
       </div>
     </div>
   </div>

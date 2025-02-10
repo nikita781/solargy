@@ -60,6 +60,9 @@ $x-big: 1829.98px;
       display: flex;
       flex-direction: column;
       gap: 50px;
+      &-prod {
+        gap: 30px;
+      }
       h3 {
         margin: 30px 0 0 0;
       }
@@ -71,6 +74,30 @@ $x-big: 1829.98px;
         width: 100%;
         &-long {
           max-width: 750px;
+        }
+        &-dialog {
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          width: 100%;
+        }
+      }
+      &-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        &-input {
+          width: 25px;
+          height: 25px;
+          border: 1px solid #EF7F1A;
+          border-radius: 5px;
+          background-color: #fff;
+          cursor: pointer;
+          transition: background-color 0.3s ease, border-color 0.3s ease;
+          &:checked {
+            background-color: #EF7F1A;
+            border-color: #EF7F1A;
+          }
         }
       }
       &_info {
@@ -153,6 +180,15 @@ $x-big: 1829.98px;
       display: flex;
       flex-direction: column;
       gap: 20px;
+      overflow-y: auto;
+      &-small {
+        width: calc(30vw - 60px);
+      }
+      &-prod {
+        padding: unset;
+        width: calc(60vw - 60px);
+        gap: unset;
+      }
     }
     &_form {
       display: grid;
@@ -205,6 +241,41 @@ $x-big: 1829.98px;
       justify-content: center;
       align-items: center;
       cursor: pointer;
+    }
+    &_tabs {
+      display: flex;
+      border-bottom: 1px solid #cccccc;
+      &-item {
+        padding: 15px 30px;
+        cursor: pointer;
+        &.active {
+          color: #EF7F1A;
+          border-bottom: 1px solid #EF7F1A;
+        }
+      }
+    }
+    &_content {
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+    &_title {
+      margin: unset !important;
+    }
+    &_grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+
+    }
+    &_reset {
+      background-color: #ff4545;
+      border: 1px solid #ff4545;
+      &:hover {
+        border: 1px solid #ff4545;
+        color: #ff4545;
+      }
     }
   }
   table {

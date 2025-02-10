@@ -5,6 +5,9 @@ $large: 1199.98px;
 $x-large: 1399.98px;
 $big: 1592.98px;
 $x-big: 1829.98px;
+.editor__dialog {
+  padding: 0 20px;
+}
 .editor__content {
   display: flex;
   flex-direction: column;

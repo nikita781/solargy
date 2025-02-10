@@ -13,6 +13,7 @@ onMounted(async () => {
     await fetchOptions();
     await fetchImgs();
     await fetchProductPrice();
+    await fetchAllProductsFull()
   }
 });
 
@@ -91,6 +92,7 @@ const currentPropertieId = ref(null)
 const isEditingProductPhoto = ref(false)
 const currentProductPhotoId = ref(null)
 const allProducts = ref([]);
+const allProductsFull = ref([]);
 const allProductsSearch = ref([]);
 const allCategories = ref([]);
 const categories = ref([]);
@@ -132,6 +134,14 @@ const fetchAllProducts = async () => {
     const response = await axios.get(`/all-products?page=${page.value}`);
     totalPages.value = response.data.meta.last_page || 0;
     allProducts.value = response.data.data || [];
+  } catch (error) {
+    console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
+  }
+};
+const fetchAllProductsFull = async () => {
+  try {
+    const response = await axios.get(`/products-for-select`);
+    allProductsFull.value = response.data;
   } catch (error) {
     console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
   }
@@ -233,7 +243,9 @@ const createProduct = async () => {
       headers: {},
     });
     await fetchAllProducts();
+    await fetchAllProductsFull();
     resetProduct();
+    closeDialogAdd()
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
@@ -267,7 +279,7 @@ const updateProduct = async () => {
       headers: {},
     });
     await fetchAllProducts();
-    resetProduct();
+    // resetProduct();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
@@ -275,6 +287,7 @@ const updateProduct = async () => {
   }
 };
 const editProduct = (product) => {
+  openDialogUpdate();
   isEditingProduct.value = true;
   currentProductId.value = product.id;
   productName.value = product.name;
@@ -552,22 +565,25 @@ const resetProductPhoto = async () => {
   productPreview.value = null
 }
 const editProductPhoto = async (photo) => {
+  console.log(productPhoto.value)
   currentProductPhotoId.value = photo.id;
   isEditingProductPhoto.value = true;
   productOrder.value = photo.order;
   productPreview.value = photo.photo;
 }
+
 function getIdByName(name) {
   const foundOption = options.value.find(option => option.name === name);
   return foundOption ? foundOption.id : null;
 }
+
 const addProductOption = async () => {
   isLoading.value = true;
   try {
     const valueId = await getIdByName(productOption.value);
     const formData = new FormData();
     // formData.append('options[0][id]', productOption.value);
-    formData.append('options[0][id]',valueId);
+    formData.append('options[0][id]', valueId);
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
@@ -981,7 +997,6 @@ const resetFiles = (index) => {
 };
 
 
-
 const selectedValues = ref({});
 const totalPrice = ref(null);
 const filteredProducts = ref([]);
@@ -1042,963 +1057,941 @@ const deleteProductPrice = async (imgId) => {
     console.error('Ошибка:', error.response?.data || error);
   }
 };
+
+
+const visibleDialogAdd = ref(false);
+const openDialogAdd = () => {
+  visibleDialogAdd.value = true;
+};
+const closeDialogAdd = () => {
+  visibleDialogAdd.value = false;
+};
+
+
+const visibleDialogUpdate = ref(false);
+const openDialogUpdate = () => {
+  visibleDialogUpdate.value = true;
+};
+const closeDialogUpdate = () => {
+  activeTab.value = "Главная";
+  visibleDialogUpdate.value = false;
+  resetProduct();
+  resetProductPhoto();
+  resetProductPropertie();
+};
+const activeTab = ref("Главная");
 </script>
 
 <template>
-<div class="admin-panel__content">
-  <h2>Управление товарами</h2>
-  <form class="admin-panel__content_form" v-if="!isEditingProduct" @submit.prevent="createProduct">
+  <div class="admin-panel__content admin-panel__content-prod">
+    <h2>Управление товарами</h2>
+    <button class="main_btn" @click="openDialogAdd" style="width: fit-content">Создать товар</button>
     <input
         type="text"
         class="basket__form_input admin-panel__content_input"
-        v-model="productName"
-        placeholder="Введите имя товара"
-        :class="{ error: errors.productName }"
+        v-model="productSearch"
+        placeholder="Поиск"
+        @input="searchProduct"
     />
-    <textarea
-        class="basket__form_input admin-panel__content_textarea"
-        v-model="productDescription"
-        placeholder="Введите описание"
-        :class="{ error: errors.productDescription }"
-    ></textarea>
-    Категория
-    <select v-model="productCategory" :class="{ error: errors.productCategory }"
-            class="basket__form_input admin-panel__content_select">
-      <option value="" disabled>Выберите категорию</option>
-      <option v-for="category in allCategories" :key="category.id" :value="category.id">
-        {{ category.name }}
-      </option>
-    </select>
-    Топ товар
-    <input
-        type="checkbox"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productTop"
-        placeholder="Топ товар"
-    />
-    <input
-        type="text"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productPrice"
-        placeholder="Введите цену"
-        :class="{ error: errors.productPrice }"
-    />
-    <button
-        class="main_btn"
-        type="submit"
-        :disabled="isLoading"
-        :class="{ 'loading': isLoading }"
-        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-    >
-      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-      <span v-else>Создать товар</span>
-    </button>
-  </form>
-  <form class="admin-panel__content_form" v-if="isEditingProduct" @submit.prevent="updateProduct">
-    <input
-        type="text"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productName"
-        placeholder="Введите имя товара"
-        :class="{ error: errors.productName }"
-    />
-    <textarea
-        class="basket__form_input admin-panel__content_textarea"
-        v-model="productDescription"
-        placeholder="Введите описание"
-        :class="{ error: errors.productDescription }"
-    ></textarea>
-    Категория
-    <select v-model="productCategory" :class="{ error: errors.productCategory }"
-            class="basket__form_input admin-panel__content_select">
-      <option value="" disabled>Выберите категорию</option>
-      <option v-for="category in allCategories" :key="category.id" :value="category.id">
-        {{ category.name }}
-      </option>
-    </select>
-    Топ товар
-    <input
-        type="checkbox"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productTop"
-        placeholder="Топ товар"
-    />
-    <input
-        type="text"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productPrice"
-        placeholder="Введите цену"
-        :class="{ error: errors.productPrice }"
-    />
-    <button
-        class="main_btn"
-        type="submit"
-        :disabled="isLoading"
-        :class="{ 'loading': isLoading }"
-        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-    >
-      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-      <span v-else>Изменить товар</span>
-    </button>
-    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
-  </form>
-  <h3 v-if="isEditingProduct">Добавить картинку</h3>
-  <form class="admin-panel__content_form" v-if="isEditingProduct && !isEditingProductPhoto"
-        @submit.prevent="addProductPhoto">
-<!--    <input-->
-<!--        type="file"-->
-<!--        ref="productFile"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeProductPhoto"-->
-<!--        accept="image/*"-->
-<!--    />-->
-    <div class="input__wrapper">
-      <input ref="productFile" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview" class="input__file-icon" :src="productPreview" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder"
-        placeholder="Введите порядок фото"
-    />
-
-<!--    <input-->
-<!--        v-if="productPhoto"-->
-<!--        type="file"-->
-<!--        ref="productFile1"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeProductPhoto1"-->
-<!--        accept="image/*"-->
-<!--    />-->
-    <div class="input__wrapper" v-if="productPhoto">
-      <input ref="productFile1" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto1" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview1" class="input__file-icon" :src="productPreview1" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        v-if="productPhoto"
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder1"
-        placeholder="Введите порядок фото"
-    />
-
-<!--    <input-->
-<!--        v-if="productPhoto1"-->
-<!--        type="file"-->
-<!--        ref="productFile2"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeProductPhoto2"-->
-<!--        accept="image/*"-->
-<!--    />-->
-    <div class="input__wrapper" v-if="productPhoto1">
-      <input ref="productFile2" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto2" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview2" class="input__file-icon" :src="productPreview2" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        v-if="productPhoto1"
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder2"
-        placeholder="Введите порядок фото"
-    />
-
-<!--    <input-->
-<!--        v-if="productPhoto2"-->
-<!--        type="file"-->
-<!--        ref="productFile3"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeProductPhoto3"-->
-<!--        accept="image/*"-->
-<!--    />-->
-    <div class="input__wrapper" v-if="productPhoto2">
-      <input ref="productFile3" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto3" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview3" class="input__file-icon" :src="productPreview3" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        v-if="productPhoto2"
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder3"
-        placeholder="Введите порядок фото"
-    />
-
-<!--    <input-->
-<!--        v-if="productPhoto3"-->
-<!--        type="file"-->
-<!--        ref="productFile4"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeProductPhoto4"-->
-<!--        accept="image/*"-->
-<!--    />-->
-    <div class="input__wrapper" v-if="productPhoto3">
-      <input ref="productFile4" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto4" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview4" class="input__file-icon" :src="productPreview4" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        v-if="productPhoto3"
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder4"
-        placeholder="Введите порядок фото"
-    />
-
-<!--    <input-->
-<!--        v-if="productPhoto4"-->
-<!--        type="file"-->
-<!--        ref="productFile5"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeProductPhoto5"-->
-<!--        accept="image/*"-->
-<!--    />-->
-    <div class="input__wrapper" v-if="productPhoto4">
-      <input ref="productFile5" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto5" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview5" class="input__file-icon" :src="productPreview5" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        v-if="productPhoto4"
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder5"
-        placeholder="Введите порядок фото"
-    />
-
-<!--    <input-->
-<!--        v-if="productPhoto5"-->
-<!--        type="file"-->
-<!--        ref="productFile6"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeProductPhoto6"-->
-<!--        accept="image/*"-->
-<!--    />-->
-    <div class="input__wrapper" v-if="productPhoto5">
-      <input ref="productFile6" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto6" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview6" class="input__file-icon" :src="productPreview6" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        v-if="productPhoto5"
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder6"
-        placeholder="Введите порядок фото"
-    />
-
-<!--    <input-->
-<!--        v-if="productPhoto6"-->
-<!--        type="file"-->
-<!--        ref="productFile7"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeProductPhoto7"-->
-<!--        accept="image/*"-->
-<!--    />-->
-    <div class="input__wrapper" v-if="productPhoto6">
-      <input ref="productFile7" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto7" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview7" class="input__file-icon" :src="productPreview7" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        v-if="productPhoto6"
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder7"
-        placeholder="Введите порядок фото"
-    />
-
-<!--    <input-->
-<!--        v-if="productPhoto7"-->
-<!--        type="file"-->
-<!--        ref="productFile8"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeProductPhoto8"-->
-<!--        accept="image/*"-->
-<!--    />-->
-    <div class="input__wrapper" v-if="productPhoto7">
-      <input ref="productFile8" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto8" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview8" class="input__file-icon" :src="productPreview8" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        v-if="productPhoto7"
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder8"
-        placeholder="Введите порядок фото"
-    />
-
-<!--    <input-->
-<!--        v-if="productPhoto8"-->
-<!--        type="file"-->
-<!--        ref="productFile9"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeProductPhoto9"-->
-<!--        accept="image/*"-->
-<!--    />-->
-    <div class="input__wrapper" v-if="productPhoto8">
-      <input ref="productFile9" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto9" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview9" class="input__file-icon" :src="productPreview9" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        v-if="productPhoto8"
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder9"
-        placeholder="Введите порядок фото"
-    />
-    <button
-        class="main_btn"
-        type="submit"
-        :disabled="isLoading"
-        :class="{ 'loading': isLoading }"
-        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-    >
-      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-      <span v-else>Добавить</span>
-    </button>
-    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
-  </form>
-  <form class="admin-panel__content_form" v-if="isEditingProduct && isEditingProductPhoto"
-        @submit.prevent="updateProductPhoto">
-    <div class="input__wrapper">
-      <input ref="productFile" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeProductPhoto" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview" class="input__file-icon" :src="productPreview" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <input
-        type="number"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productOrder"
-        placeholder="Введите порядок фото"
-    />
-    <button
-        class="main_btn"
-        type="submit"
-        :disabled="isLoading"
-        :class="{ 'loading': isLoading }"
-        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-    >
-      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-      <span v-else>Изменить</span>
-    </button>
-    <button class="main_btn" @click="resetProductPhoto" v-if="!isLoading">Отмена</button>
-  </form>
-  <table v-if="isEditingProduct">
-    <thead>
-    <tr>
-      <th>Фото</th>
-      <th>Порядок</th>
-      <th style="width: 100px">Изменить</th>
-      <th style="width: 100px">Удалить</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr v-for="product in oneProd.photos" :key="product.id">
-      <td>
-        <img v-if="product.photo" :src="product.photo" alt="Фото" width="100"/>
-      </td>
-      <td>{{ product.order }}</td>
-      <td>
-        <button @click="editProductPhoto(product)" class="admin-panel__content_btn">Изменить</button>
-      </td>
-      <td>
-        <button @click="deleteProductPhoto(product.id)" class="admin-panel__content_btn">Удалить</button>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-  <h3 v-if="isEditingProduct">Добавить параметр</h3>
-  <form class="admin-panel__content_form" v-if="isEditingProduct" @submit.prevent="addProductOption">
-<!--    <input-->
-<!--        v-model="searchQuery"-->
-<!--        @input="handleSearch"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        type="text"-->
-<!--        placeholder="Введите запрос для поиска"-->
-<!--    />-->
-<!--    <select v-model="productOption" class="basket__form_input admin-panel__content_select">-->
-<!--      <option value="" disabled>Выберите категорию</option>-->
-<!--      <option v-for="option in options" :key="option.id" :value="option.id">-->
-<!--        {{ option.name }}-->
-<!--      </option>-->
-<!--    </select>-->
-    <input list="test" placeholder="Введите запрос для поиска" class="basket__form_input admin-panel__content_input" v-model="productOption">
-    <datalist id="test">
-      <option v-for="option in options" :key="option.id" :value="option.name">
-      </option>
-    </datalist>
-    <button
-        class="main_btn"
-        type="submit"
-        :disabled="isLoading"
-        :class="{ 'loading': isLoading }"
-        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-    >
-      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-      <span v-else>Добавить</span>
-    </button>
-    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
-  </form>
-  <div
-      v-if="isEditingProduct"
-      class="admin-panel__content_info_item"
-      v-for="option in oneProd.options"
-      :key="option.id"
-  >
-    <div class="admin-panel__content_info_content">
-      <p>{{ option.name }}</p>
-      <div></div>
-      <button @click="deleteProductOptionFull(option.id)" class="admin-panel__content_btn">Отвязать</button>
-    </div>
-    <table>
+    <table v-if="!isSearch">
       <thead>
       <tr>
-        <th>Параметр</th>
+        <th>Название</th>
+        <th>Категория</th>
+        <th>Описание</th>
         <th>Цена</th>
-        <th>Фото</th>
-        <th style="width: 100px">Отвязка</th>
+        <th>Топ</th>
+        <th style="width: 100px">Изменить</th>
+        <th style="width: 100px">Дублирование</th>
+        <th style="width: 100px">Удалить</th>
       </tr>
       </thead>
       <tbody>
-      <tr v-for="value in option.values" :key="value.id">
-        <td>{{ value.value }}</td>
-        <td>{{ value.price }}</td>
+      <tr v-for="product in paginatedProducts" :key="product.id">
+        <td>{{ product.name }}</td>
+        <td>{{ product.category_id.name }}</td>
+        <td>{{ product.description }}</td>
+        <td>{{ product.price }}</td>
+        <td><input type="checkbox" disabled v-model="product.is_top"/></td>
         <td>
-          <img v-if="value.image" :src="value.image" alt="Фото" width="100"/>
+          <button @click="editProduct(product)" class="admin-panel__content_btn">Изменить</button>
         </td>
         <td>
-          <button @click="deleteProductOption(value.id)" class="admin-panel__content_btn">Отвязать</button>
+          <button @click="copyProduct(product.id)" class="admin-panel__content_btn">Дублировать</button>
+        </td>
+        <td>
+          <button @click="deleteProduct(product.id)" class="admin-panel__content_btn">Удалить</button>
         </td>
       </tr>
       </tbody>
     </table>
-    <form class="admin-panel__content_form" @submit.prevent="createProductOptionValue">
-      <select
-          v-model="productOptionValue"
-          class="basket__form_input admin-panel__content_select"
-          @focus="fetchValueByOption(option.id)"
-      >
-        <option value="" disabled>Выберите параметр</option>
-        <option v-for="value in valueByOption" :key="value.id" :value="value.id">
-          {{ value.value }}
-        </option>
-      </select>
+    <table v-if="isSearch">
+      <thead v-if="allProductsSearch.products.length > 0">
+      <tr>
+        <th>Название</th>
+        <th>Категория</th>
+        <th>Описание</th>
+        <th>Цена</th>
+        <th>Топ</th>
+        <th style="width: 100px">Изменить</th>
+        <th style="width: 100px">Дублирование</th>
+        <th style="width: 100px">Удалить</th>
+      </tr>
+      </thead>
+      <tbody v-if="allProductsSearch.products.length > 0">
+      <tr v-for="product in allProductsSearch.products" :key="product.id">
+        <td>{{ product.name }}</td>
+        <td>{{ product.category_id.name }}</td>
+        <td>{{ product.description }}</td>
+        <td>{{ product.price }}</td>
+        <td><input type="checkbox" disabled v-model="product.is_top"/></td>
+        <td>
+          <button @click="editProduct(product)" class="admin-panel__content_btn">Изменить</button>
+        </td>
+        <td>
+          <button @click="copyProduct(product.id)" class="admin-panel__content_btn">Дублировать</button>
+        </td>
+        <td>
+          <button @click="deleteProduct(product.id)" class="admin-panel__content_btn">Удалить</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+    <div class="pagination" v-if="totalPages > 1 && !isSearch">
       <button
-          class="main_btn"
-          type="submit"
-          :disabled="isLoading"
-          :class="{ 'loading': isLoading }"
-          :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+          class="arrow-left"
+          @click="goToPage(page - 1)"
+          :disabled="page === 1"
       >
-        <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-        <span v-else>Привязать</span>
       </button>
-    </form>
-  </div>
-  <h3 v-if="isEditingProduct">Добавить кастомную цену</h3>
-  <form class="admin-panel__content_form" v-if="isEditingProduct">
-    <input
-        v-model="totalPrice"
-        class="basket__form_input admin-panel__content_input"
-        type="number"
-        placeholder="Цена"
-    />
-    <div v-for="option in oneProd.options" :key="option.id" class="option-block">
-      <label :for="`select-${option.id}`">{{ option.name }}</label>
-      <select
-          :id="`select-${option.id}`"
-          v-model="selectedValues[option.id]"
-          class="basket__form_input admin-panel__content_select"
+      <span
+          class="pagination__number"
+          :class="{ active: page === 1 }"
+          @click="goToPage(1)"
       >
-        <option value="" disabled>Выберите значение</option>
-        <option
-            v-for="value in option.values"
-            :key="value.id"
-            :value="value.id"
-        >
-          {{ value.value }}
-        </option>
-      </select>
-    </div>
-    <button
-        class="main_btn"
-        @click="addProductPrice"
-        :disabled="isLoading"
-        :class="{ 'loading': isLoading }"
-        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-    >
-      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-      <span v-else>Добавить цену</span>
-    </button>
-    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
-  </form>
-  <div
-      v-if="isEditingProduct"
-      class="admin-panel__content_info_item"
-      v-for="option in oneProd.option_prices"
-      :key="option.id"
-  >
-    <div class="admin-panel__content_info_content">
-      <p>{{ option.price }}</p>
-      <div></div>
-      <button @click="deleteProductPrice(option.id)" class="admin-panel__content_btn">Удалить</button>
-    </div>
-    <div>
-      <table>
-        <thead>
-        <tr>
-          <th>Параметр</th>
-          <th>Значение</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="(value, key) in option.options_details" :key="key">
-          <td>{{ value.option }}</td>
-          <td>{{ value.value }}</td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <h3 v-if="isEditingProduct">Добавить таб (максимум 6)</h3>
-  <form
-      class="admin-panel__content_form admin-panel__content_form-long"
-      v-if="isEditingProduct && !isEditingPropertie && oneProd.properties.length !== 6"
-      @submit.prevent="addProductPropertie"
-  >
-    <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
-      <option value="" disabled>Выберите категорию</option>
-      <option value='property'>
-        Характеристики
-      </option>
-      <option value='description'>
-        Описание
-      </option>
-      <option value='photo'>
-        Фото товара
-      </option>
-      <option value='instruction'>
-        Инструкции
-      </option>
-      <option value='recommendation'>
-        Рекомендации
-      </option>
-      <option value='guaranty'>
-        Гарантии
-      </option>
-    </select>
-    <EditorProd @export-html="handleExportHtmlPropertie"/>
-<!--    <div class="input__wrapper">-->
-<!--      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file-reset"-->
-<!--             @change="handleFileChangeProductPropertie" accept="image/*" multiple>-->
-<!--      <label for="input__file" class="input__file-button-reset">-->
-<!--          <span class="input__file-icon-wrapper">-->
-<!--            <img v-if="productPreviewPropertie" class="input__file-icon" :src="productPreviewPropertie" alt="Выбрать файл"-->
-<!--                 width="50" height="50px">-->
-<!--          </span>-->
-<!--        <span class="input__file-button-text">Выберите картинку</span>-->
-<!--        <span class="input__file-icon-reset" @click.prevent="resetProductPreviewPropertie">-->
-<!--            <IconsCross color="#fff"/>-->
-<!--          </span>-->
-<!--      </label>-->
-<!--    </div>-->
-    <button type="button" class="main_btn" @click="openDialog">Библиотека файлов</button>
-<!--    {{selectedFiles}}-->
-    <div v-if="selectedFiles[0]" class="admin-panel__content_grid">
-      <div
-          class="admin-panel__content_grid-item"
-          v-for="(file, index) in selectedFiles"
-          :key="index"
-          @click="resetFiles(index)"
-      >
-        {{ file.file_name }}
-      </div>
-    </div>
-<!--    <button v-if="selectedFiles[0]" type="button" class="main_btn" @click="resetFiles">{{optionFileName}} / Отменить выбор</button>-->
-<!--    <label class="admin-panel__content_label">Текстовый файл</label>-->
-<!--    <input-->
-<!--        type="file"-->
-<!--        ref="productTextFile"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeText"-->
-<!--        accept=".pdf,.dwg,.docx"-->
-<!--    />-->
-    <button
-        class="main_btn"
-        type="submit"
-        :disabled="isLoading"
-        :class="{ 'loading': isLoading }"
-        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-    >
-      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-      <span v-else>Добавить</span>
-    </button>
-    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
-  </form>
-  <form
-      class="admin-panel__content_form admin-panel__content_form-long" v-if="isEditingProduct && isEditingPropertie"
-      @submit.prevent="updateProductPropertie"
-  >
-    <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
-      <option value="" disabled>Выберите категорию</option>
-      <option value='property'>
-        Характеристики
-      </option>
-      <option value='description'>
-        Описание
-      </option>
-      <option value='photo'>
-        Фото товара
-      </option>
-      <option value='instruction'>
-        Инструкции
-      </option>
-      <option value='recommendation'>
-        Рекомендации
-      </option>
-      <option value='guaranty'>
-        Гарантии
-      </option>
-    </select>
-    <!--          <textarea-->
-    <!--              class="basket__form_input admin-panel__content_textarea"-->
-    <!--              v-model="productPropertieDescription"-->
-    <!--              placeholder="Введите описание"-->
-    <!--          ></textarea>-->
-    <EditorProd :initialHtml="productPropertieDescription" @export-html="handleExportHtmlPropertie"/>
-<!--    <label class="admin-panel__content_label">Изображение</label>-->
-<!--    <div class="input__wrapper">-->
-<!--      <input ref="productFilePropertie" type="file" id="input__file" class="input input__file-reset"-->
-<!--             @change="handleFileChangeProductPropertie" accept="image/*" multiple>-->
-<!--      <label for="input__file" class="input__file-button-reset">-->
-<!--          <span class="input__file-icon-wrapper">-->
-<!--            <img v-if="productPreviewPropertie" class="input__file-icon" :src="productPreviewPropertie" alt="Выбрать файл"-->
-<!--                 width="50" height="50px">-->
-<!--          </span>-->
-<!--        <span class="input__file-button-text">Выберите картинку</span>-->
-<!--        <span class="input__file-icon-reset" @click.prevent="resetProductPreviewPropertie">-->
-<!--            <IconsCross color="#fff"/>-->
-<!--          </span>-->
-<!--      </label>-->
-<!--    </div>-->
-    <button type="button" class="main_btn" @click="openDialog">Библиотека файлов</button>
-    <div v-if="selectedFiles[0]" class="admin-panel__content_grid">
-      <div
-          class="admin-panel__content_grid-item"
-          v-for="(file, index) in selectedFiles"
-          :key="index"
-          @click="resetFiles(index)"
-      >
-        {{ file.file_name }}
-      </div>
-    </div>
-<!--    <button v-if="optionFile || optionFileName" type="button" class="main_btn" @click="resetFiles">{{optionFileName}} / Отменить выбор</button>-->
-<!--    <label class="admin-panel__content_label">Текстовый файл</label>-->
-<!--    <input-->
-<!--        type="file"-->
-<!--        ref="productTextFile"-->
-<!--        class="basket__form_input admin-panel__content_input"-->
-<!--        @change="handleFileChangeText"-->
-<!--        accept=".pdf,.dwg,.docx"-->
-<!--    />-->
-    <button
-        class="main_btn"
-        type="submit"
-        :disabled="isLoading"
-        :class="{ 'loading': isLoading }"
-        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-    >
-      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-      <span v-else>Изменить</span>
-    </button>
-    <button class="main_btn" @click="resetProductPropertie" v-if="!isLoading">Отмена</button>
-  </form>
-  <table v-if="isEditingProduct">
-    <thead>
-    <tr>
-      <th>Название</th>
-      <th>Контент</th>
-      <th style="width: 100px">Изменить</th>
-      <th style="width: 100px">Удалить</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr v-for="propertie in oneProd?.properties" :key="propertie.id">
-      <td>{{ toggleTab(propertie.title) }}</td>
-      <td>{{ propertie.html }}</td>
-      <td>
-        <button @click="editProductPropertie(propertie)" class="admin-panel__content_btn">Изменить</button>
-      </td>
-      <td>
-        <button @click="deleteProductPropertie(propertie.id)" class="admin-panel__content_btn">Удалить</button>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-  <h3 v-if="isEditingProduct">Добавить сопутствующий товар</h3>
-  <form
-      class="admin-panel__content_form" v-if="isEditingProduct"
-      @submit.prevent="addProductProd"
-  >
-    <select v-model="productProd" class="basket__form_input admin-panel__content_select">
-      <option value="" disabled>Выберите товар</option>
-      <option v-for="prod in allProducts" :key="prod.id" :value="prod.id">
-        {{ prod.name }}
-      </option>
-    </select>
-    <button
-        class="main_btn"
-        type="submit"
-        :disabled="isLoading"
-        :class="{ 'loading': isLoading }"
-        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-    >
-      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-      <span v-else>Добавить товар</span>
-    </button>
-    <button class="main_btn" @click="resetProduct" v-if="!isLoading">Отмена</button>
-  </form>
-  <table v-if="isEditingProduct">
-    <thead>
-    <tr>
-      <th>Название</th>
-      <th style="width: 100px">Удалить</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr v-for="prod in oneProd.related_products" :key="prod.id">
-      <td>{{ prod.name }}</td>
-      <td>
-        <button @click="deleteProductProd(prod.id)" class="admin-panel__content_btn">Удалить</button>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-  <input
-      type="text"
-      class="basket__form_input admin-panel__content_input"
-      v-model="productSearch"
-      placeholder="Поиск"
-      @input="searchProduct"
-  />
-  <table v-if="!isSearch">
-    <thead>
-    <tr>
-      <th>Название</th>
-      <th>Категория</th>
-      <th>Описание</th>
-      <th>Цена</th>
-      <th>Топ</th>
-      <th style="width: 100px">Изменить</th>
-      <th style="width: 100px">Дублирование</th>
-      <th style="width: 100px">Удалить</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr v-for="product in paginatedProducts" :key="product.id">
-      <td>{{ product.name }}</td>
-      <td>{{ product.category_id.name }}</td>
-      <td>{{ product.description }}</td>
-      <td>{{ product.price }}</td>
-      <td><input type="checkbox" disabled v-model="product.is_top"/></td>
-      <td>
-        <button @click="editProduct(product)" class="admin-panel__content_btn">Изменить</button>
-      </td>
-      <td>
-        <button @click="copyProduct(product.id)" class="admin-panel__content_btn">Дублировать</button>
-      </td>
-      <td>
-        <button @click="deleteProduct(product.id)" class="admin-panel__content_btn">Удалить</button>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-  <table v-if="isSearch">
-    <thead v-if="allProductsSearch.products.length > 0">
-    <tr>
-      <th>Название</th>
-      <th>Категория</th>
-      <th>Описание</th>
-      <th>Цена</th>
-      <th>Топ</th>
-      <th style="width: 100px">Изменить</th>
-      <th style="width: 100px">Дублирование</th>
-      <th style="width: 100px">Удалить</th>
-    </tr>
-    </thead>
-    <tbody v-if="allProductsSearch.products.length > 0">
-    <tr v-for="product in allProductsSearch.products" :key="product.id">
-      <td>{{ product.name }}</td>
-      <td>{{ product.category_id.name }}</td>
-      <td>{{ product.description }}</td>
-      <td>{{ product.price }}</td>
-      <td><input type="checkbox" disabled v-model="product.is_top"/></td>
-      <td>
-        <button @click="editProduct(product)" class="admin-panel__content_btn">Изменить</button>
-      </td>
-      <td>
-        <button @click="copyProduct(product.id)" class="admin-panel__content_btn">Дублировать</button>
-      </td>
-      <td>
-        <button @click="deleteProduct(product.id)" class="admin-panel__content_btn">Удалить</button>
-      </td>
-    </tr>
-    </tbody>
-  </table>
-  <div class="pagination" v-if="totalPages > 1 && !isSearch">
-    <button
-        class="arrow-left"
-        @click="goToPage(page - 1)"
-        :disabled="page === 1"
-    >
-    </button>
-    <span
-        class="pagination__number"
-        :class="{ active: page === 1 }"
-        @click="goToPage(1)"
-    >
         1
       </span>
-    <span v-if="page > 6">...</span>
-    <span
-        v-for="pageNum in pagesInRange"
-        :key="pageNum"
-        class="pagination__number"
-        :class="{ active: pageNum === page }"
-        @click="goToPage(pageNum)"
-    >
+      <span v-if="page > 6">...</span>
+      <span
+          v-for="pageNum in pagesInRange"
+          :key="pageNum"
+          class="pagination__number"
+          :class="{ active: pageNum === page }"
+          @click="goToPage(pageNum)"
+      >
         {{ pageNum }}
       </span>
-    <span v-if="page < totalPages - 5">...</span>
-    <span
-        class="pagination__number"
-        :class="{ active: page === totalPages }"
-        @click="goToPage(totalPages)"
-    >
+      <span v-if="page < totalPages - 5">...</span>
+      <span
+          class="pagination__number"
+          :class="{ active: page === totalPages }"
+          @click="goToPage(totalPages)"
+      >
         {{ totalPages }}
       </span>
-    <button
-        class="arrow-right"
-        @click="goToPage(page + 1)"
-        :disabled="page === totalPages"
-    >
-    </button>
-  </div>
-  <div class="admin__dialog" v-if="visibleDialog" @click="closeDialog">
-    <div class="admin__dialog_container" @click.stop>
-      <h4>Библиотека файлов</h4>
-      <div class="admin__dialog_form-file">
-        <input
-            type="file"
-            ref="productTextFile"
-            class="basket__form_input admin-panel__content_input"
-            @change="handleFileChangeText"
-            accept=".pdf,.dwg,.docx"
-        />
-        <input
-            type="text"
-            class="basket__form_input admin-panel__content_input"
-            v-model="productTextFileName"
-            placeholder="Введите название"
-        />
-        <button
-            class="main_btn"
-            @click="addImage"
-            :disabled="isLoading"
-            :class="{ 'loading': isLoading }"
-            :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-        >
-          <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-          <span v-else>Добавить файл</span>
-        </button>
-      </div>
-      <div class="admin__dialog_imgs">
-        <div
-            v-for="file in files" :key="file.id"
-            @click="selectFiles(file)"
-            class="admin__dialog_file"
-        >
-          <p>{{file.file_name}}</p>
-          <div @click.stop="deleteImg(file.id)" class="admin__dialog_trash">
-            <IconsTrash color="#fff"/>
+      <button
+          class="arrow-right"
+          @click="goToPage(page + 1)"
+          :disabled="page === totalPages"
+      >
+      </button>
+    </div>
+    <div class="admin__dialog" style="z-index: 1" v-if="visibleDialog" @click="closeDialog">
+      <div class="admin__dialog_container" @click.stop>
+        <h4>Библиотека файлов</h4>
+        <div class="admin__dialog_form-file">
+          <input
+              type="file"
+              ref="productTextFile"
+              class="basket__form_input admin-panel__content_input"
+              @change="handleFileChangeText"
+              accept=".pdf,.dwg,.docx"
+          />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productTextFileName"
+              placeholder="Введите название"
+          />
+          <button
+              class="main_btn"
+              @click="addImage"
+              :disabled="isLoading"
+              :class="{ 'loading': isLoading }"
+              :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+          >
+            <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+            <span v-else>Добавить файл</span>
+          </button>
+        </div>
+        <div class="admin__dialog_imgs">
+          <div
+              v-for="file in files" :key="file.id"
+              @click="selectFiles(file)"
+              class="admin__dialog_file"
+          >
+            <p>{{ file.file_name }}</p>
+            <div @click.stop="deleteImg(file.id)" class="admin__dialog_trash">
+              <IconsTrash color="#fff"/>
+            </div>
           </div>
         </div>
       </div>
     </div>
+    <div class="admin__dialog" v-if="visibleDialogAdd" @click="closeDialogAdd">
+      <div class="admin__dialog_container admin__dialog_container-small" @click.stop>
+        <h3 style="margin: 0">Создание товара</h3>
+        <form class="admin-panel__content_form-dialog" @submit.prevent="createProduct">
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productName"
+              placeholder="Введите имя товара"
+              :class="{ error: errors.productName }"
+          />
+          <textarea
+              class="basket__form_input admin-panel__content_textarea"
+              v-model="productDescription"
+              placeholder="Введите описание"
+              :class="{ error: errors.productDescription }"
+          ></textarea>
+          Категория
+          <select v-model="productCategory" :class="{ error: errors.productCategory }"
+                  class="basket__form_input admin-panel__content_select">
+            <option value="" disabled>Выберите категорию</option>
+            <option v-for="category in allCategories" :key="category.id" :value="category.id">
+              {{ category.name }}
+            </option>
+          </select>
+          <div class="admin-panel__content-checkbox">
+            <input
+                type="checkbox"
+                class="admin-panel__content-checkbox-input"
+                v-model="productTop"
+                placeholder="Топ товар"
+            />
+            Топ товар
+          </div>
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productPrice"
+              placeholder="Введите цену"
+              :class="{ error: errors.productPrice }"
+          />
+          <button
+              class="main_btn"
+              type="submit"
+              :disabled="isLoading"
+              :class="{ 'loading': isLoading }"
+              :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+          >
+            <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+            <span v-else>Создать товар</span>
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="admin__dialog" v-if="visibleDialogUpdate" @click="closeDialogUpdate">
+      <div class="admin__dialog_container admin__dialog_container-prod" @click.stop>
+        <div class="admin__dialog_tabs">
+          <p
+              class="admin__dialog_tabs-item"
+              :class="{ active: activeTab === 'Главная' }"
+              @click="activeTab = 'Главная'"
+          >
+            Главная
+          </p>
+          <p
+              class="admin__dialog_tabs-item"
+              :class="{ active: activeTab === 'Картинки' }"
+              @click="activeTab = 'Картинки'"
+          >
+            Картинки
+          </p>
+          <p
+              class="admin__dialog_tabs-item"
+              :class="{ active: activeTab === 'Параметры' }"
+              @click="activeTab = 'Параметры'"
+          >
+            Параметры
+          </p>
+          <p
+              class="admin__dialog_tabs-item"
+              :class="{ active: activeTab === 'Цена' }"
+              @click="activeTab = 'Цена'"
+          >
+            Цена
+          </p>
+          <p
+              class="admin__dialog_tabs-item"
+              :class="{ active: activeTab === 'Табы' }"
+              @click="activeTab = 'Табы'"
+          >
+            Табы
+          </p>
+          <p
+              class="admin__dialog_tabs-item"
+              :class="{ active: activeTab === 'Товары' }"
+              @click="activeTab = 'Товары'"
+          >
+            Товары
+          </p>
+        </div>
+        <div
+            class="admin__dialog_content"
+            v-if="activeTab === 'Главная'"
+        >
+          <h3 class="admin__dialog_title">Изменение товара</h3>
+          <form class="admin-panel__content_form-dialog" @submit.prevent="updateProduct">
+            <input
+                type="text"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productName"
+                placeholder="Введите имя товара"
+                :class="{ error: errors.productName }"
+            />
+            <textarea
+                class="basket__form_input admin-panel__content_textarea"
+                v-model="productDescription"
+                placeholder="Введите описание"
+                :class="{ error: errors.productDescription }"
+            ></textarea>
+            Категория
+            <select v-model="productCategory" :class="{ error: errors.productCategory }"
+                    class="basket__form_input admin-panel__content_select">
+              <option value="" disabled>Выберите категорию</option>
+              <option v-for="category in allCategories" :key="category.id" :value="category.id">
+                {{ category.name }}
+              </option>
+            </select>
+            <div class="admin-panel__content-checkbox">
+              <input
+                  type="checkbox"
+                  class="admin-panel__content-checkbox-input"
+                  v-model="productTop"
+                  placeholder="Топ товар"
+              />
+              Топ товар
+            </div>
+            <input
+                type="text"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productPrice"
+                placeholder="Введите цену"
+                :class="{ error: errors.productPrice }"
+            />
+            <button
+                class="main_btn"
+                type="submit"
+                :disabled="isLoading"
+                :class="{ 'loading': isLoading }"
+                :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+            >
+              <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+              <span v-else>Изменить товар</span>
+            </button>
+          </form>
+        </div>
+        <div
+            class="admin__dialog_content"
+            v-if="activeTab === 'Картинки'"
+        >
+          <h3 class="admin__dialog_title">Картинки</h3>
+          <form class="admin-panel__content_form-dialog" v-if="!isEditingProductPhoto"
+                @submit.prevent="addProductPhoto">
+            <div class="input__wrapper">
+              <input ref="productFile" type="file" id="input__file" class="input input__file"
+                     @change="handleFileChangeProductPhoto" accept="image/*" multiple>
+              <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview" class="input__file-icon" :src="productPreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                <span class="input__file-button-text">Выберите картинку</span>
+              </label>
+            </div>
+            <input
+                type="number"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder"
+                placeholder="Введите порядок фото"
+            />
+            <div class="input__wrapper" v-if="productPhoto">
+              <input ref="productFile1" type="file" id="input__file" class="input input__file"
+                     @change="handleFileChangeProductPhoto1" accept="image/*" multiple>
+              <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview1" class="input__file-icon" :src="productPreview1" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                <span class="input__file-button-text">Выберите картинку</span>
+              </label>
+            </div>
+            <input
+                v-if="productPhoto"
+                type="number"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder1"
+                placeholder="Введите порядок фото"
+            />
+            <div class="input__wrapper" v-if="productPhoto1">
+              <input ref="productFile2" type="file" id="input__file" class="input input__file"
+                     @change="handleFileChangeProductPhoto2" accept="image/*" multiple>
+              <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview2" class="input__file-icon" :src="productPreview2" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                <span class="input__file-button-text">Выберите картинку</span>
+              </label>
+            </div>
+            <input
+                v-if="productPhoto1"
+                type="number"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder2"
+                placeholder="Введите порядок фото"
+            />
+            <div class="input__wrapper" v-if="productPhoto2">
+              <input ref="productFile3" type="file" id="input__file" class="input input__file"
+                     @change="handleFileChangeProductPhoto3" accept="image/*" multiple>
+              <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview3" class="input__file-icon" :src="productPreview3" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                <span class="input__file-button-text">Выберите картинку</span>
+              </label>
+            </div>
+            <input
+                v-if="productPhoto2"
+                type="number"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder3"
+                placeholder="Введите порядок фото"
+            />
+            <div class="input__wrapper" v-if="productPhoto3">
+              <input ref="productFile4" type="file" id="input__file" class="input input__file"
+                     @change="handleFileChangeProductPhoto4" accept="image/*" multiple>
+              <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview4" class="input__file-icon" :src="productPreview4" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                <span class="input__file-button-text">Выберите картинку</span>
+              </label>
+            </div>
+            <input
+                v-if="productPhoto3"
+                type="number"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder4"
+                placeholder="Введите порядок фото"
+            />
+            <div class="input__wrapper" v-if="productPhoto4">
+              <input ref="productFile5" type="file" id="input__file" class="input input__file"
+                     @change="handleFileChangeProductPhoto5" accept="image/*" multiple>
+              <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview5" class="input__file-icon" :src="productPreview5" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                <span class="input__file-button-text">Выберите картинку</span>
+              </label>
+            </div>
+            <input
+                v-if="productPhoto4"
+                type="number"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder5"
+                placeholder="Введите порядок фото"
+            />
+            <div class="input__wrapper" v-if="productPhoto5">
+              <input ref="productFile6" type="file" id="input__file" class="input input__file"
+                     @change="handleFileChangeProductPhoto6" accept="image/*" multiple>
+              <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview6" class="input__file-icon" :src="productPreview6" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                <span class="input__file-button-text">Выберите картинку</span>
+              </label>
+            </div>
+            <input
+                v-if="productPhoto5"
+                type="number"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder6"
+                placeholder="Введите порядок фото"
+            />
+            <div class="input__wrapper" v-if="productPhoto6">
+              <input ref="productFile7" type="file" id="input__file" class="input input__file"
+                     @change="handleFileChangeProductPhoto7" accept="image/*" multiple>
+              <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview7" class="input__file-icon" :src="productPreview7" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                <span class="input__file-button-text">Выберите картинку</span>
+              </label>
+            </div>
+            <input
+                v-if="productPhoto6"
+                type="number"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder7"
+                placeholder="Введите порядок фото"
+            />
+            <div class="input__wrapper" v-if="productPhoto7">
+              <input ref="productFile8" type="file" id="input__file" class="input input__file"
+                     @change="handleFileChangeProductPhoto8" accept="image/*" multiple>
+              <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview8" class="input__file-icon" :src="productPreview8" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                <span class="input__file-button-text">Выберите картинку</span>
+              </label>
+            </div>
+            <input
+                v-if="productPhoto7"
+                type="number"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder8"
+                placeholder="Введите порядок фото"
+            />
+            <div class="input__wrapper" v-if="productPhoto8">
+              <input ref="productFile9" type="file" id="input__file" class="input input__file"
+                     @change="handleFileChangeProductPhoto9" accept="image/*" multiple>
+              <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview9" class="input__file-icon" :src="productPreview9" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                <span class="input__file-button-text">Выберите картинку</span>
+              </label>
+            </div>
+            <input
+                v-if="productPhoto8"
+                type="number"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder9"
+                placeholder="Введите порядок фото"
+            />
+            <button
+                class="main_btn"
+                type="submit"
+                :disabled="isLoading"
+                :class="{ 'loading': isLoading }"
+                :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+            >
+              <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+              <span v-else>Добавить</span>
+            </button>
+          </form>
+          <form class="admin-panel__content_form-dialog" v-if="isEditingProductPhoto"
+                @submit.prevent="updateProductPhoto">
+            <div class="admin__dialog_grid">
+              <div class="input__wrapper">
+                <input ref="productFile" type="file" id="input__file" class="input input__file"
+                       @change="handleFileChangeProductPhoto" accept="image/*" multiple>
+                <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="productPreview" class="input__file-icon" :src="productPreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+                  <span class="input__file-button-text">Выберите картинку</span>
+                </label>
+              </div>
+              <input
+                  style="height: 100%"
+                  type="number"
+                  class="basket__form_input admin-panel__content_input"
+                  v-model="productOrder"
+                  placeholder="Введите порядок фото"
+              />
+            </div>
+            <div class="admin__dialog_grid">
+              <button
+                  class="main_btn"
+                  type="submit"
+                  :disabled="isLoading"
+                  :class="{ 'loading': isLoading }"
+                  :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+              >
+                <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+                <span v-else>Изменить</span>
+              </button>
+              <button class="main_btn" @click="resetProductPhoto" v-if="!isLoading">Отмена</button>
+            </div>
+          </form>
+          <table>
+            <thead>
+            <tr>
+              <th>Фото</th>
+              <th>Порядок</th>
+              <th style="width: 100px">Изменить</th>
+              <th style="width: 100px">Удалить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="product in oneProd.photos" :key="product.id">
+              <td>
+                <img v-if="product.photo" :src="product.photo" alt="Фото" width="100"/>
+              </td>
+              <td>{{ product.order }}</td>
+              <td>
+                <button @click="editProductPhoto(product)" class="admin-panel__content_btn">Изменить</button>
+              </td>
+              <td>
+                <button @click="deleteProductPhoto(product.id)" class="admin-panel__content_btn">Удалить</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+            class="admin__dialog_content"
+            v-if="activeTab === 'Параметры'"
+        >
+          <h3 class="admin__dialog_title">Параметры</h3>
+          <form class="admin-panel__content_form-dialog" @submit.prevent="addProductOption">
+            <div class="admin__dialog_grid">
+              <!--    <input-->
+              <!--        v-model="searchQuery"-->
+              <!--        @input="handleSearch"-->
+              <!--        class="basket__form_input admin-panel__content_input"-->
+              <!--        type="text"-->
+              <!--        placeholder="Введите запрос для поиска"-->
+              <!--    />-->
+              <!--    <select v-model="productOption" class="basket__form_input admin-panel__content_select">-->
+              <!--      <option value="" disabled>Выберите категорию</option>-->
+              <!--      <option v-for="option in options" :key="option.id" :value="option.id">-->
+              <!--        {{ option.name }}-->
+              <!--      </option>-->
+              <!--    </select>-->
+              <input list="test" placeholder="Введите запрос для поиска"
+                     class="basket__form_input admin-panel__content_input"
+                     v-model="productOption" style="height: 100%">
+              <datalist id="test">
+                <option v-for="option in options" :key="option.id" :value="option.name">
+                </option>
+              </datalist>
+              <button
+                  class="main_btn"
+                  type="submit"
+                  :disabled="isLoading"
+                  :class="{ 'loading': isLoading }"
+                  :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+              >
+                <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+                <span v-else>Добавить</span>
+              </button>
+            </div>
+          </form>
+          <div
+              class="admin-panel__content_info_item"
+              v-for="option in oneProd.options"
+              :key="option.id"
+          >
+            <div class="admin-panel__content_info_content">
+              <p>{{ option.name }}</p>
+              <div></div>
+              <button @click="deleteProductOptionFull(option.id)" class="admin-panel__content_btn">Отвязать</button>
+            </div>
+            <table>
+              <thead>
+              <tr>
+                <th>Параметр</th>
+                <th>Цена</th>
+                <th>Фото</th>
+                <th style="width: 100px">Отвязка</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr v-for="value in option.values" :key="value.id">
+                <td>{{ value.value }}</td>
+                <td>{{ value.price }}</td>
+                <td>
+                  <img v-if="value.image" :src="value.image" alt="Фото" width="100"/>
+                </td>
+                <td>
+                  <button @click="deleteProductOption(value.id)" class="admin-panel__content_btn">Отвязать</button>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+            <form class="admin-panel__content_form" @submit.prevent="createProductOptionValue">
+              <select
+                  v-model="productOptionValue"
+                  class="basket__form_input admin-panel__content_select"
+                  @focus="fetchValueByOption(option.id)"
+              >
+                <option value="" disabled>Выберите параметр</option>
+                <option v-for="value in valueByOption" :key="value.id" :value="value.id">
+                  {{ value.value }}
+                </option>
+              </select>
+              <button
+                  class="main_btn"
+                  type="submit"
+                  :disabled="isLoading"
+                  :class="{ 'loading': isLoading }"
+                  :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+              >
+                <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+                <span v-else>Привязать</span>
+              </button>
+            </form>
+          </div>
+        </div>
+        <div
+            class="admin__dialog_content"
+            v-if="activeTab === 'Цена'"
+        >
+          <h3 class="admin__dialog_title">Кастомная цена</h3>
+          <form class="admin-panel__content_form-dialog">
+            <input
+                v-model="totalPrice"
+                class="basket__form_input admin-panel__content_input"
+                type="number"
+                placeholder="Цена"
+            />
+            <div v-for="option in oneProd.options" :key="option.id" class="option-block">
+              <label :for="`select-${option.id}`">{{ option.name }}</label>
+              <select
+                  :id="`select-${option.id}`"
+                  v-model="selectedValues[option.id]"
+                  class="basket__form_input admin-panel__content_select"
+              >
+                <option value="" disabled>Выберите значение</option>
+                <option
+                    v-for="value in option.values"
+                    :key="value.id"
+                    :value="value.id"
+                >
+                  {{ value.value }}
+                </option>
+              </select>
+            </div>
+            <button
+                class="main_btn"
+                @click="addProductPrice"
+                :disabled="isLoading"
+                :class="{ 'loading': isLoading }"
+                :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+            >
+              <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+              <span v-else>Добавить цену</span>
+            </button>
+          </form>
+          <div
+              class="admin-panel__content_info_item"
+              v-for="option in oneProd.option_prices"
+              :key="option.id"
+          >
+            <div class="admin-panel__content_info_content">
+              <p>{{ option.price }}</p>
+              <div></div>
+              <button @click="deleteProductPrice(option.id)" class="admin-panel__content_btn">Удалить</button>
+            </div>
+            <div>
+              <table>
+                <thead>
+                <tr>
+                  <th>Параметр</th>
+                  <th>Значение</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="(value, key) in option.options_details" :key="key">
+                  <td>{{ value.option }}</td>
+                  <td>{{ value.value }}</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div
+            class="admin__dialog_content"
+            v-if="activeTab === 'Табы'"
+        >
+          <h3 class="admin__dialog_title">Табы</h3>
+          <form
+              class="admin-panel__content_form-dialog"
+              v-if="!isEditingPropertie && oneProd.properties.length !== 6"
+              @submit.prevent="addProductPropertie"
+          >
+            <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
+              <option value="" disabled>Выберите категорию</option>
+              <option value='property'>
+                Характеристики
+              </option>
+              <option value='description'>
+                Описание
+              </option>
+              <option value='photo'>
+                Фото товара
+              </option>
+              <option value='instruction'>
+                Инструкции
+              </option>
+              <option value='recommendation'>
+                Рекомендации
+              </option>
+              <option value='guaranty'>
+                Гарантии
+              </option>
+            </select>
+            <div class="editor__dialog">
+              <EditorProd class="editor__dialog" @export-html="handleExportHtmlPropertie"/>
+            </div>
+            <button type="button" class="main_btn" @click="openDialog">Библиотека файлов</button>
+            <div v-if="selectedFiles[0]" class="admin-panel__content_grid">
+              <div
+                  class="admin-panel__content_grid-item"
+                  v-for="(file, index) in selectedFiles"
+                  :key="index"
+                  @click="resetFiles(index)"
+              >
+                {{ file.file_name }}
+              </div>
+            </div>
+            <button
+                class="main_btn"
+                type="submit"
+                :disabled="isLoading"
+                :class="{ 'loading': isLoading }"
+                :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+            >
+              <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+              <span v-else>Добавить</span>
+            </button>
+          </form>
+          <form
+              class="admin-panel__content_form-dialog" v-if="isEditingPropertie"
+              @submit.prevent="updateProductPropertie"
+          >
+            <select v-model="productPropertieTitle" class="basket__form_input admin-panel__content_select">
+              <option value="" disabled>Выберите категорию</option>
+              <option value='property'>
+                Характеристики
+              </option>
+              <option value='description'>
+                Описание
+              </option>
+              <option value='photo'>
+                Фото товара
+              </option>
+              <option value='instruction'>
+                Инструкции
+              </option>
+              <option value='recommendation'>
+                Рекомендации
+              </option>
+              <option value='guaranty'>
+                Гарантии
+              </option>
+            </select>
+            <div class="editor__dialog">
+              <EditorProd :initialHtml="productPropertieDescription" @export-html="handleExportHtmlPropertie"/>
+            </div>
+            <button type="button" class="main_btn" @click="openDialog">Библиотека файлов</button>
+            <div v-if="selectedFiles[0]" class="admin-panel__content_grid">
+              <div
+                  class="admin-panel__content_grid-item"
+                  v-for="(file, index) in selectedFiles"
+                  :key="index"
+                  @click="resetFiles(index)"
+              >
+                {{ file.file_name }}
+              </div>
+            </div>
+            <button
+                class="main_btn"
+                type="submit"
+                :disabled="isLoading"
+                :class="{ 'loading': isLoading }"
+                :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+            >
+              <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+              <span v-else>Изменить</span>
+            </button>
+            <button class="main_btn" @click="resetProductPropertie" v-if="!isLoading">Отмена</button>
+          </form>
+          <table>
+            <thead>
+            <tr>
+              <th>Название</th>
+<!--              <th>Контент</th>-->
+              <th style="width: 100px">Изменить</th>
+              <th style="width: 100px">Удалить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="propertie in oneProd?.properties" :key="propertie.id">
+              <td>{{ toggleTab(propertie.title) }}</td>
+<!--              <td>{{ propertie.html }}</td>-->
+              <td>
+                <button @click="editProductPropertie(propertie)" class="admin-panel__content_btn">Изменить</button>
+              </td>
+              <td>
+                <button @click="deleteProductPropertie(propertie.id)" class="admin-panel__content_btn">Удалить</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div
+            class="admin__dialog_content"
+            v-if="activeTab === 'Товары'"
+        >
+          <h3 class="admin__dialog_title">Сопутствующие товары</h3>
+          <form
+              class="admin-panel__content_form-dialog"
+              @submit.prevent="addProductProd"
+          >
+            <div class="admin__dialog_grid">
+              <select v-model="productProd" class="basket__form_input admin-panel__content_select"  style="height: 100%">
+                <option value="" disabled>Выберите товар</option>
+                <option v-for="prod in allProductsFull" :key="prod.id" :value="prod.id">
+                  {{ prod.name }}
+                </option>
+              </select>
+              <button
+                  class="main_btn"
+                  type="submit"
+                  :disabled="isLoading"
+                  :class="{ 'loading': isLoading }"
+                  :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+              >
+                <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+                <span v-else>Добавить товар</span>
+              </button>
+            </div>
+          </form>
+          <table>
+            <thead>
+            <tr>
+              <th>Название</th>
+              <th style="width: 100px">Удалить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="prod in oneProd.related_products" :key="prod.id">
+              <td>{{ prod.name }}</td>
+              <td>
+                <button @click="deleteProductProd(prod.id)" class="admin-panel__content_btn">Удалить</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
 </template>
 
 <style scoped lang="scss">
@@ -2015,6 +2008,7 @@ $x-big: 1829.98px;
   flex-direction: column;
   gap: 10px;
 }
+
 .pagination {
   display: flex;
   flex-wrap: wrap;
