@@ -1412,7 +1412,7 @@ const activeTab = ref("Главная");
               </label>
             </div>
             <input
-                type="number"
+                type="number" :min="0"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productOrder"
                 placeholder="Введите порядок фото"
@@ -1430,7 +1430,7 @@ const activeTab = ref("Главная");
             </div>
             <input
                 v-if="productPhoto"
-                type="number"
+                type="number" :min="0"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productOrder1"
                 placeholder="Введите порядок фото"
@@ -1448,7 +1448,7 @@ const activeTab = ref("Главная");
             </div>
             <input
                 v-if="productPhoto1"
-                type="number"
+                type="number" :min="0"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productOrder2"
                 placeholder="Введите порядок фото"
@@ -1466,7 +1466,7 @@ const activeTab = ref("Главная");
             </div>
             <input
                 v-if="productPhoto2"
-                type="number"
+                type="number" :min="0"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productOrder3"
                 placeholder="Введите порядок фото"
@@ -1484,7 +1484,7 @@ const activeTab = ref("Главная");
             </div>
             <input
                 v-if="productPhoto3"
-                type="number"
+                type="number" :min="0"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productOrder4"
                 placeholder="Введите порядок фото"
@@ -1502,7 +1502,7 @@ const activeTab = ref("Главная");
             </div>
             <input
                 v-if="productPhoto4"
-                type="number"
+                type="number" :min="0"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productOrder5"
                 placeholder="Введите порядок фото"
@@ -1520,7 +1520,7 @@ const activeTab = ref("Главная");
             </div>
             <input
                 v-if="productPhoto5"
-                type="number"
+                type="number" :min="0"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productOrder6"
                 placeholder="Введите порядок фото"
@@ -1538,7 +1538,7 @@ const activeTab = ref("Главная");
             </div>
             <input
                 v-if="productPhoto6"
-                type="number"
+                type="number" :min="0"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productOrder7"
                 placeholder="Введите порядок фото"
@@ -1556,7 +1556,7 @@ const activeTab = ref("Главная");
             </div>
             <input
                 v-if="productPhoto7"
-                type="number"
+                type="number" :min="0"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productOrder8"
                 placeholder="Введите порядок фото"
@@ -1574,7 +1574,7 @@ const activeTab = ref("Главная");
             </div>
             <input
                 v-if="productPhoto8"
-                type="number"
+                type="number" :min="0"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productOrder9"
                 placeholder="Введите порядок фото"
@@ -1606,7 +1606,7 @@ const activeTab = ref("Главная");
               </div>
               <input
                   style="height: 100%"
-                  type="number"
+                  type="number" :min="0"
                   class="basket__form_input admin-panel__content_input"
                   v-model="productOrder"
                   placeholder="Введите порядок фото"
@@ -1755,7 +1755,7 @@ const activeTab = ref("Главная");
             <input
                 v-model="totalPrice"
                 class="basket__form_input admin-panel__content_input"
-                type="number"
+                type="number" :min="0"
                 placeholder="Цена"
             />
             <div v-for="option in oneProd.options" :key="option.id" class="option-block">
@@ -1935,10 +1935,22 @@ const activeTab = ref("Главная");
               <td>{{ toggleTab(propertie.title) }}</td>
 <!--              <td>{{ propertie.html }}</td>-->
               <td>
-                <button @click="editProductPropertie(propertie)" class="admin-panel__content_btn">Изменить</button>
+                <button
+                    @click="editProductPropertie(propertie)"
+                    class="admin-panel__content_btn"
+                    :class="{ 'disabled-btn': isEditingPropertie }"
+                    :disabled="isEditingPropertie"
+                    :title="isEditingPropertie ? 'Отмените редактирование' : ''"
+                >
+                  Изменить
+                </button>
               </td>
               <td>
-                <button @click="deleteProductPropertie(propertie.id)" class="admin-panel__content_btn">Удалить</button>
+                <button @click="deleteProductPropertie(propertie.id)" class="admin-panel__content_btn"
+                        :class="{ 'disabled-btn': isEditingPropertie }"
+                        :disabled="isEditingPropertie"
+                        :title="isEditingPropertie ? 'Отмените редактирование' : ''"
+                >Удалить</button>
               </td>
             </tr>
             </tbody>

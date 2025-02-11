@@ -297,7 +297,7 @@ const resetSubBanners = () => {
           :class="{ error: errors.titleBanner }"
       />
       <input
-          type="number"
+          type="number" :min="0"
           class="basket__form_input admin-panel__content_input"
           v-model="numberBanner"
           placeholder="Введите порядок"
@@ -353,7 +353,7 @@ const resetSubBanners = () => {
           :class="{ error: errors.titleBanner }"
       />
       <input
-          type="number"
+          type="number" :min="0"
           class="basket__form_input admin-panel__content_input"
           v-model="numberBanner"
           placeholder="Введите порядок"
@@ -440,7 +440,7 @@ const resetSubBanners = () => {
           :class="{ error: errors.titleSlider }"
       />
       <input
-          type="number"
+          type="number" :min="0"
           class="basket__form_input admin-panel__content_input"
           v-model="numberSlider"
           placeholder="Введите порядок"
@@ -474,7 +474,7 @@ const resetSubBanners = () => {
           :class="{ error: errors.titleSlider }"
       />
       <input
-          type="number"
+          type="number" :min="0"
           class="basket__form_input admin-panel__content_input"
           v-model="numberSlider"
           placeholder="Введите порядок"

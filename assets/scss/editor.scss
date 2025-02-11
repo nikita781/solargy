@@ -73,8 +73,8 @@ $x-big: 1829.98px;
   .image-block {
     img {
       width: 100%;
-      max-width: 276px;
-      height: 276px;
+      max-width: 470px;
+      height: 470px;
       object-fit: cover;
       cursor: pointer;
     }
@@ -100,7 +100,7 @@ $x-big: 1829.98px;
     display: flex;
     flex-direction: column;
     gap: 15px;
-    max-width: 276px;
+    max-width: 470px;
     width: 100%;
   }
 }
@@ -123,4 +123,7 @@ $x-big: 1829.98px;
 
 .cell-editor {
   min-height: 50px;
+}
+.image-tool__caption, .image-gallery__caption {
+  display: none !important;
 }
