@@ -1921,7 +1921,7 @@ const activeTab = ref("Главная");
             </button>
             <button class="main_btn" @click="resetProductPropertie" v-if="!isLoading">Отмена</button>
           </form>
-          <table>
+          <table v-if="!isEditingPropertie">
             <thead>
             <tr>
               <th>Название</th>
