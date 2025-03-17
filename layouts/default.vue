@@ -11,6 +11,11 @@ const pageData = useState('pageData');
       </div>
       <UIFooter :style="{ display: pageData ? 'none' : 'flex' }"/>
     </div>
+    <noscript>
+      <div>
+        <img src="https://mc.yandex.ru/watch/100325209" style="position:absolute; left:-9999px;" alt="" />
+      </div>
+    </noscript>
   </div>
 </template>
 
