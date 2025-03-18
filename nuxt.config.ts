@@ -18,6 +18,7 @@ export default defineNuxtConfig({
         { name: 'image', content: '/main_logo.png' },
         { charset: 'utf-8' },
         { name: 'robots', content: 'index, follow' },
+        { name: 'yandex-verification', content: '1d8d495fcc235e22' },
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/main_logo.png' },
