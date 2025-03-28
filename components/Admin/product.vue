@@ -76,6 +76,17 @@ const productFile9 = ref(null);
 const productPreview9 = ref(null);
 const productOrder9 = ref(null);
 
+const productVideo = ref('');
+const productVideo1 = ref('');
+const productVideo2 = ref('');
+const productVideo3 = ref('');
+const productVideo4 = ref('');
+const productOrderVideo = ref(null);
+const productOrderVideo1 = ref(null);
+const productOrderVideo2 = ref(null);
+const productOrderVideo3 = ref(null);
+const productOrderVideo4 = ref(null);
+
 const productOption = ref(null);
 const valueByOption = ref([]);
 const idByOption = ref('');
@@ -90,6 +101,7 @@ const productTextPropertie = ref(null);
 const isEditingPropertie = ref(false);
 const currentPropertieId = ref(null)
 const isEditingProductPhoto = ref(false)
+const isEditingProductVideo = ref(false)
 const currentProductPhotoId = ref(null)
 const allProducts = ref([]);
 const allProductsFull = ref([]);
@@ -527,6 +539,62 @@ const addProductPhoto = async () => {
     isLoading.value = false;
   }
 }
+const addProductVideo = async () => {
+  isLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('photos[0][video]', productVideo.value);
+    if (productOrderVideo.value) {
+      formData.append('photos[0][order]', productOrderVideo.value);
+    }
+    if (productVideo1.value) {
+      formData.append('photos[1][video]', productVideo1.value);
+      if (productOrderVideo1.value) {
+        formData.append('photos[1][order]', productOrderVideo1.value);
+      }
+    }
+    if (productVideo2.value) {
+      formData.append('photos[2][video]', productVideo2.value);
+      if (productOrderVideo2.value) {
+        formData.append('photos[2][order]', productOrderVideo2.value);
+      }
+    }
+    if (productVideo3.value) {
+      formData.append('photos[3][video]', productVideo3.value);
+      if (productOrderVideo3.value) {
+        formData.append('photos[3][order]', productOrderVideo3.value);
+      }
+    }
+    if (productVideo4.value) {
+      formData.append('photos[4][video]', productVideo4.value);
+      if (productOrderVideo4.value) {
+        formData.append('photos[4][order]', productOrderVideo4.value);
+      }
+    }
+
+    await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
+      headers: {
+
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchProductById(currentProductId.value);
+    productVideo.value = '';
+    productOrderVideo.value = null;
+    productVideo1.value = '';
+    productOrderVideo1.value = null;
+    productVideo2.value = '';
+    productOrderVideo2.value = null;
+    productVideo3.value = '';
+    productOrderVideo3.value = null;
+    productVideo4.value = '';
+    productOrderVideo4.value = null;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+  }
+}
 const updateProductPhoto = async () => {
   isLoading.value = true;
   try {
@@ -565,11 +633,51 @@ const resetProductPhoto = async () => {
   productPreview.value = null
 }
 const editProductPhoto = async (photo) => {
-  console.log(productPhoto.value)
+  await resetProductVideo();
   currentProductPhotoId.value = photo.id;
+  isEditingProductVideo.value = false;
   isEditingProductPhoto.value = true;
   productOrder.value = photo.order;
   productPreview.value = photo.photo;
+}
+const updateProductVideo = async () => {
+  isLoading.value = true;
+  try {
+    const formData = new FormData();
+    formData.append('photos[0][id]', currentProductPhotoId.value);
+    if (productOrderVideo.value) {
+      formData.append('photos[0][order]', productOrderVideo.value);
+    }
+    if (productVideo.value) {
+      formData.append('photos[0][video]', productVideo.value);
+    }
+
+    await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
+      headers: {
+
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchProductById(currentProductId.value);
+    await resetProductVideo();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+const resetProductVideo = async () => {
+  isEditingProductVideo.value = false;
+  productVideo.value = '';
+  productOrderVideo.value = null;
+}
+const editProductVideo = async (video) => {
+  await resetProductPhoto();
+  currentProductPhotoId.value = video.id;
+  isEditingProductPhoto.value = false;
+  isEditingProductVideo.value = true;
+  productOrderVideo.value = video.order;
+  productVideo.value = video.photo;
 }
 
 function getIdByName(name) {
@@ -1397,199 +1505,291 @@ const activeTab = ref("Главная");
             class="admin__dialog_content"
             v-if="activeTab === 'Картинки'"
         >
-          <h3 class="admin__dialog_title">Картинки</h3>
-          <form class="admin-panel__content_form-dialog" v-if="!isEditingProductPhoto"
-                @submit.prevent="addProductPhoto">
-            <div class="input__wrapper">
-              <input ref="productFile" type="file" id="input__file" class="input input__file"
-                     @change="handleFileChangeProductPhoto" accept="image/*" multiple>
-              <label for="input__file" class="input__file-button">
+          <h3 class="admin__dialog_title">Картинки / Видео</h3>
+          <div class="admin__dialog_grid" v-if="!isEditingProductPhoto && !isEditingProductVideo">
+            <div>
+              <form class="admin-panel__content_form-dialog"
+                    @submit.prevent="addProductPhoto">
+                <div class="input__wrapper">
+                  <input ref="productFile" type="file" id="input__file" class="input input__file"
+                         @change="handleFileChangeProductPhoto" accept="image/*" multiple>
+                  <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreview" class="input__file-icon" :src="productPreview" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
-                <span class="input__file-button-text">Выберите картинку</span>
-              </label>
-            </div>
-            <input
-                type="number" :min="0"
-                class="basket__form_input admin-panel__content_input"
-                v-model="productOrder"
-                placeholder="Введите порядок фото"
-            />
-            <div class="input__wrapper" v-if="productPhoto">
-              <input ref="productFile1" type="file" id="input__file" class="input input__file"
-                     @change="handleFileChangeProductPhoto1" accept="image/*" multiple>
-              <label for="input__file" class="input__file-button">
+                    <span class="input__file-button-text">Выберите картинку</span>
+                  </label>
+                </div>
+                <input
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrder"
+                    placeholder="Введите порядок фото"
+                />
+                <div class="input__wrapper" v-if="productPhoto">
+                  <input ref="productFile1" type="file" id="input__file" class="input input__file"
+                         @change="handleFileChangeProductPhoto1" accept="image/*" multiple>
+                  <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreview1" class="input__file-icon" :src="productPreview1" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
-                <span class="input__file-button-text">Выберите картинку</span>
-              </label>
-            </div>
-            <input
-                v-if="productPhoto"
-                type="number" :min="0"
-                class="basket__form_input admin-panel__content_input"
-                v-model="productOrder1"
-                placeholder="Введите порядок фото"
-            />
-            <div class="input__wrapper" v-if="productPhoto1">
-              <input ref="productFile2" type="file" id="input__file" class="input input__file"
-                     @change="handleFileChangeProductPhoto2" accept="image/*" multiple>
-              <label for="input__file" class="input__file-button">
+                    <span class="input__file-button-text">Выберите картинку</span>
+                  </label>
+                </div>
+                <input
+                    v-if="productPhoto"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrder1"
+                    placeholder="Введите порядок фото"
+                />
+                <div class="input__wrapper" v-if="productPhoto1">
+                  <input ref="productFile2" type="file" id="input__file" class="input input__file"
+                         @change="handleFileChangeProductPhoto2" accept="image/*" multiple>
+                  <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreview2" class="input__file-icon" :src="productPreview2" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
-                <span class="input__file-button-text">Выберите картинку</span>
-              </label>
-            </div>
-            <input
-                v-if="productPhoto1"
-                type="number" :min="0"
-                class="basket__form_input admin-panel__content_input"
-                v-model="productOrder2"
-                placeholder="Введите порядок фото"
-            />
-            <div class="input__wrapper" v-if="productPhoto2">
-              <input ref="productFile3" type="file" id="input__file" class="input input__file"
-                     @change="handleFileChangeProductPhoto3" accept="image/*" multiple>
-              <label for="input__file" class="input__file-button">
+                    <span class="input__file-button-text">Выберите картинку</span>
+                  </label>
+                </div>
+                <input
+                    v-if="productPhoto1"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrder2"
+                    placeholder="Введите порядок фото"
+                />
+                <div class="input__wrapper" v-if="productPhoto2">
+                  <input ref="productFile3" type="file" id="input__file" class="input input__file"
+                         @change="handleFileChangeProductPhoto3" accept="image/*" multiple>
+                  <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreview3" class="input__file-icon" :src="productPreview3" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
-                <span class="input__file-button-text">Выберите картинку</span>
-              </label>
-            </div>
-            <input
-                v-if="productPhoto2"
-                type="number" :min="0"
-                class="basket__form_input admin-panel__content_input"
-                v-model="productOrder3"
-                placeholder="Введите порядок фото"
-            />
-            <div class="input__wrapper" v-if="productPhoto3">
-              <input ref="productFile4" type="file" id="input__file" class="input input__file"
-                     @change="handleFileChangeProductPhoto4" accept="image/*" multiple>
-              <label for="input__file" class="input__file-button">
+                    <span class="input__file-button-text">Выберите картинку</span>
+                  </label>
+                </div>
+                <input
+                    v-if="productPhoto2"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrder3"
+                    placeholder="Введите порядок фото"
+                />
+                <div class="input__wrapper" v-if="productPhoto3">
+                  <input ref="productFile4" type="file" id="input__file" class="input input__file"
+                         @change="handleFileChangeProductPhoto4" accept="image/*" multiple>
+                  <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreview4" class="input__file-icon" :src="productPreview4" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
-                <span class="input__file-button-text">Выберите картинку</span>
-              </label>
-            </div>
-            <input
-                v-if="productPhoto3"
-                type="number" :min="0"
-                class="basket__form_input admin-panel__content_input"
-                v-model="productOrder4"
-                placeholder="Введите порядок фото"
-            />
-            <div class="input__wrapper" v-if="productPhoto4">
-              <input ref="productFile5" type="file" id="input__file" class="input input__file"
-                     @change="handleFileChangeProductPhoto5" accept="image/*" multiple>
-              <label for="input__file" class="input__file-button">
+                    <span class="input__file-button-text">Выберите картинку</span>
+                  </label>
+                </div>
+                <input
+                    v-if="productPhoto3"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrder4"
+                    placeholder="Введите порядок фото"
+                />
+                <div class="input__wrapper" v-if="productPhoto4">
+                  <input ref="productFile5" type="file" id="input__file" class="input input__file"
+                         @change="handleFileChangeProductPhoto5" accept="image/*" multiple>
+                  <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreview5" class="input__file-icon" :src="productPreview5" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
-                <span class="input__file-button-text">Выберите картинку</span>
-              </label>
-            </div>
-            <input
-                v-if="productPhoto4"
-                type="number" :min="0"
-                class="basket__form_input admin-panel__content_input"
-                v-model="productOrder5"
-                placeholder="Введите порядок фото"
-            />
-            <div class="input__wrapper" v-if="productPhoto5">
-              <input ref="productFile6" type="file" id="input__file" class="input input__file"
-                     @change="handleFileChangeProductPhoto6" accept="image/*" multiple>
-              <label for="input__file" class="input__file-button">
+                    <span class="input__file-button-text">Выберите картинку</span>
+                  </label>
+                </div>
+                <input
+                    v-if="productPhoto4"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrder5"
+                    placeholder="Введите порядок фото"
+                />
+                <div class="input__wrapper" v-if="productPhoto5">
+                  <input ref="productFile6" type="file" id="input__file" class="input input__file"
+                         @change="handleFileChangeProductPhoto6" accept="image/*" multiple>
+                  <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreview6" class="input__file-icon" :src="productPreview6" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
-                <span class="input__file-button-text">Выберите картинку</span>
-              </label>
-            </div>
-            <input
-                v-if="productPhoto5"
-                type="number" :min="0"
-                class="basket__form_input admin-panel__content_input"
-                v-model="productOrder6"
-                placeholder="Введите порядок фото"
-            />
-            <div class="input__wrapper" v-if="productPhoto6">
-              <input ref="productFile7" type="file" id="input__file" class="input input__file"
-                     @change="handleFileChangeProductPhoto7" accept="image/*" multiple>
-              <label for="input__file" class="input__file-button">
+                    <span class="input__file-button-text">Выберите картинку</span>
+                  </label>
+                </div>
+                <input
+                    v-if="productPhoto5"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrder6"
+                    placeholder="Введите порядок фото"
+                />
+                <div class="input__wrapper" v-if="productPhoto6">
+                  <input ref="productFile7" type="file" id="input__file" class="input input__file"
+                         @change="handleFileChangeProductPhoto7" accept="image/*" multiple>
+                  <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreview7" class="input__file-icon" :src="productPreview7" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
-                <span class="input__file-button-text">Выберите картинку</span>
-              </label>
-            </div>
-            <input
-                v-if="productPhoto6"
-                type="number" :min="0"
-                class="basket__form_input admin-panel__content_input"
-                v-model="productOrder7"
-                placeholder="Введите порядок фото"
-            />
-            <div class="input__wrapper" v-if="productPhoto7">
-              <input ref="productFile8" type="file" id="input__file" class="input input__file"
-                     @change="handleFileChangeProductPhoto8" accept="image/*" multiple>
-              <label for="input__file" class="input__file-button">
+                    <span class="input__file-button-text">Выберите картинку</span>
+                  </label>
+                </div>
+                <input
+                    v-if="productPhoto6"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrder7"
+                    placeholder="Введите порядок фото"
+                />
+                <div class="input__wrapper" v-if="productPhoto7">
+                  <input ref="productFile8" type="file" id="input__file" class="input input__file"
+                         @change="handleFileChangeProductPhoto8" accept="image/*" multiple>
+                  <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreview8" class="input__file-icon" :src="productPreview8" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
-                <span class="input__file-button-text">Выберите картинку</span>
-              </label>
-            </div>
-            <input
-                v-if="productPhoto7"
-                type="number" :min="0"
-                class="basket__form_input admin-panel__content_input"
-                v-model="productOrder8"
-                placeholder="Введите порядок фото"
-            />
-            <div class="input__wrapper" v-if="productPhoto8">
-              <input ref="productFile9" type="file" id="input__file" class="input input__file"
-                     @change="handleFileChangeProductPhoto9" accept="image/*" multiple>
-              <label for="input__file" class="input__file-button">
+                    <span class="input__file-button-text">Выберите картинку</span>
+                  </label>
+                </div>
+                <input
+                    v-if="productPhoto7"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrder8"
+                    placeholder="Введите порядок фото"
+                />
+                <div class="input__wrapper" v-if="productPhoto8">
+                  <input ref="productFile9" type="file" id="input__file" class="input input__file"
+                         @change="handleFileChangeProductPhoto9" accept="image/*" multiple>
+                  <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="productPreview9" class="input__file-icon" :src="productPreview9" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
-                <span class="input__file-button-text">Выберите картинку</span>
-              </label>
+                    <span class="input__file-button-text">Выберите картинку</span>
+                  </label>
+                </div>
+                <input
+                    v-if="productPhoto8"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrder9"
+                    placeholder="Введите порядок фото"
+                />
+                <button
+                    class="main_btn"
+                    type="submit"
+                    :disabled="isLoading"
+                    :class="{ 'loading': isLoading }"
+                    :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+                >
+                  <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+                  <span v-else>Добавить</span>
+                </button>
+              </form>
             </div>
-            <input
-                v-if="productPhoto8"
-                type="number" :min="0"
-                class="basket__form_input admin-panel__content_input"
-                v-model="productOrder9"
-                placeholder="Введите порядок фото"
-            />
-            <button
-                class="main_btn"
-                type="submit"
-                :disabled="isLoading"
-                :class="{ 'loading': isLoading }"
-                :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-            >
-              <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-              <span v-else>Добавить</span>
-            </button>
-          </form>
+            <div>
+              <form class="admin-panel__content_form-dialog"
+                    @submit.prevent="addProductVideo">
+                <input
+                    style="height: 58px;"
+                    type="text"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productVideo"
+                    placeholder="Введите ссылку на VK video"
+                />
+                <input
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrderVideo"
+                    placeholder="Введите порядок видео"
+                />
+                <input
+                    v-if="productVideo"
+                    style="height: 58px;"
+                    type="text"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productVideo1"
+                    placeholder="Введите ссылку на VK video"
+                />
+                <input
+                    v-if="productVideo"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrderVideo1"
+                    placeholder="Введите порядок видео"
+                />
+                <input
+                    v-if="productVideo1"
+                    style="height: 58px;"
+                    type="text"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productVideo2"
+                    placeholder="Введите ссылку на VK video"
+                />
+                <input
+                    v-if="productVideo1"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrderVideo2"
+                    placeholder="Введите порядок видео"
+                />
+                <input
+                    v-if="productVideo2"
+                    style="height: 58px;"
+                    type="text"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productVideo3"
+                    placeholder="Введите ссылку на VK video"
+                />
+                <input
+                    v-if="productVideo2"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrderVideo3"
+                    placeholder="Введите порядок видео"
+                />
+                <input
+                    v-if="productVideo3"
+                    style="height: 58px;"
+                    type="text"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productVideo4"
+                    placeholder="Введите ссылку на VK video"
+                />
+                <input
+                    v-if="productVideo3"
+                    type="number" :min="0"
+                    class="basket__form_input admin-panel__content_input"
+                    v-model="productOrderVideo4"
+                    placeholder="Введите порядок видео"
+                />
+                <button
+                    class="main_btn"
+                    type="submit"
+                    :disabled="isLoading"
+                    :class="{ 'loading': isLoading }"
+                    :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+                >
+                  <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+                  <span v-else>Добавить</span>
+                </button>
+              </form>
+            </div>
+          </div>
           <form class="admin-panel__content_form-dialog" v-if="isEditingProductPhoto"
                 @submit.prevent="updateProductPhoto">
             <div class="admin__dialog_grid">
@@ -1626,6 +1826,36 @@ const activeTab = ref("Главная");
               <button class="main_btn" @click="resetProductPhoto" v-if="!isLoading">Отмена</button>
             </div>
           </form>
+          <form class="admin-panel__content_form-dialog" v-if="isEditingProductVideo"
+                @submit.prevent="updateProductVideo">
+            <div class="admin__dialog_grid">
+              <input
+                  type="text"
+                  class="basket__form_input admin-panel__content_input"
+                  v-model="productVideo"
+                  placeholder="Введите ссылку на VK video"
+              />
+              <input
+                  type="number" :min="0"
+                  class="basket__form_input admin-panel__content_input"
+                  v-model="productOrderVideo"
+                  placeholder="Введите порядок видео"
+              />
+            </div>
+            <div class="admin__dialog_grid">
+              <button
+                  class="main_btn"
+                  type="submit"
+                  :disabled="isLoading"
+                  :class="{ 'loading': isLoading }"
+                  :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+              >
+                <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+                <span v-else>Изменить</span>
+              </button>
+              <button class="main_btn" @click="resetProductVideo" v-if="!isLoading">Отмена</button>
+            </div>
+          </form>
           <table>
             <thead>
             <tr>
@@ -1638,11 +1868,13 @@ const activeTab = ref("Главная");
             <tbody>
             <tr v-for="product in oneProd.photos" :key="product.id">
               <td>
-                <img v-if="product.photo" :src="product.photo" alt="Фото" width="100"/>
+                <img v-if="product.photo && product.type !== 'video'" :src="product.photo" alt="Фото" width="100"/>
+                <p v-if="product.photo && product.type === 'video'">Видео</p>
               </td>
               <td>{{ product.order }}</td>
               <td>
-                <button @click="editProductPhoto(product)" class="admin-panel__content_btn">Изменить</button>
+                <button v-if="product.photo && product.type !== 'video'" @click="editProductPhoto(product)" class="admin-panel__content_btn">Изменить</button>
+                <button v-if="product.photo && product.type === 'video'" @click="editProductVideo(product)" class="admin-panel__content_btn">Изменить</button>
               </td>
               <td>
                 <button @click="deleteProductPhoto(product.id)" class="admin-panel__content_btn">Удалить</button>

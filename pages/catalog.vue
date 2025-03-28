@@ -189,6 +189,14 @@ onMounted(() => {
   fetchTabs();
   fetchProducts();
 });
+
+const findImage = (photos) => {
+  if (photos?.length) {
+    const image = photos.find((item) => item.type === "image" || item.type === null);
+    return image ? image.photo : "/S.png";
+  }
+  return "/S.png";
+};
 </script>
 
 <template>
@@ -218,7 +226,7 @@ onMounted(() => {
           >
             <NuxtImg format="webp" preload
                 class="best-product__item_img"
-                :src="product.photos[0]?.photo"
+                :src="findImage(product.photos)"
                 alt="Product Image"
             />
           </NuxtLink>

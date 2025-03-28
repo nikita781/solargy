@@ -320,7 +320,9 @@ watch(() => route.fullPath, async () => {
   await fetchCategory();
   await fetchProducts();
   imgs.value = [];
-  imgs.value = product.value.photos.map(photo => photo.photo);
+  imgs.value = (product.value?.photos || [])
+      .filter(item => item.type !== 'video')
+      .map(item => item.photo);
   selectedSlide.value = product.value?.photos[0];
   selectedOptions.value = {};
   product.value.options.forEach((option) => {
@@ -358,7 +360,9 @@ onMounted(async () => {
   await fetchCategory();
   await fetchProducts();
   imgs.value = [];
-  imgs.value = product.value.photos.map(photo => photo.photo);
+  imgs.value = (product.value?.photos || [])
+      .filter(item => item.type !== 'video')
+      .map(item => item.photo);
   selectedSlide.value = product.value?.photos[0];
   selectedOptions.value = {};
   product.value.options.forEach((option) => {
@@ -374,10 +378,30 @@ onMounted(async () => {
   });
 });
 
+const photosNoVideo = computed(() => {
+  // Если product.value или product.value.photos ещё не доступны,
+  // подставляем пустой массив, иначе фильтруем
+  return (product.value?.photos || []).filter(item => item.type !== 'video');
+});
+
+watch(() => product.value, () => {
+  // Обновляем imgs
+  imgs.value = photosNoVideo.value.map(photo => photo.photo);
+}, { immediate: true });
+
 const indexRef = ref(0);
 const selectSlide = (slide, index) => {
   selectedSlide.value = slide;
-  indexRef.value = index;
+  // Если это фото (image), то найдём индекс в photosNoVideo
+    // Смотрим, где он лежит в «безвидео» массивах
+    const idx = photosNoVideo.value.findIndex(item => item.id === slide.id);
+    if (idx !== -1) {
+      indexRef.value = idx;
+    }
+
+    // Если хотим сразу открыть лайтбокс:
+    // visibleRef.value = true;
+    // но если у вас логика открытия другая — оставьте как есть.
 };
 
 const totalPrice = computed(() => {
@@ -475,7 +499,7 @@ const totalPrice = computed(() => {
 });
 
 const visibleRef = ref(false);
-const showImg = (index) => {
+const showImg = (idx) => {
   visibleRef.value = true;
 };
 const onHide = () => (visibleRef.value = false);
@@ -589,6 +613,20 @@ const handleImageClickHtml = (event) => {
     }
   }
 };
+
+function getVkEmbedLink(url) {
+  // Пытаемся найти в ссылке шаблон 'video-<oid>_<id>'
+  const match = url.match(/video\-([\-0-9]+)\_([0-9]+)/);
+  if (!match) {
+    // Если не нашли, возвращаем исходную ссылку или подставляем fallback
+    return url;
+  }
+  // match[1] = -224743475, match[2] = 456239218
+  const oid = match[1];
+  const id = match[2];
+  // Собираем формат, который нужен для iframe
+  return `https://vkvideo.ru/video_ext.php?oid=-${oid}&id=${id}&hd=1`;
+}
 </script>
 
 <template>
@@ -619,10 +657,24 @@ const handleImageClickHtml = (event) => {
                 >
                   <div
                       class="swiper__slide"
-                      :style="{ 'background-image': `url(${slide.photo})` }"
                       @click="selectSlide(slide, index)"
                       :class="{ active: slide.id === selectedSlide.id }"
-                  ></div>
+                  >
+                    <!-- Если это изображение -->
+                    <template v-if="slide.type === 'image' || slide.type === null">
+                      <div
+                          class="swiper__slide-img"
+                          :style="{ backgroundImage: `url(${slide.photo})` }"
+                      ></div>
+                    </template>
+
+                    <!-- Если это видео -->
+                    <template v-else-if="slide.type === 'video'">
+                      <!-- Тут ставьте превью, которое хотите:
+                           либо своя картинка, либо первый кадр, если есть ссылка -->
+                      <img src="/play.png" alt="Video preview" class="swiper__slide-video" />
+                    </template>
+                  </div>
                 </SwiperSlide>
               </Swiper>
             </client-only>
@@ -631,8 +683,37 @@ const handleImageClickHtml = (event) => {
             </div>
           </div>
           <div class="card__main_img" v-if="selectedSlide">
-            <NuxtImg format="webp" preload class="card__main_img-pict" :src="selectedSlide?.photo" alt="Selected Image"
-                     @click="() => showImg(selectedSlide?.photo)"/>
+            <!-- Если тип = image, оставляем как раньше -->
+            <template v-if="selectedSlide.type === 'image' || selectedSlide.type === null">
+              <NuxtImg
+                  format="webp"
+                  preload
+                  class="card__main_img-pict"
+                  :src="selectedSlide?.photo"
+                  alt="Selected Image"
+                  @click="() => showImg(indexRef.value)"
+              />
+            </template>
+
+            <!-- Если тип = video, выводим iframe ВК-плеера -->
+            <template v-else-if="selectedSlide.type === 'video'">
+              <div class="card__main_img-pict">
+                <!-- Тут нужно корректно получить embed-ссылку.
+                     Для демонстрации просто ставлю :src="selectedSlide.photo".
+                     Но на практике, возможно, придётся подменить 'video-' на 'video_embed-'
+                     или вообще использовать https://vk.com/video_ext.php?...
+                     Всё зависит от реальной схемы встраивания.
+                -->
+                <iframe
+                    width="100%"
+                    height="100%"
+                    :src="getVkEmbedLink(selectedSlide.photo)"
+                    allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;"
+                    frameborder="0"
+                    allowfullscreen
+                ></iframe>
+              </div>
+            </template>
             <VueEasyLightbox
                 :visible="visibleRef"
                 :imgs="imgs"
@@ -866,6 +947,18 @@ $x-big: 1829.98px;
 
     &.active {
       border: 1px solid #EF7F1A;
+    }
+    &-img {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+    &-video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
   }
 }

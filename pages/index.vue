@@ -251,6 +251,14 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(interval);
 });
+
+const findImage = (photos) => {
+  if (photos?.length) {
+    const image = photos.find((item) => item.type === "image" || item.type === null);
+    return image ? image.photo : "/S.png";
+  }
+  return "/S.png";
+};
 </script>
 
 <template>
@@ -326,7 +334,7 @@ onUnmounted(() => {
                 :to="`/card/${product.id}-${generateSlug(product.name)}/`"
                 v-if="product?.photos[0]?.photo"
             >
-              <NuxtImg format="webp" preload loading="lazy" class="best-product__item_img" :src="product?.photos[0]?.photo" alt=""/>
+              <NuxtImg format="webp" preload loading="lazy" class="best-product__item_img" :src="findImage(product.photos)" alt=""/>
             </NuxtLink>
             <NuxtLink
                 :to="`/card/${product.id}-${generateSlug(product.name)}/`"
