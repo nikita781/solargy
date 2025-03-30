@@ -25,6 +25,21 @@ $x-big: 1829.98px;
     gap: 5px;
     li {
       line-height: 23px;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      &::before {
+        content: "";
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        background-image: url('/sun.svg');
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+      }
       @media (max-width: $x-small) {
         letter-spacing: unset;
         font-size: 14px;
