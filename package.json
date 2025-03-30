@@ -31,6 +31,7 @@
     "editorjs-paragraph-with-alignment": "^3.0.0",
     "editorjs-style": "^3.0.3",
     "editorjs-text-alignment-blocktune": "^1.0.3",
+    "file-saver": "^2.0.5",
     "nuxt": "^3.14.1592",
     "nuxt-easy-lightbox": "^1.0.2",
     "nuxt-swiper": "^2.0.0",

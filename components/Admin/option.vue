@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import { saveAs } from 'file-saver';
 
 onMounted(async () => {
   const token = localStorage.getItem('authToken');
@@ -56,6 +57,23 @@ const fetchImgs = async () => {
   try {
     const response = await axios.get('/library-images');
     imgs.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const ExportOptions = async (option) => {
+  try {
+    const response = await axios.get(`/options/${option.id}/export`, {
+      responseType: 'blob',
+    });
+
+    // Создаем Blob-объект с Excel-файлом
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    // Сохраняем файл с помощью FileSaver.js
+    saveAs(blob, `${option.name}.xlsx`);
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   }
@@ -374,14 +392,60 @@ const closeDialogUpdateValue = () => {
   visibleDialogUpdateValue.value = false;
   resetOptionValue();
 };
+
+const optionImport = ref(null);
+const visibleDialogImport = ref(false);
+const openDialogImport = () => {
+  visibleDialogImport.value = true;
+};
+const closeDialogImport = () => {
+  visibleDialogImport.value = false;
+};
+
+const onFileChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    optionImport.value = file
+  }
+}
+
+const importOptions = async () => {
+  isLoading.value = true;
+  if (!optionFile.value) {
+    return
+  }
+  if (!optionFile.value.name.toLowerCase().endsWith('.xlsx')) {
+    return
+  }
+  try {
+    const formData = new FormData();
+    formData.append('file', optionImport.value);
+
+    await axios.post(`/options/import`, formData, {
+      headers: {
+
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    await fetchOptions();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+    closeDialogImport();
+  }
+};
 </script>
 
 <template>
 <div class="admin-panel__content admin-panel__content-prod">
   <h2>Управление параметрами товара</h2>
   <div class="admin-panel__content_info">
-    <button class="main_btn" @click="openDialogAdd" style="width: fit-content">Создать параметр</button>
-    <button class="main_btn" @click="openDialogAddValue" style="width: fit-content">Создать пункт</button>
+    <div class="admin__flex">
+      <button class="main_btn" @click="openDialogAdd" style="width: fit-content">Создать параметр</button>
+      <button class="main_btn" @click="openDialogAddValue" style="width: fit-content">Создать пункт</button>
+      <button class="main_btn" @click="openDialogImport" style="width: fit-content">Импорт</button>
+    </div>
     <input
         type="text"
         class="basket__form_input admin-panel__content_input"
@@ -394,10 +458,13 @@ const closeDialogUpdateValue = () => {
         v-for="option in options" :key="option.id"
         v-if="!isSearch"
     >
-      <div class="admin-panel__content_info_content">
+      <div class="admin__grid_2">
         <p>{{ option.name }}</p>
-        <button @click="editOptions(option)" class="admin-panel__content_btn">Изменить</button>
-        <button @click="deleteOptions(option.id)" class="admin-panel__content_btn">Удалить</button>
+        <div class="admin__flex">
+          <button class="main_btn" @click="ExportOptions(option)" style="width: fit-content">Экспорт</button>
+          <button @click="editOptions(option)" class="main_btn" style="width: fit-content">Изменить</button>
+          <button @click="deleteOptions(option.id)" class="main_btn" style="width: fit-content">Удалить</button>
+        </div>
       </div>
       <table>
         <thead>
@@ -669,6 +736,29 @@ const closeDialogUpdateValue = () => {
           >
             <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
             <span v-else>Изменить пункт</span>
+          </button>
+        </form>
+      </div>
+    </div>
+    <div class="admin__dialog" v-if="visibleDialogImport" @click="closeDialogImport">
+      <div class="admin__dialog_container admin__dialog_container-small" @click.stop>
+        <h3 style="margin: 0">Импорт параметров</h3>
+        <form class="admin-panel__content_form-dialog" @submit.prevent="importOptions">
+          <input
+              type="file"
+              accept=".xlsx"
+              class="basket__form_input admin-panel__content_input"
+              @change="onFileChange"
+          />
+          <button
+              class="main_btn"
+              type="submit"
+              :disabled="isLoading"
+              :class="{ 'loading': isLoading }"
+              :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+          >
+            <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+            <span v-else>Импорт</span>
           </button>
         </form>
       </div>
