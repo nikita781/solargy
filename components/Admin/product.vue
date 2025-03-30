@@ -26,6 +26,8 @@ const errors = ref({
   productCategory: false,
 });
 
+const selectedCategory = ref('all');
+
 const productName = ref('');
 const productCategory = ref(null);
 const productDescription = ref('');
@@ -141,6 +143,16 @@ const handleSearch = async () => {
     await fetchSearchOptions(searchQuery.value);
   }
 };
+const fetchProductsByCategory = async (categoryId) => {
+  try {
+    const response = await axios.get(`/all-products?page=${page.value}&category=${categoryId}`);
+    totalPages.value = response.data.meta.last_page || 0;
+    allProducts.value = response.data.data || [];
+    console.log(response)
+  } catch (error) {
+    console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
+  }
+};
 const fetchAllProducts = async () => {
   try {
     const response = await axios.get(`/all-products?page=${page.value}`);
@@ -150,6 +162,15 @@ const fetchAllProducts = async () => {
     console.error('Ошибка при загрузке продуктов:', error.response?.data || error);
   }
 };
+watch(selectedCategory, (newValue) => {
+  if (newValue) {
+    if (newValue === 'all') {
+      fetchAllProducts();
+    } else {
+      fetchProductsByCategory(newValue);
+    }
+  }
+});
 const fetchAllProductsFull = async () => {
   try {
     const response = await axios.get(`/products-for-select`);
@@ -1026,10 +1047,12 @@ const pagesInRange = computed(() => {
 
 function searchProduct() {
   if (productSearch.value.trim() !== '') {
+    selectedCategory.value = null;
     fetchSearchProduct()
     isSearch.value = true
   } else {
     isSearch.value = false
+    fetchAllProducts()
   }
 }
 
@@ -1194,13 +1217,23 @@ const activeTab = ref("Главная");
   <div class="admin-panel__content admin-panel__content-prod">
     <h2>Управление товарами</h2>
     <button class="main_btn" @click="openDialogAdd" style="width: fit-content">Создать товар</button>
-    <input
-        type="text"
-        class="basket__form_input admin-panel__content_input"
-        v-model="productSearch"
-        placeholder="Поиск"
-        @input="searchProduct"
-    />
+    <div class="admin__filter">
+      <input
+          type="text"
+          class="basket__form_input admin-panel__content_input"
+          v-model="productSearch"
+          placeholder="Поиск"
+          @input="searchProduct"
+      />
+      <select style="height: 42px" v-model="selectedCategory"
+              class="basket__form_input admin-panel__content_select" placeholder="111">
+        <option value="" disabled>Выберите категорию</option>
+        <option value="all">Все категории</option>
+        <option v-for="category in allCategories" :key="category.id" :value="category.id">
+          {{ category.name }}
+        </option>
+      </select>
+    </div>
     <table v-if="!isSearch">
       <thead>
       <tr>
@@ -1249,7 +1282,7 @@ const activeTab = ref("Главная");
       <tbody v-if="allProductsSearch.products.length > 0">
       <tr v-for="product in allProductsSearch.products" :key="product.id">
         <td>{{ product.name }}</td>
-        <td>{{ product.category_id.name }}</td>
+        <td>{{ product.category.name }}</td>
         <td>{{ product.description }}</td>
         <td>{{ product.price }}</td>
         <td><input type="checkbox" disabled v-model="product.is_top"/></td>
