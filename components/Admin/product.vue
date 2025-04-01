@@ -164,6 +164,7 @@ const fetchAllProducts = async () => {
 };
 watch(selectedCategory, (newValue) => {
   if (newValue) {
+    page.value = 1;
     if (newValue === 'all') {
       fetchAllProducts();
     } else {
@@ -1030,7 +1031,11 @@ const paginatedProducts = computed(() => allProducts.value.slice(0, itemsPerPage
 const goToPage = (newPage) => {
   if (newPage >= 1 && newPage <= totalPages.value) {
     page.value = newPage;
-    fetchAllProducts();
+    if (selectedCategory.value === 'all') {
+      fetchAllProducts();
+    } else {
+      fetchProductsByCategory(selectedCategory.value);
+    }
   }
 };
 const pagesInRange = computed(() => {
@@ -1448,7 +1453,7 @@ const activeTab = ref("Главная");
               :class="{ active: activeTab === 'Картинки' }"
               @click="activeTab = 'Картинки'"
           >
-            Картинки
+            Картинки / Видео
           </p>
           <p
               class="admin__dialog_tabs-item"

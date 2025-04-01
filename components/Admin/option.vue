@@ -411,12 +411,6 @@ const onFileChange = (event) => {
 
 const importOptions = async () => {
   isLoading.value = true;
-  if (!optionFile.value) {
-    return
-  }
-  if (!optionFile.value.name.toLowerCase().endsWith('.xlsx')) {
-    return
-  }
   try {
     const formData = new FormData();
     formData.append('file', optionImport.value);
