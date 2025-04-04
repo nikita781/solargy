@@ -992,7 +992,7 @@ function shareToOk() {
                   :key="index"
                   :to="market.product_url"
               >
-                <img :src='market.image' alt="">
+                <img :src='transformStorageUrl(market.image)' alt="">
               </NuxtLink>
             </div>
             <NuxtLink v-if="!existingItem" class="main_btn" @click="addToBasket">Добавить в корзину</NuxtLink>
