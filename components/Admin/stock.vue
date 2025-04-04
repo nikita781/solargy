@@ -307,6 +307,7 @@ const resetStock = () => {
   stockArchived.value = false;
   currentStockId.value = null
   stockProd.value = [];
+  productProd.value = null;
   errors.value.stockTitle = false;
   errors.value.stockDescription = false;
   errors.value.stockImage = false;

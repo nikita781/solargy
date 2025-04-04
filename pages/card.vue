@@ -916,6 +916,17 @@ function shareToOk() {
           <div>
             <h1 class="card__main_title">{{ product.name }}</h1>
             <p class="card__main_price">{{ totalPrice }} ₽</p>
+            <div
+                class="card__main_promo"
+            >
+              <p
+                  v-for="(promo, index) in product.promos"
+                  :key="index.id"
+                  :title="promo.title"
+              >
+                {{promo.title}}
+              </p>
+            </div>
           </div>
           <p class="card__main_description">{{ product.description }}</p>
           <div class="card__main_select-cont">
