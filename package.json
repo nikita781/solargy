@@ -32,6 +32,8 @@
     "editorjs-style": "^3.0.3",
     "editorjs-text-alignment-blocktune": "^1.0.3",
     "file-saver": "^2.0.5",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
     "nuxt": "^3.14.1592",
     "nuxt-easy-lightbox": "^1.0.2",
     "nuxt-swiper": "^2.0.0",

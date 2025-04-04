@@ -19,6 +19,58 @@ $x-big: 1829.98px;
     @media screen and (max-width: $x-small){
       padding: 30px 30px 0 30px;
     }
+    &_header {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+      &-items {
+        display: flex;
+        gap: 20px;
+      }
+      &-item {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        cursor: pointer;
+        svg {
+          transition: 0.3s;
+          @media screen and (max-width: $medium){
+            width: 16px;
+            height: 16px;
+          }
+          @media screen and (max-width: $small){
+            width: 12px;
+            height: 12px;
+          }
+        }
+        &:hover {
+          p {
+            color: #b56014;
+            transition: 0.3s;
+          }
+          svg {
+            path {
+              fill: #b56014;
+              transition: 0.3s;
+            }
+          }
+        }
+      }
+      &-text {
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 1px;
+        color: #EF7F1A;
+        transition: 0.3s;
+        @media screen and (max-width: $medium){
+          font-size: 14px;
+        }
+        @media screen and (max-width: $small){
+          font-size: 10px;
+        }
+      }
+    }
     &_links {
       display: flex;
       align-items: center;
@@ -109,6 +161,7 @@ $x-big: 1829.98px;
         cursor: pointer;
         width: 100%;
         height: 650px;
+        display: block;
         object-fit: cover;
         @media screen and (max-width: $large){
           height: 500px;
@@ -529,6 +582,53 @@ $x-big: 1829.98px;
           color: #EF7F1A;
           transition: 0.3s;
         }
+      }
+    }
+  }
+  &__dialog {
+    width: 100%;
+    max-width: 360px;
+    max-height: 70vh;
+    background-color: white;
+    border-radius: 20px;
+    padding: 40px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow-y: auto;
+    &_header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #CCCCCC;
+      p {
+        text-transform: uppercase;
+        font-weight: bold;
+        font-size: 22px;
+        letter-spacing: 2px;
+        color: #171717;
+      }
+      svg {
+        cursor: pointer;
+      }
+    }
+    &_mess {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    &_copy {
+      padding: 12px 16px;
+      background-color: #F5F5F5;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      p {
+        font-size: 14px;
       }
     }
   }

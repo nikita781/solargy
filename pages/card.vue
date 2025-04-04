@@ -7,7 +7,12 @@ import 'swiper/css';
 import axios from "axios";
 import {useBasketStore} from '@/stores/basket';
 import {useAsyncData} from '#app';
+import html2canvas from 'html2canvas'
+import jsPDF from 'jspdf'
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 
+const pdfContainerRef = ref(null)
 const route = useRoute();
 const router = useRouter();
 const productId = ref();
@@ -545,15 +550,6 @@ function capitalize(text) {
   return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
 }
 
-function getContentWithoutTables(html) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-
-  doc.querySelectorAll('table').forEach((table) => table.remove());
-
-  return doc.body.innerHTML;
-}
-
 function toggleTab(title) {
   switch (title) {
     case 'property':
@@ -569,15 +565,6 @@ function toggleTab(title) {
     case 'guaranty':
       return 'Гарантии'
   }
-}
-
-// Функция для получения только таблиц
-function getTables(html) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-
-  const tables = Array.from(doc.querySelectorAll('table'));
-  return tables.map((table) => table.outerHTML).join('');
 }
 
 function removeFromBasket(itemId) {
@@ -627,20 +614,213 @@ function getVkEmbedLink(url) {
   // Собираем формат, который нужен для iframe
   return `https://vkvideo.ru/video_ext.php?oid=-${oid}&id=${id}&hd=1`;
 }
+
+function transformAllImagesInHtml(html) {
+  if (!html) return '';
+
+  // 1. Парсим HTML-строку в DOM
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  // 2. Находим все <img> и подменяем src
+  doc.querySelectorAll('img').forEach((img) => {
+    img.src = transformStorageUrl(img.src);
+  });
+
+  // 3. Возвращаем обновлённую HTML-строку
+  return doc.body.innerHTML;
+}
+function copyLink() {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url)
+  Toastify({
+    text: "Ссылка скопирована!",
+    duration: 3000,
+    gravity: "top", // Позиция: "top" или "bottom"
+    position: "right", // Позиция: "left", "center" или "right"
+    backgroundColor: "#28a745",
+    stopOnFocus: true,
+  }).showToast();
+}
+
+async function downloadAsPdf() {
+  const element = document.querySelector('.card')
+  if (!element) return
+
+  // Настраиваем поля PDF (например, 30pt)
+  const marginTopBottom = 30
+  const marginLeftRight = 20
+
+  // Показываем тост "идёт генерация" (duration=0 => бесконечный)
+  const loadingToast = Toastify({
+    text: "Генерация PDF, пожалуйста, подождите...",
+    duration: 0,
+    close: true,
+    gravity: "top",
+    position: "right",
+    stopOnFocus: false,
+    style: {
+      background: "linear-gradient(to right, #00b09b, #96c93d)"
+    }
+  })
+  loadingToast.showToast()
+
+  try {
+    const canvas = await html2canvas(element, {
+      useCORS: true,
+      allowTaint: true,
+      scale: 2,
+    })
+
+    const pdf = new jsPDF('p', 'pt', 'a4') // портрет, pt, формат A4
+    const pageWidth = pdf.internal.pageSize.getWidth()   // ~595pt
+    const pageHeight = pdf.internal.pageSize.getHeight() // ~842pt
+
+    // Получаем размеры Canvas
+    const canvasWidth = canvas.width
+    const canvasHeight = canvas.height
+
+    // Ширина доступной области (с учётом отступов слева/справа)
+    const usablePageWidth = pageWidth - marginLeftRight * 2
+    // Высота доступной области (с учётом отступов сверху/снизу)
+    const usablePageHeight = pageHeight - marginTopBottom * 2
+
+    // В пикселях Canvas: сколько пикселей занимает usablePageHeight?
+    // Мы вписываем Canvas во всю ширину usablePageWidth => «фактор масштаба»:
+    const scaleFactor = usablePageWidth / canvasWidth
+    // Значит, на одной странице поместится:
+    const pageHeightInCanvasPx = usablePageHeight / scaleFactor
+
+    let renderedHeight = 0
+
+    while (renderedHeight < canvasHeight) {
+      // Сколько осталось от Canvas снизу
+      const remainingHeight = canvasHeight - renderedHeight
+      const sliceHeight = Math.min(pageHeightInCanvasPx, remainingHeight)
+
+      // Создаём новый фрагмент Canvas
+      const canvasFragment = document.createElement('canvas')
+      canvasFragment.width = canvasWidth
+      canvasFragment.height = sliceHeight
+
+      // Рисуем часть оригинала в canvasFragment
+      const ctx = canvasFragment.getContext('2d')
+      ctx.drawImage(
+          canvas,
+          0,
+          renderedHeight,
+          canvasWidth,
+          sliceHeight,
+          0,
+          0,
+          canvasWidth,
+          sliceHeight
+      )
+
+      // Превращаем фрагмент в base64
+      const imgData = canvasFragment.toDataURL('image/jpeg', 1.0)
+
+      // В PDF рисуем на странице, начиная с (marginLeftRight, marginTopBottom)
+      // по ширине usablePageWidth. Высота:
+      const fragmentHeightInPdf = sliceHeight * scaleFactor
+
+      pdf.addImage(
+          imgData,
+          'JPEG',
+          marginLeftRight,
+          marginTopBottom,
+          usablePageWidth,
+          fragmentHeightInPdf
+      )
+
+      renderedHeight += sliceHeight
+
+      // Если ещё не дошли до конца, добавляем страницу
+      if (renderedHeight < canvasHeight) {
+        pdf.addPage()
+      }
+    }
+    loadingToast.hideToast()
+
+    const fileName = product.value?.name ? `${product.value.name}.pdf` : 'card.pdf'
+    pdf.save(fileName)
+    Toastify({
+      text: "PDF успешно сформирован!",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      style: {
+        background: "linear-gradient(to right, #56ab2f, #a8e063)"
+      }
+    }).showToast()
+  } catch (error) {
+    console.error('Ошибка при сохранении PDF:', error)
+    Toastify({
+      text: "Ошибка при формировании PDF!",
+      duration: 5000,
+      gravity: "top",
+      position: "right",
+      style: {
+        background: "linear-gradient(to right, #ff5f6d, #ffc371)"
+      }
+    }).showToast()
+  }
+}
+function transformStorageUrl(url) {
+  if (!url) return '';
+  return url.replace('/storage/', '/api/my-storage/');
+}
+const visibleDialog = ref(false);
+const openDialog = () => {
+  visibleDialog.value = true;
+};
+const closeDialog = () => {
+  visibleDialog.value = false;
+};
+
+function shareToVK() {
+  const currentUrl = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent(document.title);
+  window.open(`https://vk.com/share.php?url=${currentUrl}&title=${title}`, '_blank');
+}
+
+function shareToTelegram() {
+  const currentUrl = encodeURIComponent(window.location.href);
+  const text = encodeURIComponent(document.title);
+  window.open(`https://t.me/share/url?url=${currentUrl}&text=${text}`, '_blank');
+}
+
+function shareToOk() {
+  const currentUrl = encodeURIComponent(window.location.href);
+  const title = encodeURIComponent(document.title);
+  window.open(`https://connect.ok.ru/offer?url=${currentUrl}&title=${title}`, '_blank');
+}
 </script>
 
 <template>
   <div class="card">
     <div class="card__main">
-      <div class="card__main_links">
-        <NuxtLink to="/catalog" class="card__main_link">Каталог</NuxtLink>
-        <IconsSun/>
-        <NuxtLink v-if="category && category.name" :to="`/catalog/${category?.id}-${generateSlug(category?.name)}/`"
-                  class="card__main_link">
-          {{ capitalize(category.name) }}
-        </NuxtLink>
-        <IconsSun color="#EF7F1A"/>
-        <NuxtLink class="card__main_link card__main_link-active">{{ capitalize(product.name) }}</NuxtLink>
+      <div class="card__main_header">
+        <div class="card__main_links">
+          <NuxtLink to="/catalog" class="card__main_link">Каталог</NuxtLink>
+          <IconsSun/>
+          <NuxtLink v-if="category && category.name" :to="`/catalog/${category?.id}-${generateSlug(category?.name)}/`"
+                    class="card__main_link">
+            {{ capitalize(category.name) }}
+          </NuxtLink>
+          <IconsSun color="#EF7F1A"/>
+          <NuxtLink class="card__main_link card__main_link-active">{{ capitalize(product.name) }}</NuxtLink>
+        </div>
+        <div class="card__main_header-items">
+          <div class="card__main_header-item" @click="downloadAsPdf">
+            <IconsDownload color="#EF7F1A"/>
+            <p class="card__main_header-text">Скачать карточку</p>
+          </div>
+          <div class="card__main_header-item" @click="openDialog">
+            <IconsShare />
+            <p class="card__main_header-text">Поделиться</p>
+          </div>
+        </div>
       </div>
       <div class="card__main_content">
         <div class="card__main_gallery">
@@ -662,10 +842,11 @@ function getVkEmbedLink(url) {
                   >
                     <!-- Если это изображение -->
                     <template v-if="slide.type === 'image' || slide.type === null">
-                      <div
-                          class="swiper__slide-img"
-                          :style="{ backgroundImage: `url(${slide.photo})` }"
-                      ></div>
+<!--                      <div-->
+<!--                          class="swiper__slide-img"-->
+<!--                          :style="{ backgroundImage: `url(${slide.photo})` }"-->
+<!--                      ></div>-->
+                      <img :src='transformStorageUrl(slide.photo)' alt="" class="swiper__slide-img-print">
                     </template>
 
                     <!-- Если это видео -->
@@ -685,11 +866,9 @@ function getVkEmbedLink(url) {
           <div class="card__main_img" v-if="selectedSlide">
             <!-- Если тип = image, оставляем как раньше -->
             <template v-if="selectedSlide.type === 'image' || selectedSlide.type === null">
-              <NuxtImg
-                  format="webp"
-                  preload
+              <img
                   class="card__main_img-pict"
-                  :src="selectedSlide?.photo"
+                  :src="transformStorageUrl(selectedSlide?.photo)"
                   alt="Selected Image"
                   @click="() => showImg(indexRef.value)"
               />
@@ -711,7 +890,14 @@ function getVkEmbedLink(url) {
                     allow="autoplay; encrypted-media; fullscreen; picture-in-picture; screen-wake-lock;"
                     frameborder="0"
                     allowfullscreen
+                    class="vkvideo"
                 ></iframe>
+                <div
+                    class="vkvideo-print"
+                    style="width: 100%; height: 100%; display: none;"
+                >
+                  <img src="/play.png" alt="Video preview" class="swiper__slide-video" />
+                </div>
               </div>
             </template>
             <VueEasyLightbox
@@ -741,11 +927,9 @@ function getVkEmbedLink(url) {
                 <p class="card__main_select-title">{{ select.name }}</p>
                 <div class="card__main_select-item">
                   <div class="card__main_select-name">
-                    <NuxtImg
-                        format="webp"
-                        preload
+                    <img
                         v-if="getSelectedValue(select)?.image"
-                        :src="getSelectedValue(select)?.image"
+                        :src="transformStorageUrl(getSelectedValue(select)?.image)"
                         alt=""
                     />
                     <p>{{ getSelectedValue(select)?.value }}</p>
@@ -836,7 +1020,7 @@ function getVkEmbedLink(url) {
           <div class="card__tabs_container" v-if="activeTab === index">
             <div
                 class="editor__content"
-                v-html="property.html"
+                v-html="transformAllImagesInHtml(property.html)"
                 @click="handleImageClickHtml"
             ></div>
             <VueEasyLightbox
@@ -879,15 +1063,15 @@ function getVkEmbedLink(url) {
                 :href="`/card/${product.id}-${generateSlug(product.name)}/`"
                 v-if="product?.photo"
             >
-              <NuxtImg format="webp" loading="lazy" preload class="best-product__item_img"
-                       :src="product?.photo"
+              <img class="best-product__item_img"
+                       :src="transformStorageUrl(product?.photo)"
                        alt=""/>
             </a>
             <a
                 :href="`/card/${product.id}-${generateSlug(product.name)}/`"
                 v-else
             >
-              <NuxtImg format="webp" loading="lazy" preload class="best-product__item_img" src="/S.png" alt=""/>
+              <img class="best-product__item_img" src="/S.png" alt=""/>
             </a>
             <div class="best-product__item_content">
               <a :href="`/card/${product.id}-${generateSlug(product.name)}/`"
@@ -904,6 +1088,23 @@ function getVkEmbedLink(url) {
               </a>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+    <div class="admin__dialog" v-if="visibleDialog" @click="closeDialog" style="z-index: 1">
+      <div class="card__dialog" @click.stop>
+        <div class="card__dialog_header">
+          <p>Поделиться</p>
+          <IconsCross @click="closeDialog" />
+        </div>
+        <div class="card__dialog_mess">
+          <img src="/VK Logo 1.svg" alt="VK" @click="shareToVK" style="cursor: pointer;" />
+          <img src="/tg%201.svg" alt="TG" @click="shareToTelegram" style="cursor: pointer;" />
+          <img src="/ok_%201.svg" alt="OK" @click="shareToOk" style="cursor: pointer;" />
+        </div>
+        <div class="card__dialog_copy" @click="copyLink">
+          <p>Скопировать ссылку</p>
+          <img src="/Link.svg" alt="">
         </div>
       </div>
     </div>
@@ -954,6 +1155,11 @@ $x-big: 1829.98px;
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center;
+      &-print {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
     }
     &-video {
       width: 100%;
