@@ -14,6 +14,7 @@ onMounted(async () => {
     await fetchImgs();
     await fetchProductPrice();
     await fetchAllProductsFull()
+    await fetchPlace()
   }
 });
 
@@ -1194,6 +1195,51 @@ const deleteProductPrice = async (imgId) => {
   }
 };
 
+const place = ref([]);
+const marketplacesPlace = ref([]);
+const marketplaceSelect = ref(null);
+const marketplaceUrl = ref('');
+
+const fetchPlace = async () => {
+  try {
+    const response = await axios.get(`/purchase-place`, {
+      headers: {},
+    });
+    place.value = response.data;
+    marketplacesPlace.value = place.value.filter((item) => item.type === "marketplace");
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
+const addProductMarketplace = async () => {
+  try {
+    isLoading.value = true;
+    const formData = new FormData();
+    formData.append('markets[0][id]', marketplaceSelect.value);
+    formData.append('markets[0][url]', marketplaceUrl.value);
+
+    await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
+      headers: {},
+    });
+    await fetchProductById(currentProductId.value);
+    marketplaceSelect.value = null
+    marketplaceUrl.value = ''
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+const deleteProductMarket = async (purchasePlace) => {
+  try {
+    await axios.delete(`/products/${oneProd.value.id}/purchase-place/${purchasePlace}`, {
+      headers: {},
+    });
+    await fetchProductById(currentProductId.value);
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
 
 const visibleDialogAdd = ref(false);
 const openDialogAdd = () => {
@@ -1468,6 +1514,13 @@ const activeTab = ref("Главная");
               @click="activeTab = 'Цена'"
           >
             Цена
+          </p>
+          <p
+              class="admin__dialog_tabs-item"
+              :class="{ active: activeTab === 'Маркетплейсы' }"
+              @click="activeTab = 'Маркетплейсы'"
+          >
+            Маркетплейсы
           </p>
           <p
               class="admin__dialog_tabs-item"
@@ -2083,6 +2136,59 @@ const activeTab = ref("Главная");
               </table>
             </div>
           </div>
+        </div>
+        <div
+            class="admin__dialog_content"
+            v-if="activeTab === 'Маркетплейсы'"
+        >
+          <h3 class="admin__dialog_title">Маркетплейсы</h3>
+          <form class="admin-panel__content_form-dialog">
+            <select
+                v-model="marketplaceSelect"
+                class="basket__form_input admin-panel__content_select"
+            >
+              <option value="" disabled>Выберите значение</option>
+              <option
+                  v-for="value in marketplacesPlace"
+                  :key="value.id"
+                  :value="value.id"
+              >
+                {{ value.name }}
+              </option>
+            </select>
+            <input
+                v-model="marketplaceUrl"
+                class="basket__form_input admin-panel__content_input"
+                type="text"
+                placeholder="Ссылка"
+            />
+            <button
+                class="main_btn"
+                @click="addProductMarketplace"
+                :disabled="isLoading"
+                :class="{ 'loading': isLoading }"
+                :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+            >
+              <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+              <span v-else>Добавить маркетплейс</span>
+            </button>
+          </form>
+          <table>
+            <thead>
+            <tr>
+              <th>Название</th>
+              <th style="width: 100px">Удалить</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="prod in oneProd.markets" :key="prod.id">
+              <td>{{ prod.name }}</td>
+              <td>
+                <button @click="deleteProductMarket(prod.id)" class="admin-panel__content_btn">Удалить</button>
+              </td>
+            </tr>
+            </tbody>
+          </table>
         </div>
         <div
             class="admin__dialog_content"

@@ -293,6 +293,16 @@ $x-big: 1829.98px;
         align-items: flex-start;
         gap: 15px;
       }
+      &-mark {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        img {
+          object-fit: contain;
+          width: 32px;
+          height: 32px;
+        }
+      }
       &-cont {
         width: 116px;
         height: 38px;
@@ -596,6 +606,9 @@ $x-big: 1829.98px;
     flex-direction: column;
     gap: 20px;
     overflow-y: auto;
+    @media screen and (max-width: $x-small){
+      padding: 20px 30px;
+    }
     &_header {
       display: flex;
       justify-content: space-between;

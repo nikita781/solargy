@@ -983,6 +983,18 @@ function shareToOk() {
                 <IconsPlus color="#EF7F1A"/>
               </div>
             </div>
+            <div
+                class="card__main_final-mark"
+            >
+              <NuxtLink
+                  target="_blank"
+                  v-for="(market, index) in product?.markets || []"
+                  :key="index"
+                  :to="market.product_url"
+              >
+                <img :src='market.image' alt="">
+              </NuxtLink>
+            </div>
             <NuxtLink v-if="!existingItem" class="main_btn" @click="addToBasket">Добавить в корзину</NuxtLink>
             <NuxtLink v-else class="card__main_final-button">
               <p>В корзине</p>
