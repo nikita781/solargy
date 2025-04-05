@@ -920,13 +920,14 @@ function shareToOk() {
             <div
                 class="card__main_promo"
             >
-              <p
+              <NuxtLink
                   v-for="(promo, index) in product.promos"
                   :key="index.id"
                   :title="promo.title"
+                  :to="`/promo/${promo.id}-${generateSlug(promo.title)}/`"
               >
                 {{promo.title}}
-              </p>
+              </NuxtLink>
             </div>
           </div>
           <p class="card__main_description">{{ product.description }}</p>
@@ -962,7 +963,9 @@ function shareToOk() {
           <div v-if="menuVisible" class="slide-out-menu">
             <div class="menu-header">
               <h3>{{ currentSelect?.name }}</h3>
-              <IconsCross @click="closeMenu"/>
+              <div>
+                <IconsCross @click="closeMenu"/>
+              </div>
             </div>
             <ul>
               <li
@@ -1227,6 +1230,7 @@ $x-big: 1829.98px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 20px;
     margin-bottom: 60px;
     padding-bottom: 20px;
     border-bottom: 1px solid #cccccc;
@@ -1245,6 +1249,8 @@ $x-big: 1829.98px;
 
     svg {
       cursor: pointer;
+      width: 16px;
+      height: 16px;
     }
   }
 

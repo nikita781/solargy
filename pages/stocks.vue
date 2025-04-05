@@ -119,6 +119,28 @@ const sliderStyle = computed(() => {
   };
 });
 
+function generateSlug(name) {
+  const cyrillicToLatinMap = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
+    и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+    с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch',
+    ы: 'y', э: 'e', ю: 'yu', я: 'ya', ъ: '', ь: ''
+  };
+
+  const transliterate = (str) => {
+    return str
+        .toLowerCase()
+        .split('')
+        .map(char => cyrillicToLatinMap[char] || char)
+        .join('');
+  };
+
+  return transliterate(name)
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim();
+}
+
 onMounted(async () => {
   await fetchSection();
   await fetchBlocks();
@@ -161,7 +183,9 @@ onMounted(async () => {
 
     <div class="card__tabs_content">
       <div v-if="activeTab === 0" class="card__tabs_info stocks__container">
-        <div v-for="block in blocksNotArchive" :key="block.id" class="stocks__item">
+        <NuxtLink v-for="block in blocksNotArchive" :key="block.id" class="stocks__item"
+                  :to="`/promo/${block.id}-${generateSlug(block.title)}/`"
+        >
           <div class="stocks__item_img">
             <NuxtImg format="webp" loading="lazy" preload :src="block.image" alt=""/>
             <h3 class="stocks__item_title">{{ block.title }}</h3>
@@ -170,10 +194,12 @@ onMounted(async () => {
             <p class="stocks__item_text">{{ block.description }}</p>
             <p class="stocks__item_data">{{ convertDateToText(block.end) }}</p>
           </div>
-        </div>
+        </NuxtLink>
       </div>
       <div v-if="activeTab === 1" class="card__tabs_info stocks__container">
-        <div v-for="block in blocksArchive" :key="block.id" class="stocks__item">
+        <NuxtLink v-for="block in blocksArchive" :key="block.id" class="stocks__item"
+                  :to="`/promo/${block.id}-${generateSlug(block.title)}/`"
+        >
           <div class="stocks__item_img">
             <NuxtImg format="webp" loading="lazy" preload :src="block.image" alt=""/>
             <h3 class="stocks__item_title">{{ block.title }}</h3>
@@ -182,7 +208,7 @@ onMounted(async () => {
             <p class="stocks__item_text">{{ block.description }}</p>
             <p class="stocks__item_data">{{ convertDateToText(block.end) }}</p>
           </div>
-        </div>
+        </NuxtLink>
       </div>
     </div>
   </div>

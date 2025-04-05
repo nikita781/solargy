@@ -42,4 +42,5 @@ if (process.client) {
 @use "/assets/scss/admin" as *;
 @use "/assets/scss/editor" as *;
 @use "/assets/scss/search" as *;
+@use "/assets/scss/promo" as *;
 </style>
