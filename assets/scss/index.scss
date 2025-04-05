@@ -346,6 +346,9 @@ $x-big: 1829.98px;
     flex-direction: column;
     justify-content: space-between;
     gap: 10px;
+    a {
+      position: relative;
+    }
     &_img {
       height: 284px;
       width: 100%;
@@ -354,6 +357,19 @@ $x-big: 1829.98px;
       @media screen and (max-width: $small){
         height: 200px;
       }
+    }
+    &_top {
+      position: absolute;
+      color: #EF7F1A;
+      top: 10px;
+      right: 10px;
+      padding: 8px 16px;
+      border: 2px solid #EF7F1A;
+      background-color: #fff;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 1px;
     }
     &_content {
       display: flex;

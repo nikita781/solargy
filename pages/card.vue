@@ -872,6 +872,7 @@ function shareToOk() {
                   alt="Selected Image"
                   @click="() => showImg(indexRef.value)"
               />
+              <p class="card__main_img_top" v-if='product?.is_top'>Хит продаж</p>
             </template>
 
             <!-- Если тип = video, выводим iframe ВК-плеера -->

@@ -157,6 +157,7 @@ $x-big: 1829.98px;
     }
     &_img {
       width: 100%;
+      position: relative;
       &-pict {
         cursor: pointer;
         width: 100%;
@@ -180,6 +181,19 @@ $x-big: 1829.98px;
             height: 300px;
           }
         }
+      }
+      &_top {
+        position: absolute;
+        color: #EF7F1A;
+        top: 20px;
+        right: 20px;
+        padding: 8px 16px;
+        border: 2px solid #EF7F1A;
+        background-color: #fff;
+        border-radius: 20px;
+        font-size: 16px;
+        font-weight: 600;
+        letter-spacing: 1px;
       }
     }
     &_info {
