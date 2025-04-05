@@ -86,11 +86,13 @@ const product = ref([]);
 const category = ref([]);
 const products = ref([]);
 const selectedOptions = ref({});
+const productPhotos = ref([]);
 
 const fetchProduct = async () => {
   try {
     const response = await axios.get(`/products/${productId.value}`);
     product.value = response.data;
+    productPhotos.value = product.value.photos;
   } catch (error) {
     console.error('Ошибка загрузки продукта:', error.response?.data || error);
   }
@@ -99,6 +101,22 @@ const fetchCategory = async () => {
   try {
     const response = await axios.get(`/categories/${product.value.category_id}`);
     category.value = response.data;
+  } catch (error) {
+    console.error('Ошибка загрузки продукта:', error.response?.data || error);
+  }
+};
+const fetchPhoto = async (param) => {
+  try {
+    const response = await axios.get(`/products/${productId.value}/photos/${param}`);
+    productPhotos.value = response.data;
+    if (productPhotos.value && productPhotos.value.length > 0) {
+      selectedSlide.value = productPhotos.value[0];
+    } else {
+      selectedSlide.value = null;
+    }
+    imgs.value = (productPhotos.value || [])
+        .filter((item) => item.type !== 'video')
+        .map((item) => item.photo);
   } catch (error) {
     console.error('Ошибка загрузки продукта:', error.response?.data || error);
   }
@@ -197,6 +215,12 @@ const selectItem = (item) => {
   existingItem.value = findItemInBasket(product.value, selectedOptions.value);
 
   quantity.value = 1;
+
+  // Если это цветовая опция – делаем запрос на фотографии
+  if (currentSelect.value.is_color) {
+    // Здесь, например, вызываем fetchPhoto по `item.value`
+    fetchPhoto(item.value);
+  }
 
   closeMenu();
 };
@@ -307,7 +331,7 @@ const addToBasket = () => {
   const basketItem = {
     id: basketStore.items.length + 1,
     name: product.value.name,
-    photo: product.value.photos[0].photo,
+    photo: findImage(productPhotos.value),
     price: totalPrice,
     url: window.location.href,
     options: Object.values(selectedOptions.value),
@@ -325,10 +349,10 @@ watch(() => route.fullPath, async () => {
   await fetchCategory();
   await fetchProducts();
   imgs.value = [];
-  imgs.value = (product.value?.photos || [])
+  imgs.value = (productPhotos.value || [])
       .filter(item => item.type !== 'video')
       .map(item => item.photo);
-  selectedSlide.value = product.value?.photos[0];
+  selectedSlide.value = productPhotos.value[0];
   selectedOptions.value = {};
   product.value.options.forEach((option) => {
     selectedOptions.value[option.id] = {
@@ -365,16 +389,19 @@ onMounted(async () => {
   await fetchCategory();
   await fetchProducts();
   imgs.value = [];
-  imgs.value = (product.value?.photos || [])
+  imgs.value = (productPhotos.value || [])
       .filter(item => item.type !== 'video')
       .map(item => item.photo);
-  selectedSlide.value = product.value?.photos[0];
+  selectedSlide.value = productPhotos.value[0];
   selectedOptions.value = {};
   product.value.options.forEach((option) => {
     selectedOptions.value[option.id] = {
       name: option.name,
       values: option.values[0],
     };
+    if (option.is_color && option.values[0]) {
+      fetchPhoto(option.values[0].value);
+    }
   });
   existingItem.value = findItemInBasket(product.value, selectedOptions.value);
   await nextTick();
@@ -386,7 +413,7 @@ onMounted(async () => {
 const photosNoVideo = computed(() => {
   // Если product.value или product.value.photos ещё не доступны,
   // подставляем пустой массив, иначе фильтруем
-  return (product.value?.photos || []).filter(item => item.type !== 'video');
+  return (productPhotos.value || []).filter(item => item.type !== 'video');
 });
 
 watch(() => product.value, () => {
@@ -795,6 +822,14 @@ function shareToOk() {
   const title = encodeURIComponent(document.title);
   window.open(`https://connect.ok.ru/offer?url=${currentUrl}&title=${title}`, '_blank');
 }
+
+const findImage = (photos) => {
+  if (photos?.length) {
+    const image = photos.find((item) => item.type === "image" || item.type === null);
+    return image ? image.photo : "/S.png";
+  }
+  return "/S.png";
+};
 </script>
 
 <template>
@@ -829,9 +864,9 @@ function shareToOk() {
               <IconsArrow class="card__main_swiper-top" color="#EF7F1A"/>
             </div>
             <client-only>
-              <Swiper v-bind="swiperConfig" v-if="product.photos">
+              <Swiper v-bind="swiperConfig" v-if="productPhotos">
                 <SwiperSlide
-                    v-for="(slide, index) in product.photos"
+                    v-for="(slide, index) in productPhotos"
                     :key="index"
                     v-if="selectedSlide"
                 >

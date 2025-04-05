@@ -117,6 +117,9 @@ const createOptions = async () => {
   try {
     const formData = new FormData();
     formData.append('name', nameOptions.value);
+    if (colorOptions.value) {
+      formData.append('is_color', colorOptions.value);
+    }
 
     await axios.post(`/options`, formData, {
       headers: {},
@@ -150,6 +153,7 @@ const updateOptions = async () => {
   try {
     const formData = new FormData();
     formData.append('name', nameOptions.value);
+    formData.append('is_color', colorOptions.value);
 
     await axios.post(`/options/${currentOptionsId.value}?_method=PATCH`, formData, {
       headers: {},
@@ -196,12 +200,14 @@ const editOptions = (options) => {
   isEditingOptions.value = true;
   currentOptionsId.value = options.id;
   nameOptions.value = options.name;
+  colorOptions.value = options.is_color;
   errors.value.nameOptions = false;
 };
 const resetOptions = () => {
   isEditingOptions.value = false;
   currentOptionsId.value = null;
   nameOptions.value = '';
+  colorOptions.value = false;
   errors.value.nameOptions = false;
   closeDialogAdd();
   closeDialogUpdate();
@@ -209,6 +215,7 @@ const resetOptions = () => {
 
 
 const optionValue = ref('')
+const colorOptions = ref(false)
 const optionPrice = ref(null)
 const optionPhoto = ref(null);
 const optionPhotoImg = ref(null);
@@ -580,6 +587,15 @@ const importOptions = async () => {
               placeholder="Введите имя параметра"
               :class="{ error: errors.nameOptions }"
           />
+          <div class="admin-panel__content-checkbox">
+            <input
+                type="checkbox"
+                class="admin-panel__content-checkbox-input"
+                v-model="colorOptions"
+                placeholder="Цветовой параметр"
+            />
+            Цветовой параметр
+          </div>
           <button
               class="main_btn"
               type="submit"
@@ -604,6 +620,15 @@ const importOptions = async () => {
               placeholder="Введите имя параметра"
               :class="{ error: errors.nameOptions }"
           />
+          <div class="admin-panel__content-checkbox">
+            <input
+                type="checkbox"
+                class="admin-panel__content-checkbox-input"
+                v-model="colorOptions"
+                placeholder="Цветовой параметр"
+            />
+            Цветовой параметр
+          </div>
           <button
               class="main_btn"
               type="submit"

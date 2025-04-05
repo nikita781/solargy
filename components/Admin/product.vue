@@ -42,42 +42,52 @@ const productPhoto = ref(null);
 const productFile = ref(null);
 const productPreview = ref(null);
 const productOrder = ref(null);
+const productColor = ref(null);
 const productPhoto1 = ref(null);
 const productFile1 = ref(null);
 const productPreview1 = ref(null);
 const productOrder1 = ref(null);
+const productColor1 = ref(null);
 const productPhoto2 = ref(null);
 const productFile2 = ref(null);
 const productPreview2 = ref(null);
 const productOrder2 = ref(null);
+const productColor2 = ref(null);
 const productPhoto3 = ref(null);
 const productFile3 = ref(null);
 const productPreview3 = ref(null);
 const productOrder3 = ref(null);
+const productColor3 = ref(null);
 const productPhoto4 = ref(null);
 const productFile4 = ref(null);
 const productPreview4 = ref(null);
 const productOrder4 = ref(null);
+const productColor4 = ref(null);
 const productPhoto5 = ref(null);
 const productFile5 = ref(null);
 const productPreview5 = ref(null);
 const productOrder5 = ref(null);
+const productColor5 = ref(null);
 const productPhoto6 = ref(null);
 const productFile6 = ref(null);
 const productPreview6 = ref(null);
 const productOrder6 = ref(null);
+const productColor6 = ref(null);
 const productPhoto7 = ref(null);
 const productFile7 = ref(null);
 const productPreview7 = ref(null);
 const productOrder7 = ref(null);
+const productColor7 = ref(null);
 const productPhoto8 = ref(null);
 const productFile8 = ref(null);
 const productPreview8 = ref(null);
 const productOrder8 = ref(null);
+const productColor8 = ref(null);
 const productPhoto9 = ref(null);
 const productFile9 = ref(null);
 const productPreview9 = ref(null);
 const productOrder9 = ref(null);
+const productColor9 = ref(null);
 
 const productVideo = ref('');
 const productVideo1 = ref('');
@@ -321,10 +331,20 @@ const updateProduct = async () => {
     isLoading.value = false;
   }
 };
+const colorProd = ref([])
+const fetchColorPhoto = async (idProd) => {
+  try {
+    const response = await axios.get(`/products/${idProd}/colors`);
+    colorProd.value = response.data;
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+  }
+};
 const editProduct = (product) => {
   openDialogUpdate();
   isEditingProduct.value = true;
   currentProductId.value = product.id;
+  fetchColorPhoto(currentProductId.value);
   productName.value = product.name;
   productPrice.value = product.price;
   productDescription.value = product.description;
@@ -454,10 +474,16 @@ const addProductPhoto = async () => {
     if (productOrder.value) {
       formData.append('photos[0][order]', productOrder.value);
     }
+    if (productColor.value) {
+      formData.append('photos[0][value_id]', productColor.value);
+    }
     if (productPhoto1.value) {
       formData.append('photos[1][photo]', productPhoto1.value);
       if (productOrder1.value) {
         formData.append('photos[1][order]', productOrder1.value);
+      }
+      if (productColor1.value) {
+        formData.append('photos[1][value_id]', productColor1.value);
       }
     }
     if (productPhoto2.value) {
@@ -465,11 +491,17 @@ const addProductPhoto = async () => {
       if (productOrder2.value) {
         formData.append('photos[2][order]', productOrder2.value);
       }
+      if (productColor2.value) {
+        formData.append('photos[2][value_id]', productColor2.value);
+      }
     }
     if (productPhoto3.value) {
       formData.append('photos[3][photo]', productPhoto3.value);
       if (productOrder3.value) {
         formData.append('photos[3][order]', productOrder3.value);
+      }
+      if (productColor3.value) {
+        formData.append('photos[3][value_id]', productColor3.value);
       }
     }
     if (productPhoto4.value) {
@@ -477,11 +509,17 @@ const addProductPhoto = async () => {
       if (productOrder4.value) {
         formData.append('photos[4][order]', productOrder4.value);
       }
+      if (productColor4.value) {
+        formData.append('photos[4][value_id]', productColor4.value);
+      }
     }
     if (productPhoto5.value) {
       formData.append('photos[5][photo]', productPhoto5.value);
       if (productOrder5.value) {
         formData.append('photos[5][order]', productOrder5.value);
+      }
+      if (productColor5.value) {
+        formData.append('photos[5][value_id]', productColor5.value);
       }
     }
     if (productPhoto6.value) {
@@ -489,11 +527,17 @@ const addProductPhoto = async () => {
       if (productOrder6.value) {
         formData.append('photos[6][order]', productOrder6.value);
       }
+      if (productColor6.value) {
+        formData.append('photos[6][value_id]', productColor6.value);
+      }
     }
     if (productPhoto7.value) {
       formData.append('photos[7][photo]', productPhoto7.value);
       if (productOrder7.value) {
         formData.append('photos[7][order]', productOrder7.value);
+      }
+      if (productColor7.value) {
+        formData.append('photos[7][value_id]', productColor7.value);
       }
     }
     if (productPhoto8.value) {
@@ -501,11 +545,17 @@ const addProductPhoto = async () => {
       if (productOrder8.value) {
         formData.append('photos[8][order]', productOrder8.value);
       }
+      if (productColor8.value) {
+        formData.append('photos[8][value_id]', productColor8.value);
+      }
     }
     if (productPhoto9.value) {
       formData.append('photos[9][photo]', productPhoto9.value);
       if (productOrder9.value) {
         formData.append('photos[9][order]', productOrder9.value);
+      }
+      if (productColor9.value) {
+        formData.append('photos[9][value_id]', productColor9.value);
       }
     }
 
@@ -520,42 +570,52 @@ const addProductPhoto = async () => {
     productFile.value.value = ''
     productPreview.value = null
     productOrder.value = '';
+    productColor.value = '';
     productPhoto1.value = null;
     productFile1.value.value = ''
     productPreview1.value = null
     productOrder1.value = '';
+    productColor1.value = '';
     productPhoto2.value = null;
     productFile2.value.value = ''
     productPreview2.value = null
     productOrder2.value = '';
+    productColor2.value = '';
     productPhoto3.value = null;
     productFile3.value.value = ''
     productPreview3.value = null
     productOrder3.value = '';
+    productColor3.value = '';
     productPhoto4.value = null;
     productFile4.value.value = ''
     productPreview4.value = null
     productOrder4.value = '';
+    productColor4.value = '';
     productPhoto5.value = null;
     productFile5.value.value = ''
     productPreview5.value = null
     productOrder5.value = '';
+    productColor5.value = '';
     productPhoto6.value = null;
     productFile6.value.value = ''
     productPreview6.value = null
     productOrder6.value = '';
+    productColor6.value = '';
     productPhoto7.value = null;
     productFile7.value.value = ''
     productPreview7.value = null
     productOrder7.value = '';
+    productColor7.value = '';
     productPhoto8.value = null;
     productFile8.value.value = ''
     productPreview8.value = null
     productOrder8.value = '';
+    productColor8.value = '';
     productPhoto9.value = null;
     productFile9.value.value = ''
     productPreview9.value = null
     productOrder9.value = '';
+    productColor9.value = '';
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
@@ -629,6 +689,9 @@ const updateProductPhoto = async () => {
     if (productPhoto.value) {
       formData.append('photos[0][photo]', productPhoto.value);
     }
+    if (productColor.value) {
+      formData.append('photos[0][value_id]', productColor.value);
+    }
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
@@ -641,6 +704,7 @@ const updateProductPhoto = async () => {
     productFile.value.value = ''
     productPreview.value = null
     productOrder.value = '';
+    productColor.value = null;
     await resetProductPhoto();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
@@ -662,6 +726,7 @@ const editProductPhoto = async (photo) => {
   isEditingProductPhoto.value = true;
   productOrder.value = photo.order;
   productPreview.value = photo.photo;
+  productColor.value = photo.value_id;
 }
 const updateProductVideo = async () => {
   isLoading.value = true;
@@ -1618,6 +1683,19 @@ const activeTab = ref("Главная");
                     v-model="productOrder"
                     placeholder="Введите порядок фото"
                 />
+                <label>Привязка к цвету</label>
+                <select
+                    v-model="productColor"
+                    class="basket__form_input admin-panel__content_select"
+                >
+                  <option value="" disabled>Выберите значение</option>
+                  <option
+                      v-for="value in colorProd"
+                      :value="value.id"
+                  >
+                    {{ value.value }}
+                  </option>
+                </select>
                 <div class="input__wrapper" v-if="productPhoto">
                   <input ref="productFile1" type="file" id="input__file" class="input input__file"
                          @change="handleFileChangeProductPhoto1" accept="image/*" multiple>
@@ -1636,6 +1714,19 @@ const activeTab = ref("Главная");
                     v-model="productOrder1"
                     placeholder="Введите порядок фото"
                 />
+                <select
+                    v-if="productPhoto"
+                    v-model="productColor1"
+                    class="basket__form_input admin-panel__content_select"
+                >
+                  <option value="" disabled>Выберите значение</option>
+                  <option
+                      v-for="value in colorProd"
+                      :value="value.id"
+                  >
+                    {{ value.value }}
+                  </option>
+                </select>
                 <div class="input__wrapper" v-if="productPhoto1">
                   <input ref="productFile2" type="file" id="input__file" class="input input__file"
                          @change="handleFileChangeProductPhoto2" accept="image/*" multiple>
@@ -1654,6 +1745,19 @@ const activeTab = ref("Главная");
                     v-model="productOrder2"
                     placeholder="Введите порядок фото"
                 />
+                <select
+                    v-if="productPhoto1"
+                    v-model="productColor2"
+                    class="basket__form_input admin-panel__content_select"
+                >
+                  <option value="" disabled>Выберите значение</option>
+                  <option
+                      v-for="value in colorProd"
+                      :value="value.id"
+                  >
+                    {{ value.value }}
+                  </option>
+                </select>
                 <div class="input__wrapper" v-if="productPhoto2">
                   <input ref="productFile3" type="file" id="input__file" class="input input__file"
                          @change="handleFileChangeProductPhoto3" accept="image/*" multiple>
@@ -1672,6 +1776,19 @@ const activeTab = ref("Главная");
                     v-model="productOrder3"
                     placeholder="Введите порядок фото"
                 />
+                <select
+                    v-if="productPhoto2"
+                    v-model="productColor3"
+                    class="basket__form_input admin-panel__content_select"
+                >
+                  <option value="" disabled>Выберите значение</option>
+                  <option
+                      v-for="value in colorProd"
+                      :value="value.id"
+                  >
+                    {{ value.value }}
+                  </option>
+                </select>
                 <div class="input__wrapper" v-if="productPhoto3">
                   <input ref="productFile4" type="file" id="input__file" class="input input__file"
                          @change="handleFileChangeProductPhoto4" accept="image/*" multiple>
@@ -1690,6 +1807,19 @@ const activeTab = ref("Главная");
                     v-model="productOrder4"
                     placeholder="Введите порядок фото"
                 />
+                <select
+                    v-if="productPhoto3"
+                    v-model="productColor4"
+                    class="basket__form_input admin-panel__content_select"
+                >
+                  <option value="" disabled>Выберите значение</option>
+                  <option
+                      v-for="value in colorProd"
+                      :value="value.id"
+                  >
+                    {{ value.value }}
+                  </option>
+                </select>
                 <div class="input__wrapper" v-if="productPhoto4">
                   <input ref="productFile5" type="file" id="input__file" class="input input__file"
                          @change="handleFileChangeProductPhoto5" accept="image/*" multiple>
@@ -1708,6 +1838,19 @@ const activeTab = ref("Главная");
                     v-model="productOrder5"
                     placeholder="Введите порядок фото"
                 />
+                <select
+                    v-if="productPhoto4"
+                    v-model="productColor5"
+                    class="basket__form_input admin-panel__content_select"
+                >
+                  <option value="" disabled>Выберите значение</option>
+                  <option
+                      v-for="value in colorProd"
+                      :value="value.id"
+                  >
+                    {{ value.value }}
+                  </option>
+                </select>
                 <div class="input__wrapper" v-if="productPhoto5">
                   <input ref="productFile6" type="file" id="input__file" class="input input__file"
                          @change="handleFileChangeProductPhoto6" accept="image/*" multiple>
@@ -1726,6 +1869,19 @@ const activeTab = ref("Главная");
                     v-model="productOrder6"
                     placeholder="Введите порядок фото"
                 />
+                <select
+                    v-if="productPhoto5"
+                    v-model="productColor6"
+                    class="basket__form_input admin-panel__content_select"
+                >
+                  <option value="" disabled>Выберите значение</option>
+                  <option
+                      v-for="value in colorProd"
+                      :value="value.id"
+                  >
+                    {{ value.value }}
+                  </option>
+                </select>
                 <div class="input__wrapper" v-if="productPhoto6">
                   <input ref="productFile7" type="file" id="input__file" class="input input__file"
                          @change="handleFileChangeProductPhoto7" accept="image/*" multiple>
@@ -1744,6 +1900,19 @@ const activeTab = ref("Главная");
                     v-model="productOrder7"
                     placeholder="Введите порядок фото"
                 />
+                <select
+                    v-if="productPhoto6"
+                    v-model="productColor7"
+                    class="basket__form_input admin-panel__content_select"
+                >
+                  <option value="" disabled>Выберите значение</option>
+                  <option
+                      v-for="value in colorProd"
+                      :value="value.id"
+                  >
+                    {{ value.value }}
+                  </option>
+                </select>
                 <div class="input__wrapper" v-if="productPhoto7">
                   <input ref="productFile8" type="file" id="input__file" class="input input__file"
                          @change="handleFileChangeProductPhoto8" accept="image/*" multiple>
@@ -1762,6 +1931,19 @@ const activeTab = ref("Главная");
                     v-model="productOrder8"
                     placeholder="Введите порядок фото"
                 />
+                <select
+                    v-if="productPhoto7"
+                    v-model="productColor8"
+                    class="basket__form_input admin-panel__content_select"
+                >
+                  <option value="" disabled>Выберите значение</option>
+                  <option
+                      v-for="value in colorProd"
+                      :value="value.id"
+                  >
+                    {{ value.value }}
+                  </option>
+                </select>
                 <div class="input__wrapper" v-if="productPhoto8">
                   <input ref="productFile9" type="file" id="input__file" class="input input__file"
                          @change="handleFileChangeProductPhoto9" accept="image/*" multiple>
@@ -1780,6 +1962,19 @@ const activeTab = ref("Главная");
                     v-model="productOrder9"
                     placeholder="Введите порядок фото"
                 />
+                <select
+                    v-if="productPhoto8"
+                    v-model="productColor9"
+                    class="basket__form_input admin-panel__content_select"
+                >
+                  <option value="" disabled>Выберите значение</option>
+                  <option
+                      v-for="value in colorProd"
+                      :value="value.id"
+                  >
+                    {{ value.value }}
+                  </option>
+                </select>
                 <button
                     class="main_btn"
                     type="submit"
@@ -1902,6 +2097,18 @@ const activeTab = ref("Главная");
                   v-model="productOrder"
                   placeholder="Введите порядок фото"
               />
+              <select
+                  v-model="productColor"
+                  class="basket__form_input admin-panel__content_select"
+              >
+                <option value="" disabled>Выберите значение</option>
+                <option
+                    v-for="value in colorProd"
+                    :value="value.id"
+                >
+                  {{ value.value }}
+                </option>
+              </select>
             </div>
             <div class="admin__dialog_grid">
               <button
