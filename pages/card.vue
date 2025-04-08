@@ -264,6 +264,7 @@ const swiperConfig = reactive({
   spaceBetween: 16,
   slidesPerView: 4,
   slidesPerGroup: 1,
+  virtual: false,
   speed: 500,
   loop: true,
   watchSlidesProgress: true,
@@ -670,6 +671,28 @@ function copyLink() {
   }).showToast();
 }
 
+// Показывать / скрывать диалог «Перед скачиванием PDF»
+const visibleDialogDownload = ref(false)
+
+function openDialogDownload() {
+  visibleDialogDownload.value = true
+}
+
+function closeDialogDownload() {
+  visibleDialogDownload.value = false
+}
+
+function handleDownloadPdf() {
+  // 1) Закрываем диалог
+  closeDialogDownload();
+
+  // 2) Ждём, пока модалка исчезнет из DOM
+  setTimeout(() => {
+    // 3) Вызываем PDF-генерацию (где html2canvas)
+    downloadAsPdf();
+  }, 300);
+}
+
 async function downloadAsPdf() {
   const element = document.querySelector('.card')
   if (!element) return
@@ -847,7 +870,7 @@ const findImage = (photos) => {
           <NuxtLink class="card__main_link card__main_link-active">{{ capitalize(product.name) }}</NuxtLink>
         </div>
         <div class="card__main_header-items">
-          <div class="card__main_header-item" @click="downloadAsPdf">
+          <div class="card__main_header-item" @click="openDialogDownload">
             <IconsDownload color="#EF7F1A"/>
             <p class="card__main_header-text">Скачать карточку</p>
           </div>
@@ -1009,7 +1032,7 @@ const findImage = (photos) => {
                   :class="{ active: item.id === currentSelectedId }"
                   @click="selectItem(item)"
               >
-                <NuxtImg format="webp" loading="lazy" preload v-if="item.image" :src="item.image" alt=""/>
+                <NuxtImg format="webp" preload v-if="item.image" :src="item.image" alt=""/>
                 <span>{{ item.value }}</span>
               </li>
             </ul>
@@ -1040,9 +1063,10 @@ const findImage = (photos) => {
                   target="_blank"
                   v-for="(market, index) in product?.markets || []"
                   :key="index"
-                  :to="market.product_url"
+                  :to="market.url"
               >
-                <img :src='transformStorageUrl(market.image)' alt="">
+                <img v-if="market.is_attached" :src='transformStorageUrl(market.image_active)' alt="">
+                <img v-else :src='transformStorageUrl(market.image_disable)' alt="">
               </NuxtLink>
             </div>
             <NuxtLink v-if="!existingItem" class="main_btn" @click="addToBasket">Добавить в корзину</NuxtLink>
@@ -1168,6 +1192,21 @@ const findImage = (photos) => {
           <p>Скопировать ссылку</p>
           <img src="/Link.svg" alt="">
         </div>
+      </div>
+    </div>
+    <div class="admin__dialog" v-if="visibleDialogDownload" @click="closeDialogDownload" style="z-index: 1">
+      <div class="card__dialog" @click.stop>
+        <div class="card__dialog_header">
+          <p>Подготовка к скачиванию</p>
+          <IconsCross @click="closeDialogDownload" />
+        </div>
+        <div class="card__dialog_mess">
+          <p>Пожалуйста, дождитесь полной загрузки всех фотографий на странице.</p>
+          <p>Затем нажмите кнопку «Скачать», чтобы получить корректный PDF.</p>
+        </div>
+        <button class="main_btn" @click="handleDownloadPdf">
+          Скачать карточку
+        </button>
       </div>
     </div>
   </div>

@@ -17,6 +17,8 @@ const errors = ref({
   placeName: false,
   placeSelect: false,
   placeImg: false,
+  placeImg1: false,
+  placeImg2: false,
 });
 
 const place = ref([]);
@@ -29,6 +31,12 @@ const placeUrl = ref('')
 const placeImg = ref(null);
 const placeFile = ref(null);
 const placePreview = ref(null);
+const placeImg1 = ref(null);
+const placeFile1 = ref(null);
+const placePreview1 = ref(null);
+const placeImg2 = ref(null);
+const placeFile2 = ref(null);
+const placePreview2 = ref(null);
 const placeSelect = ref('');
 const isEditingPlace = ref(false);
 const currentPlaceId = ref(false);
@@ -54,20 +62,44 @@ const handleFileChangePlace = (event) => {
     placePreview.value = URL.createObjectURL(file);
   }
 };
+const handleFileChangePlace1 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    placeImg1.value = file;
+    placePreview1.value = URL.createObjectURL(file);
+  }
+};
+const handleFileChangePlace2 = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    placeImg2.value = file;
+    placePreview2.value = URL.createObjectURL(file);
+  }
+};
 const createPlace = async () => {
   isLoading.value = true;
   errors.value.placeName = false;
   errors.value.placeSelect = false;
   errors.value.placeImg = false;
+  errors.value.placeImg1 = false;
+  errors.value.placeImg2 = false;
   errors.value.placeName = !placeName.value;
   errors.value.placeSelect = !placeSelect.value;
   errors.value.placeImg = !placeImg.value;
+  errors.value.placeImg1 = !placeImg1.value;
+  errors.value.placeImg2 = !placeImg2.value;
   try {
     const formData = new FormData();
     formData.append('name', placeName.value);
     formData.append('type', placeSelect.value);
     if (placeImg.value) {
       formData.append('image', placeImg.value);
+    }
+    if (placeImg1.value) {
+      formData.append('image_active', placeImg1.value);
+    }
+    if (placeImg2.value) {
+      formData.append('image_disable', placeImg2.value);
     }
     if (placeUrl.value) {
       formData.append('url', placeUrl.value);
@@ -99,6 +131,12 @@ const updatePlace = async () => {
     formData.append('type', placeSelect.value);
     if (placeImg.value) {
       formData.append('image', placeImg.value);
+    }
+    if (placeImg1.value) {
+      formData.append('image_active', placeImg1.value);
+    }
+    if (placeImg2.value) {
+      formData.append('image_disable', placeImg2.value);
     }
     if (placeUrl.value) {
       formData.append('url', placeUrl.value);
@@ -133,6 +171,8 @@ const deletePlace = async (idPlace) => {
 };
 const editPlace = (place) => {
   placePreview.value = place.image;
+  placePreview1.value = place.image_active;
+  placePreview2.value = place.image_disable;
   isEditingPlace.value = true;
   currentPlaceId.value = place.id;
   placeName.value = place.name;
@@ -143,22 +183,40 @@ const editPlace = (place) => {
   errors.value.placeImg = false;
 };
 const resetPlace = () => {
-  placePreview.value = null;
   isEditingPlace.value = false;
   placeName.value = '';
   placeUrl.value = '';
   placeImg.value = null;
   placeFile.value.value = ''
+  placePreview.value = null;
+  placeImg1.value = null;
+  placeFile1.value.value = ''
+  placePreview1.value = null;
+  placeImg2.value = null;
+  placeFile2.value.value = ''
+  placePreview2.value = null;
   placeSelect.value = ''
   currentPlaceId.value = null
   errors.value.placeName = false;
   errors.value.placeSelect = false;
   errors.value.placeImg = false;
+  errors.value.placeImg1 = false;
+  errors.value.placeImg2 = false;
 };
 const resetPlacePreview = () => {
   placePreview.value = null;
   placeImg.value = null;
   placeFile.value.value = ''
+};
+const resetPlacePreview1 = () => {
+  placePreview1.value = null;
+  placeImg1.value = null;
+  placeFile1.value.value = ''
+};
+const resetPlacePreview2 = () => {
+  placePreview.value2 = null;
+  placeImg2.value = null;
+  placeFile2.value.value = ''
 };
 </script>
 
@@ -195,6 +253,7 @@ const resetPlacePreview = () => {
         v-model="placeUrl"
         placeholder="Введите ссылку"
     />
+    Картинка в подвал
     <div class="input__wrapper">
       <input ref="placeFile" type="file" id="input__file" class="input input__file-reset"
              @change="handleFileChangePlace" accept="image/*" multiple>
@@ -205,6 +264,36 @@ const resetPlacePreview = () => {
           </span>
         <span class="input__file-button-text">Выберите картинку</span>
         <span class="input__file-icon-reset" @click.prevent="resetPlacePreview">
+            <IconsCross color="#fff"/>
+          </span>
+      </label>
+    </div>
+    Активная картинка
+    <div class="input__wrapper">
+      <input ref="placeFile1" type="file" id="input__file" class="input input__file-reset"
+             @change="handleFileChangePlace1" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button-reset">
+          <span class="input__file-icon-wrapper">
+            <img v-if="placePreview1" class="input__file-icon" :src="placePreview1" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+        <span class="input__file-icon-reset" @click.prevent="resetPlacePreview1">
+            <IconsCross color="#fff"/>
+          </span>
+      </label>
+    </div>
+    Неактивная картинка
+    <div class="input__wrapper">
+      <input ref="placeFile2" type="file" id="input__file" class="input input__file-reset"
+             @change="handleFileChangePlace2" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button-reset">
+          <span class="input__file-icon-wrapper">
+            <img v-if="placePreview2" class="input__file-icon" :src="placePreview2" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+        <span class="input__file-icon-reset" @click.prevent="resetPlacePreview2">
             <IconsCross color="#fff"/>
           </span>
       </label>
@@ -250,12 +339,37 @@ const resetPlacePreview = () => {
         v-model="placeUrl"
         placeholder="Введите ссылку"
     />
+    Картинка в подвал
     <div class="input__wrapper">
       <input ref="placeFile" type="file" id="input__file" class="input input__file"
              @change="handleFileChangePlace" accept="image/*" multiple>
       <label for="input__file" class="input__file-button">
           <span class="input__file-icon-wrapper">
             <img v-if="placePreview" class="input__file-icon" :src="placePreview" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
+    Активная картинка
+    <div class="input__wrapper">
+      <input ref="placeFile1" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangePlace1" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="placePreview1" class="input__file-icon" :src="placePreview1" alt="Выбрать файл"
+                 width="50" height="50px">
+          </span>
+        <span class="input__file-button-text">Выберите картинку</span>
+      </label>
+    </div>
+    Неактивная картинка
+    <div class="input__wrapper">
+      <input ref="placeFile2" type="file" id="input__file" class="input input__file"
+             @change="handleFileChangePlace2" accept="image/*" multiple>
+      <label for="input__file" class="input__file-button">
+          <span class="input__file-icon-wrapper">
+            <img v-if="placePreview2" class="input__file-icon" :src="placePreview2" alt="Выбрать файл"
                  width="50" height="50px">
           </span>
         <span class="input__file-button-text">Выберите картинку</span>
@@ -280,7 +394,9 @@ const resetPlacePreview = () => {
       <tr>
         <th>Название</th>
         <th>Ссылка</th>
-        <th>Иконка</th>
+        <th>Иконка подвала</th>
+        <th>Иконка активная</th>
+        <th>Иконка неактивная</th>
         <th style="width: 100px">Изменить</th>
         <th style="width: 100px">Удалить</th>
       </tr>
@@ -292,6 +408,8 @@ const resetPlacePreview = () => {
         <td>
           <img v-if="place.image" :src="place.image" alt="Фото" width="50"/>
         </td>
+        <td><img v-if="place.image_active" :src="place.image_active" alt="Фото" width="50"/></td>
+        <td><img v-if="place.image_disable" :src="place.image_disable" alt="Фото" width="50"/></td>
         <td>
           <button @click="editPlace(place)" class="admin-panel__content_btn">Изменить</button>
         </td>

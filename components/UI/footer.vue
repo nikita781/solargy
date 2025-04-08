@@ -115,7 +115,7 @@ onMounted(() => {
                   v-for="place in socials"
                   :key="place.id"
               >
-                <NuxtLink :to="place.url">
+                <NuxtLink :to="place.url" target=_blank>
                   <NuxtImg format="webp" loading="lazy" preload :src="place.image_footer" alt=""/>
                 </NuxtLink>
               </div>
@@ -130,7 +130,7 @@ onMounted(() => {
                   v-for="place in marketplacesPlace"
                   :key="place.id"
               >
-                <NuxtLink :to="place.url">
+                <NuxtLink :to="place.url" target=_blank>
                   <NuxtImg format="webp" loading="lazy" preload :src="place.image" alt=""/>
                 </NuxtLink>
               </div>
