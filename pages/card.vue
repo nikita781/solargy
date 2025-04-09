@@ -977,6 +977,7 @@ const findImage = (photos) => {
             <p class="card__main_price">{{ totalPrice }} ₽</p>
             <div
                 class="card__main_promo"
+                v-if="product?.promos?.[0]"
             >
               <NuxtLink
                   v-for="(promo, index) in product.promos"
@@ -989,7 +990,7 @@ const findImage = (photos) => {
             </div>
           </div>
           <p class="card__main_description">{{ product.description }}</p>
-          <div class="card__main_select-cont">
+          <div class="card__main_select-cont" v-if="product?.options?.[0]">
             <div
                 v-for="(select, index) in product.options"
                 :key="select.id"
