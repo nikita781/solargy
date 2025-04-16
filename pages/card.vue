@@ -655,6 +655,14 @@ function transformAllImagesInHtml(html) {
     img.src = transformStorageUrl(img.src);
   });
 
+  // Проверка на .columns с двумя .column
+  doc.querySelectorAll('.columns').forEach((columns) => {
+    const columnChildren = columns.querySelectorAll(':scope > .column');
+    if (columnChildren.length === 2) {
+      columns.classList.add('columns--two');
+    }
+  });
+
   // 3. Возвращаем обновлённую HTML-строку
   return doc.body.innerHTML;
 }
