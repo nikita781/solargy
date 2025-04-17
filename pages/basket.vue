@@ -3,6 +3,7 @@ import {ref, computed} from "vue";
 import { useBasketStore } from "@/stores/basket";
 import axios from "axios";
 import { useAsyncData } from '#app';
+import Toastify from "toastify-js";
 
 const { data: seos, error } = await useAsyncData("fetchSeos", () =>
     axios.get(`/seos`).then((res) => res.data)
@@ -117,8 +118,28 @@ const toggleFormOpen = () => {
   errors.value.name = false;
   errors.value.phone = false;
   errors.value.name = !nameUser.value.trim();
-  errors.value.phone = phoneUser.value.replace(/\D/g, '').length !== 11;
+  errors.value.phone = !phoneUser.value.trim();
   if (errors.value.name || errors.value.phone) {
+    Toastify({
+      text: "Заполните все поля!",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ff4545",
+      stopOnFocus: true,
+    }).showToast();
+    return;
+  }
+  if (phoneUser.value.replace(/\D/g, '').length !== 11) {
+    errors.value.phone = true;
+    Toastify({
+      text: "Неверный номер телефона!",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ff4545",
+      stopOnFocus: true,
+    }).showToast();
     return;
   }
   basketStore.updateUserInfo(nameUser.value, phoneUser.value);

@@ -139,8 +139,19 @@ const addSuppurt = async () => {
   errors.value.phone = false;
   errors.value.name = !nameUser.value.trim();
   errors.value.phone = !phone.value.trim();
-  errors.value.phone = phone.value.replace(/\D/g, '').length !== 11;
   if (!errors.value.name && !errors.value.phone) {
+    if (phone.value.replace(/\D/g, '').length !== 11) {
+      errors.value.phone = true;
+      Toastify({
+        text: "Неверный номер телефона!",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#ff4545",
+        stopOnFocus: true,
+      }).showToast();
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append('name', nameUser.value);
@@ -171,6 +182,15 @@ const addSuppurt = async () => {
         stopOnFocus: true,
       }).showToast();
     }
+  } else {
+    Toastify({
+      text: "Заполните все поля!",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ff4545",
+      stopOnFocus: true,
+    }).showToast();
   }
 };
 

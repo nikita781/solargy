@@ -192,9 +192,21 @@ const addSuppurt = async () => {
   errors.value.name = !nameUser.value.trim();
   errors.value.email = !email.value.trim();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  errors.value.email = !email.value.trim() || !emailRegex.test(email.value);
+  errors.value.email = !email.value.trim();
   errors.value.comment = !comment.value.trim();
   if (!errors.value.name && !errors.value.email && !errors.value.comment) {
+    if (!emailRegex.test(email.value)) {
+      errors.value.email = !emailRegex.test(email.value);
+      Toastify({
+        text: "Не верный формат почты",
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "#ff4545",
+        stopOnFocus: true,
+      }).showToast();
+      return;
+    }
     try {
       const formData = new FormData();
       formData.append('name', nameUser.value);
@@ -223,6 +235,15 @@ const addSuppurt = async () => {
         stopOnFocus: true,
       }).showToast();
     }
+  } else {
+    Toastify({
+      text: "Заполните все поля!",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ff4545",
+      stopOnFocus: true,
+    }).showToast();
   }
 };
 
