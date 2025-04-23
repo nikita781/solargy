@@ -320,6 +320,13 @@ onBeforeUnmount(() => {
             >
               КОНТАКТЫ
             </NuxtLink>
+            <NuxtLink
+                class="header__main_nav-item"
+                :class="{ active: route.name === 'blog' }"
+                to="/blog"
+            >
+              НОВОСТИ
+            </NuxtLink>
           </nav>
           <div class="header__main_menu">
             <IconsSearch @click="toggleMenuSearch"/>
@@ -412,6 +419,13 @@ onBeforeUnmount(() => {
               >
                 КОНТАКТЫ
               </NuxtLink>
+              <NuxtLink
+                  class="header__main_nav-item"
+                  :class="{ active: route.name === 'blog' }"
+                  to="/blog"
+              >
+                НОВОСТИ
+              </NuxtLink>
             </nav>
           </div>
         </div>
@@ -460,7 +474,7 @@ onBeforeUnmount(() => {
           >
             <NuxtLink
                 class="header__menu_container-search"
-                :to="`/stocks`"
+                :to="`/promo/${search.id}-${generateSlug(search.title)}/`"
             >
               <NuxtImg format="webp" loading="lazy" preload :src="search.image" alt=""/>
               <div class="header__menu_container-search-info">

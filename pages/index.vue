@@ -77,6 +77,35 @@ const swiperConfig = reactive({
   },
 });
 
+const swiperRightNews = ref(null);
+const swiperLeftNews = ref(null);
+
+const swiperConfigNews = reactive({
+  modules: [Navigation],
+  spaceBetween: 20,
+  loop: true,
+  speed: 500,
+  slidesPerView: 3,
+  navigation: {
+    nextEl: null, // Будет настроено в onMounted
+    prevEl: null, // Будет настроено в onMounted
+  },
+  breakpoints: {
+    // когда ширина экрана >= 320px
+    1: {
+      slidesPerView: 1,
+    },
+    // когда ширина экрана >= 640px
+    640: {
+      slidesPerView: 2,
+    },
+    // когда ширина экрана >= 1024px
+    1024: {
+      slidesPerView: 3,
+    },
+  }
+});
+
 const swiperInstance = ref(null);
 
 function generateSlug(name) {
@@ -119,6 +148,11 @@ const { data: banners } = await useAsyncData("banners", async () => {
 const { data: topProduct } = await useAsyncData("topProduct", async () => {
   const response = await axios.get(`/products?top=1`);
   return response.data;
+});
+
+const { data: news } = await useAsyncData("news", async () => {
+  const response = await axios.get(`/news?last_month=true`);
+  return response.data.data;
 });
 // const topProduct = ref([]);
 //
@@ -267,6 +301,8 @@ onMounted(() => {
   interval = setInterval(changeSlide, 5000);
   swiperConfig.navigation.nextEl = swiperRight.value;
   swiperConfig.navigation.prevEl = swiperLeft.value;
+  swiperConfigNews.navigation.nextEl = swiperRightNews.value;
+  swiperConfigNews.navigation.prevEl = swiperLeftNews.value;
 });
 
 onUnmounted(() => {
@@ -436,6 +472,51 @@ const findImage = (photos) => {
             </NuxtLink>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="best-product">
+      <div class="best-product_page">
+        <div class="best-product__header-news">
+          <h2 class="main_title">Новости</h2>
+          <div class="best-product__header_link">
+            <div class="best-product__header_link-btn">
+              <div ref="swiperLeftNews" class="swiper__left_news">
+                <IconsBtnSlide/>
+              </div>
+              <div ref="swiperRightNews" class="swiper__right_news">
+                <IconsBtnSlide/>
+              </div>
+            </div>
+            <NuxtLink to="/blog" class="main_btn">Узнать больше</NuxtLink>
+          </div>
+        </div>
+        <Swiper
+            v-bind="swiperConfigNews"
+            ref="swiperInstanceNews"
+            @swiper="onSwiperInit"
+            style="height: unset"
+        >
+          <SwiperSlide ref="swiperInstanceNews"
+                       v-for="(blog, index) in news"
+                       :key="index"
+          >
+            <NuxtLink
+                class="news-card"
+                :to="`/news/${blog.id}-${generateSlug(blog.title)}/`"
+            >
+              <div class="news-card__header">
+                <NuxtImg format="webp" preload loading="lazy" class="news-card__photo" :src="blog.image" alt=""/>
+                <div class="news-card__title_cont">
+                  <p class="news-card__title">{{blog.title}}</p>
+                </div>
+              </div>
+              <div class="news-card__footer">
+                <p class="news-card__type">{{ blog.type }}</p>
+                <p class="news-card__date">{{ blog.date }}</p>
+              </div>
+            </NuxtLink>
+          </SwiperSlide>
+        </Swiper>
       </div>
     </div>
     <div class="questions">

@@ -187,7 +187,7 @@ watch(
         >
           <NuxtLink
               class="header__menu_container-search"
-              :to="`/stocks`"
+              :to="`/promo/${search.id}-${generateSlug(search.title)}/`"
           >
             <NuxtImg format="webp" preload :src="search.image" alt=""/>
             <div class="header__menu_container-search-info">
@@ -210,12 +210,34 @@ watch(
         >
           <NuxtLink
               class="header__menu_container-search"
-              :to="`/stocks`"
+              :to="`/promo/${search.id}-${generateSlug(search.title)}/`"
           >
             <NuxtImg format="webp" preload :src="search.image" alt=""/>
             <div class="header__menu_container-search-info">
               <p class="header__menu_name">{{ search.title }}</p>
               <p class="header__menu_data">{{ convertDateToText(search.end) }}</p>
+            </div>
+          </NuxtLink>
+        </div>
+      </div>
+      <div class="header__menu_title">
+        <h3>Новости</h3>
+        <p>{{ searchResultFull?.news?.length }}</p>
+      </div>
+      <div class="header__menu_container-search-cont">
+        <div
+            v-if="searchResultFull?.news"
+            v-for="(search, index) in searchResultFull?.news"
+            :key="index"
+            class="header__menu_container-search"
+        >
+          <NuxtLink
+              class="header__menu_container-search"
+              :to="`/news/${search.id}-${generateSlug(search.title)}/`"
+          >
+            <NuxtImg format="webp" preload :src="search.image" alt=""/>
+            <div class="header__menu_container-search-info">
+              <p class="header__menu_name">{{ search.title }}</p>
             </div>
           </NuxtLink>
         </div>

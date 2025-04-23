@@ -43,4 +43,5 @@ if (process.client) {
 @use "/assets/scss/editor" as *;
 @use "/assets/scss/search" as *;
 @use "/assets/scss/promo" as *;
+@use "/assets/scss/news" as *;
 </style>

@@ -133,6 +133,13 @@ const errors = ref({
           </p>
           <p
               class="admin-panel__menu_item"
+              :class="{ active: activeTab === 'Новости' }"
+              @click="activeTab = 'Новости'"
+          >
+            Новости
+          </p>
+          <p
+              class="admin-panel__menu_item"
               :class="{ active: activeTab === 'О нас' }"
               @click="activeTab = 'О нас'"
           >
@@ -194,6 +201,7 @@ const errors = ref({
       <AdminCategory v-if="activeTab === 'Категории'"/>
       <AdminOption v-if="activeTab === 'Параметры товара'"/>
       <AdminProduct v-if="activeTab === 'Товары'"/>
+      <AdminNews v-if="activeTab === 'Новости'"/>
       <AdminAboutUs  v-if="activeTab === 'О нас'"/>
       <AdminContact v-if="activeTab === 'Контакты'"/>
       <AdminStock v-if="activeTab === 'Акции'"/>

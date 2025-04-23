@@ -177,6 +177,9 @@ $x-big: 1829.98px;
         font-family: 'Exo 2 Bold', serif;
         transition: 0.2s;
         color: #171717;
+        @media screen and (max-width: $medium) {
+          font-size: 14px;
+        }
       }
       &-arrow {
         height: 100%;

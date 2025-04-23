@@ -151,6 +151,7 @@ onMounted(() => {
           <NuxtLink to="/about_us" class="footer__catalog_link">О нас</NuxtLink>
           <NuxtLink to="/catalog" class="footer__catalog_link">Каталог</NuxtLink>
           <NuxtLink to="/contact" class="footer__catalog_link">Контакты</NuxtLink>
+          <NuxtLink to="/blog" class="footer__catalog_link">Новости</NuxtLink>
         </div>
         <div class="footer__catalog_item">
           <p class="footer__catalog_title">Каталог</p>

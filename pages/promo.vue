@@ -9,6 +9,55 @@ const router = useRouter();
 const promoId = ref(null);
 const promo = ref([]);
 
+const promoIdURL = route.params.promoId;
+if (!promoIdURL) {
+  await router.push('/');
+} else {
+  promoId.value = promoIdURL.match(/^\d+/)?.[0] || null;
+}
+
+const defaultSeo = {
+  title: "SOLARGY SHOP - Световые панели для вашего дома и бизнеса",
+  description: "SOLARGY SHOP предлагает световые панели высокого качества по доступным ценам. Энергосберегающие технологии, широкий ассортимент и доставка по всей России.",
+  keywords: "световые панели, солнечные панели, энергосбережение, купить световые панели, панели для дома, панели для бизнеса, Solargy Shop, солнечные батареи, возобновляемая энергия",
+  author: "Solargy"
+};
+
+const {data: seos, error} = await useAsyncData("fetchSeos", async () => {
+  if (!promoId.value) return null;
+  try {
+    const response = await axios.get(`/promos/${promoId.value}`);
+    return response.data;
+  } catch (err) {
+    console.error("Ошибка запроса SEO:", err);
+    return null;
+  }
+});
+
+useHead(() => {
+  const deliverySeo = seos?.value;
+
+  if (!deliverySeo) {
+    return {
+      title: defaultSeo.title,
+      meta: [
+        {name: "description", content: defaultSeo.description},
+        {name: "keywords", content: defaultSeo.keywords},
+        {name: "author", content: defaultSeo.author},
+      ],
+    };
+  }
+
+  return {
+    title: deliverySeo.title || defaultSeo.title,
+    meta: [
+      {name: "description", content: deliverySeo.description || defaultSeo.description},
+      {name: "keywords", content: deliverySeo.keywords || defaultSeo.keywords},
+      {name: "author", content: deliverySeo.author || defaultSeo.author},
+    ],
+  };
+});
+
 const fetchPromo = async (idPromo) => {
   try {
     const response = await axios.get(`/promos/${idPromo}`);
