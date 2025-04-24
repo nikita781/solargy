@@ -474,17 +474,17 @@ const findImage = (photos) => {
         </div>
       </div>
     </div>
-    <div class="best-product">
+    <div class="best-product" v-if="news">
       <div class="best-product_page">
         <div class="best-product__header-news">
           <h2 class="main_title">Новости</h2>
           <div class="best-product__header_link">
             <div class="best-product__header_link-btn">
               <div ref="swiperLeftNews" class="swiper__left_news">
-                <IconsBtnSlide/>
+                <IconsBtnSlide :class="{ active: news.length < 4 }"/>
               </div>
               <div ref="swiperRightNews" class="swiper__right_news">
-                <IconsBtnSlide/>
+                <IconsBtnSlide :class="{ active: news.length < 4 }"/>
               </div>
             </div>
             <NuxtLink to="/blog" class="main_btn">Узнать больше</NuxtLink>
@@ -495,6 +495,7 @@ const findImage = (photos) => {
             ref="swiperInstanceNews"
             @swiper="onSwiperInit"
             style="height: unset"
+            v-if="news.length > 3"
         >
           <SwiperSlide ref="swiperInstanceNews"
                        v-for="(blog, index) in news"
@@ -517,6 +518,25 @@ const findImage = (photos) => {
             </NuxtLink>
           </SwiperSlide>
         </Swiper>
+        <div class="news-card__container" v-else>
+          <NuxtLink
+              class="news-card"
+              v-for="(blog, index) in news"
+              :key="index"
+              :to="`/news/${blog.id}-${generateSlug(blog.title)}/`"
+          >
+            <div class="news-card__header">
+              <NuxtImg format="webp" preload loading="lazy" class="news-card__photo" :src="blog.image" alt=""/>
+              <div class="news-card__title_cont">
+                <p class="news-card__title">{{blog.title}}</p>
+              </div>
+            </div>
+            <div class="news-card__footer">
+              <p class="news-card__type">{{ blog.type }}</p>
+              <p class="news-card__date">{{ blog.date }}</p>
+            </div>
+          </NuxtLink>
+        </div>
       </div>
     </div>
     <div class="questions">

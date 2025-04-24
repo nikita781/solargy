@@ -300,9 +300,9 @@ $x-big: 1829.98px;
   &_page {
     max-width: 1440px;
     margin: 0 auto;
-    padding: 100px 80px;
+    padding: 60px 80px;
     @media screen and (max-width: $large){
-      padding: 80px;
+      padding: 60px 80px;
     }
     @media screen and (max-width: $medium){
       padding: 60px 50px;
@@ -476,6 +476,19 @@ $x-big: 1829.98px;
   cursor: pointer;
   width: 52px;
   height: 52px;
+  .svg-container {
+    &.active {
+      svg {
+        cursor: not-allowed;
+        path {
+          fill: #9B9B9B;
+        }
+      }
+      &:hover svg path {
+        fill: #9B9B9B;
+      }
+    }
+  }
 }
 .swiper__right_news {
   transform: rotate(180deg);
