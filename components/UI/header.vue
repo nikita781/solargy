@@ -441,11 +441,11 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="header__menu header__menu_search" :style="{ display: isSearchOpen ? 'grid' : 'none'}">
-        <div class="header__menu_title">
+        <div class="header__menu_title" v-if="searchResult?.products?.length">
           <h3>Товары</h3>
           <p>{{ searchResult?.products?.length }}</p>
         </div>
-        <div class="header__menu_container-search-cont">
+        <div class="header__menu_container-search-cont" v-if="searchResult?.products?.length">
           <div
               v-if="searchResult?.products"
               v-for="(search, index) in searchResult?.products"
@@ -461,11 +461,11 @@ onBeforeUnmount(() => {
             </a>
           </div>
         </div>
-        <div class="header__menu_title">
+        <div class="header__menu_title" v-if="searchResult?.newPromos?.length">
           <h3>Акции</h3>
           <p>{{ searchResult?.newPromos?.length }}</p>
         </div>
-        <div class="header__menu_container-search-cont">
+        <div class="header__menu_container-search-cont" v-if="searchResult?.newPromos?.length">
           <div
               v-if="searchResult?.newPromos"
               v-for="(search, index) in searchResult?.newPromos"
@@ -480,6 +480,28 @@ onBeforeUnmount(() => {
               <div class="header__menu_container-search-info">
                 <p class="header__menu_name">{{ search.title }}</p>
                 <p class="header__menu_data">{{ convertDateToText(search.end) }}</p>
+              </div>
+            </NuxtLink>
+          </div>
+        </div>
+        <div class="header__menu_title" v-if="searchResult?.news?.length">
+          <h3>Новости</h3>
+          <p>{{ searchResult?.news_count }}</p>
+        </div>
+        <div class="header__menu_container-search-cont" v-if="searchResult?.news?.length">
+          <div
+              v-if="searchResult?.news"
+              v-for="(search, index) in searchResult?.news"
+              :key="index"
+              class="header__menu_container-search"
+          >
+            <NuxtLink
+                class="header__menu_container-search"
+                :to="`/news/${search.id}-${generateSlug(search.title)}/`"
+            >
+              <NuxtImg format="webp" loading="lazy" preload :src="search.image" alt=""/>
+              <div class="header__menu_container-search-info">
+                <p class="header__menu_name">{{ search.title }}</p>
               </div>
             </NuxtLink>
           </div>
