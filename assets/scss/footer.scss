@@ -151,6 +151,11 @@ $x-big: 1829.98px;
       flex-direction: column;
       gap: 10px;
     }
+    &_first {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
     &_pict {
       display: flex;
       justify-content: space-between;
