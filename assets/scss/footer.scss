@@ -155,6 +155,15 @@ $x-big: 1829.98px;
       display: flex;
       flex-direction: column;
       gap: 8px;
+      a {
+        p {
+          transition: 0.2s;
+        }
+        p:hover {
+          color: #EF7F1A;
+          transition: 0.2s;
+        }
+      }
     }
     &_pict {
       display: flex;
