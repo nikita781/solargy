@@ -24,12 +24,14 @@ const errors = ref({
   productPrice: false,
   productDescription: false,
   productName: false,
+  productSeo: false,
   productCategory: false,
 });
 
 const selectedCategory = ref('all');
 
 const productName = ref('');
+const productSeo = ref('');
 const productCategory = ref(null);
 const productDescription = ref('');
 const productPrice = ref(null);
@@ -283,6 +285,10 @@ const createProduct = async () => {
     formData.append('description', productDescription.value);
     formData.append('price', productPrice.value);
     formData.append('is_top', topProd.value);
+    console.log(productSeo.value)
+    if (productSeo.value) {
+      formData.append('keywords', productSeo.value);
+    }
 
     await axios.post(`/products`, formData, {
       headers: {},
@@ -319,6 +325,9 @@ const updateProduct = async () => {
     formData.append('description', productDescription.value);
     formData.append('price', productPrice.value);
     formData.append('is_top', topProd.value);
+    if (productSeo.value) {
+      formData.append('keywords', productSeo.value);
+    }
 
     await axios.post(`/products/${currentProductId.value}?_method=patch`, formData, {
       headers: {},
@@ -341,6 +350,7 @@ const fetchColorPhoto = async (idProd) => {
   }
 };
 const editProduct = (product) => {
+  console.log(product)
   openDialogUpdate();
   isEditingProduct.value = true;
   currentProductId.value = product.id;
@@ -350,6 +360,7 @@ const editProduct = (product) => {
   productDescription.value = product.description;
   productCategory.value = product.category_id.id;
   productTop.value = product.is_top;
+  productSeo.value = product.keywords;
   errors.value.productCategory = false;
   errors.value.productName = false;
   errors.value.productDescription = false;
@@ -363,10 +374,12 @@ const resetProduct = () => {
   productDescription.value = '';
   productCategory.value = null;
   productPrice.value = null;
+  productSeo.value = '';
   productTop.value = false;
   formattedOptions.value = null;
   selectedValues.value = {}
   errors.value.productCategory = false;
+  errors.value.productSeo = false;
   errors.value.productName = false;
   errors.value.productDescription = false;
   errors.value.productPrice = false;
@@ -1615,6 +1628,12 @@ const activeTab = ref("Главная");
               placeholder="Введите цену"
               :class="{ error: errors.productPrice }"
           />
+          <input
+              type="text"
+              class="basket__form_input admin-panel__content_input"
+              v-model="productSeo"
+              placeholder="Введите ключевые слова через запятую"
+          />
           <button
               class="main_btn"
               type="submit"
@@ -1723,6 +1742,12 @@ const activeTab = ref("Главная");
                 v-model="productPrice"
                 placeholder="Введите цену"
                 :class="{ error: errors.productPrice }"
+            />
+            <input
+                type="text"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productSeo"
+                placeholder="Введите ключевые слова через запятую"
             />
             <button
                 class="main_btn"
