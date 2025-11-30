@@ -27,10 +27,35 @@ $x-big: 1829.98px;
       grid-template-columns: 1fr;
     }
   }
+  &__links {
+    flex-wrap: nowrap;
+    margin-bottom: 40px;
+    @media screen and (max-width: $medium){
+      margin-bottom: 30px;
+    }
+  }
+  &__content {
+    display: flex;
+    flex-direction: column;
+    gap: 100px;
+    @media screen and (max-width: $medium){
+      gap: 30px;
+    }
+  }
   &__items {
     display: flex;
     flex-direction: column;
     gap: 9px;
+    &-title {
+      margin-bottom: -70px;
+      color: #343A40;
+      text-transform: uppercase;
+      font-family: 'Exo 2 Bold', serif;
+      font-size: 24px;
+      @media screen and (max-width: $medium){
+        margin-bottom: unset;
+      }
+    }
   }
   &__item {
     border: 1px solid #cccccc;
@@ -134,7 +159,12 @@ $x-big: 1829.98px;
     }
   }
   &__button {
+    &-container {
+      height: 100%;
+    }
     &-cont {
+      position: sticky;
+      top: 150px;
       height: 140px;
       padding: 30px;
       border-radius: 10px;
@@ -165,10 +195,30 @@ $x-big: 1829.98px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      gap: 16px;
-      height: 110px;
+      gap: 30px;
       @media screen and (max-width: $x-small){
         height: unset;
+      }
+    }
+    &-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    &_checkbox {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      p {
+        font-size: 16px;
+        font-family: 'Exo 2 Bold', serif;
+        color: #171717;
+        line-height: 20px;
+        a {
+          color: #171717;
+          text-decoration: underline;
+          font-family: 'Exo 2 Bold', serif;
+        }
       }
     }
     &_title {

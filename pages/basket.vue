@@ -231,78 +231,100 @@ const bestProduct = ref([
 <template>
   <div>
     <div class="basket" v-if="!formOpen">
-      <h2 class="main_title">Корзина</h2>
+      <div class="card__main_links basket__links" v-if="application">
+        <NuxtLink @click="application = false" class="card__main_link" style="cursor: pointer">Корзина</NuxtLink>
+        <IconsSun color="#EF7F1A"/>
+        <NuxtLink class="card__main_link card__main_link-active">Оформление заявки</NuxtLink>
+      </div>
+      <h2 class="main_title">{{ application ? 'Оформление заявки' : 'Корзина' }}</h2>
       <div class="basket__container">
-        <div class="basket__items" v-if="!application && basketItems.length > 0">
-          <div
-              class="basket__item"
-              v-for="(item, index) in basketItems"
-              :key="index"
-          >
-            <div class="basket__item_content">
-              <div class="basket__item_characteristic-phone">
-                <div v-for="(option, index) in item.options" :key="index">
-                  <p class="basket__item_inf">
-                    {{ option.name }}: <span>{{ option.values.value }}</span>
-                  </p>
+        <div class="basket__content">
+          <div class="basket__form-cont" v-if="application">
+            <p class="basket__form_title">Покупатель</p>
+            <div class="basket__form-container">
+              <div class="basket__form_input-cont">
+                <p class="basket__form_input-title">Ваше имя <span>*</span></p>
+                <input type="text" :class="{ error: errors.name }" class="basket__form_input" v-model="nameUser" placeholder="Введите ФИО">
+              </div>
+              <div class="basket__form_content">
+                <div class="basket__form_input-cont">
+                  <p class="basket__form_input-title">Ваше Email <span>*</span></p>
+                  <input type="text" class="basket__form_input" placeholder="Введите Email">
+                </div>
+                <div class="basket__form_input-cont">
+                  <p class="basket__form_input-title">Ваш телефон <span>*</span></p>
+                  <input type="text" :class="{ error: errors.phone }" @input="onInput" class="basket__form_input" v-model="phoneUser" placeholder="Введите номер телефона">
                 </div>
               </div>
-              <NuxtImg format="webp" preload :src="item.photo" alt=""/>
-              <div class="basket__item_info">
-                <p class="basket__item_title">{{ item.name }}</p>
-                <div class="basket__item_characteristic">
+              <div class="basket__form_checkbox">
+                <input type="checkbox">
+                <div>
+                  <p>Я соглашаюсь на <a href="#">обработку персональных данных</a></p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <p class="basket__items-title" v-if="application">Список товаров</p>
+          <div class="basket__items" v-if="basketItems.length > 0">
+            <div
+                class="basket__item"
+                v-for="(item, index) in basketItems"
+                :key="index"
+            >
+              <div class="basket__item_content">
+                <div class="basket__item_characteristic-phone">
                   <div v-for="(option, index) in item.options" :key="index">
                     <p class="basket__item_inf">
                       {{ option.name }}: <span>{{ option.values.value }}</span>
                     </p>
                   </div>
                 </div>
-              </div>
-            </div>
-            <div class="basket__item_cont">
-              <div class="card__main_final-cont">
-                <div
-                    class="card__main_final-btn card__main_final-btn-left"
-                    @click="quantityMinus(item.id)"
-                >
-                  <IconsMinus :color="item.quantity === 1 ? '#cccccc' : '#EF7F1A'"/>
-                </div>
-                <div class="card__main_final-quantity">{{ item.quantity }}</div>
-                <div
-                    class="card__main_final-btn card__main_final-btn-right"
-                    @click="quantityPlus(item.id)"
-                >
-                  <IconsPlus color="#EF7F1A"/>
+                <NuxtImg format="webp" preload :src="item.photo" alt=""/>
+                <div class="basket__item_info">
+                  <p class="basket__item_title">{{ item.name }}</p>
+                  <div class="basket__item_characteristic">
+                    <div v-for="(option, index) in item.options" :key="index">
+                      <p class="basket__item_inf">
+                        {{ option.name }}: <span>{{ option.values.value }}</span>
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <p class="basket__item_price">{{ item.price * item.quantity }} ₽</p>
-              <IconsTrash class="basket__item_trash" @click="removeFromBasket(item.id)" />
+              <div class="basket__item_cont">
+                <div class="card__main_final-cont">
+                  <div
+                      class="card__main_final-btn card__main_final-btn-left"
+                      @click="quantityMinus(item.id)"
+                  >
+                    <IconsMinus :color="item.quantity === 1 ? '#cccccc' : '#EF7F1A'"/>
+                  </div>
+                  <div class="card__main_final-quantity">{{ item.quantity }}</div>
+                  <div
+                      class="card__main_final-btn card__main_final-btn-right"
+                      @click="quantityPlus(item.id)"
+                  >
+                    <IconsPlus color="#EF7F1A"/>
+                  </div>
+                </div>
+                <p class="basket__item_price">{{ item.price * item.quantity }} ₽</p>
+                <IconsTrash class="basket__item_trash" @click="removeFromBasket(item.id)" />
+              </div>
             </div>
           </div>
-        </div>
-        <div class="basket__empty" v-if="!application && basketItems.length === 0">
-          <p>Ваша корзина пуста. Добавьте товары, чтобы продолжить покупки.</p>
-        </div>
-        <div class="basket__form-cont" v-if="application">
-          <p class="basket__form_title">Покупатель</p>
-          <div class="basket__form_content">
-            <div class="basket__form_input-cont">
-              <p class="basket__form_input-title">Ваше имя <span>*</span></p>
-              <input type="text" :class="{ error: errors.name }" class="basket__form_input" v-model="nameUser" placeholder="Введите ФИО">
-            </div>
-            <div class="basket__form_input-cont">
-              <p class="basket__form_input-title">Ваш телефон <span>*</span></p>
-              <input type="text" :class="{ error: errors.phone }" @input="onInput" class="basket__form_input" v-model="phoneUser" placeholder="Введите номер телефона">
-            </div>
+          <div class="basket__empty" v-if="!application && basketItems.length === 0">
+            <p>Ваша корзина пуста. Добавьте товары, чтобы продолжить покупки.</p>
           </div>
         </div>
-        <div class="basket__button-cont">
-          <div class="basket__title-cont">
-            <p class="basket__title">Итого</p>
-            <p class="basket__title">{{totalBasketPrice}} ₽</p>
+        <div class="basket__button-container">
+          <div class="basket__button-cont">
+            <div class="basket__title-cont">
+              <p class="basket__title">Итого</p>
+              <p class="basket__title">{{totalBasketPrice}} ₽</p>
+            </div>
+            <button v-if="!application" class="main_btn basket__button" @click="toggleApplication">Перейти к оформлению</button>
+            <button v-if="application" class="main_btn basket__button" @click="toggleFormOpen">Оформить заявку</button>
           </div>
-          <button v-if="!application" class="main_btn basket__button" @click="toggleApplication">Перейти к оформлению</button>
-          <button v-if="application" class="main_btn basket__button" @click="toggleFormOpen">Оформить заявку</button>
         </div>
       </div>
     </div>

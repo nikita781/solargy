@@ -7,7 +7,7 @@ import { useAsyncData } from '#app';
 const route = useRoute();
 const router = useRouter();
 const promoId = ref(null);
-const promo = ref([]);
+const promo = ref(null);
 
 const promoIdURL = route.params.promoId;
 if (!promoIdURL) {
@@ -61,10 +61,10 @@ useHead(() => {
 const fetchPromo = async (idPromo) => {
   try {
     const response = await axios.get(`/promos/${idPromo}`);
-    promo.value = response.data;
-
+    promo.value = response.data || null;
   } catch (error) {
     console.error('Ошибка загрузки акции:', error.response?.data || error);
+    promo.value = null;
   }
 };
 
@@ -129,6 +129,13 @@ watch(() => route.fullPath, () => {
   fetchPromo(promoId.value);
 });
 
+const promoProducts = computed(() => {
+  if (!promo.value || !Array.isArray(promo.value.products)) return [];
+  return promo.value.products;
+});
+
+const hasPromoProducts = computed(() => promoProducts.value.length > 0);
+
 onMounted(() => {
   const promoIdURL = route.params.promoId;
   if (promoIdURL) {
@@ -166,7 +173,7 @@ onMounted(() => {
         </div>
       </div>
     </div>
-    <div class="promo__prod">
+    <div class="promo__prod" v-if="hasPromoProducts">
         <div class="best-product__header">
           <h2 class="main_title">Товары, участвующие в акции</h2>
         </div>

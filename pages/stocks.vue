@@ -94,15 +94,17 @@ const setActiveTab = (index) => {
 };
 
 const convertDateToText = (dateString) => {
-  const months = [
-    "января", "февраля", "марта", "апреля", "мая", "июня",
-    "июля", "августа", "сентября", "октября", "ноября", "декабря"
-  ];
+  if (!dateString) return '';
 
-  const [year, month] = dateString.split('-').map(Number);
-  const monthName = months[month - 1];
+  const parts = dateString.split('-');
+  if (parts.length < 2) return dateString;
 
-  return `До конца ${monthName} ${year} года`;
+  const [year, month, day = '01'] = parts;
+
+  const dd = day.padStart(2, '0');
+  const mm = month.padStart(2, '0');
+
+  return `${dd}.${mm}.${year}`;
 };
 
 const tabsRef = ref([]);
@@ -192,7 +194,7 @@ onMounted(async () => {
           </div>
           <div class="stocks__item_content">
             <p class="stocks__item_text">{{ block.description }}</p>
-            <p class="stocks__item_data">{{ convertDateToText(block.end) }}</p>
+            <p class="stocks__item_data">До {{ convertDateToText(block.end) }}</p>
           </div>
         </NuxtLink>
       </div>
@@ -206,7 +208,7 @@ onMounted(async () => {
           </div>
           <div class="stocks__item_content">
             <p class="stocks__item_text">{{ block.description }}</p>
-            <p class="stocks__item_data">{{ convertDateToText(block.end) }}</p>
+            <p class="stocks__item_data">До {{ convertDateToText(block.end) }}</p>
           </div>
         </NuxtLink>
       </div>

@@ -83,18 +83,29 @@ function removeEmojis(text) {
 }
 
 function getVkEmbedLink(url) {
-  // Пытаемся найти в ссылке шаблон 'video-<oid>_<id>'
-  const match = url.match(/video\-([\-0-9]+)\_([0-9]+)/);
+  if (!url) return '';
+
+  // Ищем и обычные видео, и клипы:
+  //     video-192371408_456243321
+  //     clip-50151764_456246819
+  const match = url.match(/(?:video|clip)-(-?\d+)_([0-9]+)/);
+
   if (!match) {
-    // Если не нашли, возвращаем исходную ссылку или подставляем fallback
+    // Если не нашли нужный формат — отдаем как есть
     return url;
   }
-  // match[1] = -224743475, match[2] = 456239218
-  const oid = match[1];
+
+  let oid = match[1]; // может быть '50151764' или '-50151764'
   const id = match[2];
-  // Собираем формат, который нужен для iframe
-  return `https://vkvideo.ru/video_ext.php?oid=-${oid}&id=${id}&hd=1`;
+
+  // В embed oid должен быть с минусом (для сообществ)
+  if (!oid.startsWith('-')) {
+    oid = '-' + oid;
+  }
+
+  return `https://vkvideo.ru/video_ext.php?oid=${oid}&id=${id}&hd=1`;
 }
+
 
 const visibleDialog = ref(false);
 const openDialog = () => {
