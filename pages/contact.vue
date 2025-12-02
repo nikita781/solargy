@@ -1,5 +1,5 @@
 <script setup>
-import {nextTick, onMounted, ref} from 'vue';
+import { nextTick, onMounted, ref, computed } from 'vue';
 import axios from "axios";
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
@@ -127,64 +127,78 @@ const sliderStyle = computed(() => {
 const nameUser = ref('');
 const phone = ref('+7 ');
 const comment = ref('');
+const isAgree = ref(false);
 
 const errors = ref({
   name: false,
   phone: false,
-  comment: false
+  comment: false,
+  agree: false,
 });
 
 const addSuppurt = async () => {
   errors.value.name = false;
   errors.value.phone = false;
+  errors.value.agree = false;
+
   errors.value.name = !nameUser.value.trim();
   errors.value.phone = !phone.value.trim();
-  if (!errors.value.name && !errors.value.phone) {
-    if (phone.value.replace(/\D/g, '').length !== 11) {
-      errors.value.phone = true;
-      Toastify({
-        text: "Неверный номер телефона!",
-        duration: 3000,
-        gravity: "top",
-        position: "right",
-        backgroundColor: "#ff4545",
-        stopOnFocus: true,
-      }).showToast();
-      return;
-    }
-    try {
-      const formData = new FormData();
-      formData.append('name', nameUser.value);
-      formData.append('phone', phone.value);
-      if (comment.value) {
-        formData.append('comment', comment.value);
-      }
-      formData.append('email-type', 2);
+  errors.value.agree = !isAgree.value;
 
-      await axios.post(`/call`, formData);
-      reset();
-      Toastify({
-        text: "Заявка успешно отправлена!",
-        duration: 3000,
-        gravity: "top", // Позиция: "top" или "bottom"
-        position: "right", // Позиция: "left", "center" или "right"
-        backgroundColor: "#28a745",
-        stopOnFocus: true,
-      }).showToast();
-    } catch (error) {
-      console.error('Ошибка:', error.response?.data || error);
-      Toastify({
-        text: "Не удалось отправить заявку. Попробуйте снова.",
-        duration: 3000,
-        gravity: "top",
-        position: "right",
-        backgroundColor: "#ff4545",
-        stopOnFocus: true,
-      }).showToast();
+  if (errors.value.name || errors.value.phone || errors.value.agree) {
+    let message = 'Заполните все поля!';
+
+    if (errors.value.agree) {
+      message = 'Подтвердите согласие на обработку персональных данных';
     }
-  } else {
+
     Toastify({
-      text: "Заполните все поля!",
+      text: message,
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ff4545",
+      stopOnFocus: true,
+    }).showToast();
+    return;
+  }
+
+  if (phone.value.replace(/\D/g, '').length !== 11) {
+    errors.value.phone = true;
+    Toastify({
+      text: "Неверный номер телефона!",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ff4545",
+      stopOnFocus: true,
+    }).showToast();
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('name', nameUser.value);
+    formData.append('phone', phone.value);
+    if (comment.value) {
+      formData.append('comment', comment.value);
+    }
+    formData.append('email-type', 2);
+
+    await axios.post(`/call`, formData);
+    reset();
+    Toastify({
+      text: "Заявка успешно отправлена!",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#28a745",
+      stopOnFocus: true,
+    }).showToast();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+    Toastify({
+      text: "Не удалось отправить заявку. Попробуйте снова.",
       duration: 3000,
       gravity: "top",
       position: "right",
@@ -193,11 +207,11 @@ const addSuppurt = async () => {
     }).showToast();
   }
 };
-
 const reset = () => {
   nameUser.value = '';
   phone.value = '';
   comment.value = '';
+  isAgree.value = false;
 };
 
 const onInput = (event) => {
@@ -309,6 +323,25 @@ onMounted(async () => {
               <input class="questions__form_input" type="text" @input="onInput"  v-model="phone" placeholder="Введите телефон" :class="{ error: errors.phone }">
               <p class="questions__form_name">Комментарий</p>
               <textarea style="min-height: 152px" class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий"></textarea>
+            </div>
+            <div class="basket__form_checkbox" style="margin-top: -10px">
+              <input
+                  type="checkbox"
+                  v-model="isAgree"
+                  :class="{ error: errors.agree }"
+              >
+              <div>
+                <p>
+                  Я соглашаюсь на
+                  <a
+                      href="/Политика_в_отношении_обработки_персональных_данных.docx"
+                      target="_blank"
+                      rel="noopener"
+                  >
+                    обработку персональных данных
+                  </a>
+                </p>
+              </div>
             </div>
             <button class="main_btn questions__form_btn" @click="addSuppurt">Заказать звонок</button>
           </div>

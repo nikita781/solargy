@@ -80,15 +80,17 @@ const showImg = () => {
 const onHide = () => (visibleRef.value = false);
 
 const convertDateToText = (dateString) => {
-  const months = [
-    "января", "февраля", "марта", "апреля", "мая", "июня",
-    "июля", "августа", "сентября", "октября", "ноября", "декабря"
-  ];
+  if (!dateString) return '';
 
-  const [year, month] = dateString.split('-').map(Number);
-  const monthName = months[month - 1];
+  const parts = dateString.split('-');
+  if (parts.length < 2) return dateString;
 
-  return `Акция действует до ${monthName} ${year} года`;
+  const [year, month, day = '01'] = parts;
+
+  const dd = day.padStart(2, '0');
+  const mm = month.padStart(2, '0');
+
+  return `${dd}.${mm}.${year}`;
 };
 
 function generateSlug(name) {
@@ -169,7 +171,7 @@ onMounted(() => {
         />
         <div class="promo__main_content">
           <p class="promo__main_text">{{ promo.description }}</p>
-          <p class="promo__main_data" v-if="promo.end">{{ convertDateToText(promo.end) }}</p>
+          <p class="promo__main_data" v-if="promo.end">До {{ convertDateToText(promo.end) }}</p>
         </div>
       </div>
     </div>

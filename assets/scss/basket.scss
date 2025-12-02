@@ -220,6 +220,9 @@ $x-big: 1829.98px;
           font-family: 'Exo 2 Bold', serif;
         }
       }
+      input.error {
+        outline: 1px solid #ff4545;
+      }
     }
     &_title {
       color: #171717;

@@ -259,7 +259,16 @@ const bestProduct = ref([
               <div class="basket__form_checkbox">
                 <input type="checkbox">
                 <div>
-                  <p>Я соглашаюсь на <a href="#">обработку персональных данных</a></p>
+                  <p>
+                    Я соглашаюсь на
+                    <a
+                        href="/Политика_в_отношении_обработки_персональных_данных.docx"
+                        target="_blank"
+                        rel="noopener"
+                    >
+                      обработку персональных данных
+                    </a>
+                  </p>
                 </div>
               </div>
             </div>
@@ -292,7 +301,7 @@ const bestProduct = ref([
                 </div>
               </div>
               <div class="basket__item_cont">
-                <div class="card__main_final-cont">
+                <div class="card__main_final-cont" v-if="!application">
                   <div
                       class="card__main_final-btn card__main_final-btn-left"
                       @click="quantityMinus(item.id)"
@@ -308,7 +317,7 @@ const bestProduct = ref([
                   </div>
                 </div>
                 <p class="basket__item_price">{{ item.price * item.quantity }} ₽</p>
-                <IconsTrash class="basket__item_trash" @click="removeFromBasket(item.id)" />
+                <IconsTrash v-if="!application" class="basket__item_trash" @click="removeFromBasket(item.id)" />
               </div>
             </div>
           </div>

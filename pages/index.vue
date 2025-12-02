@@ -1,5 +1,5 @@
 <script setup>
-import {ref, onMounted, onUnmounted} from 'vue';
+import { ref, onMounted, onUnmounted, reactive } from 'vue';
 import {Swiper, SwiperSlide} from 'swiper/vue';
 import 'swiper/css';
 import {Navigation, Pagination} from 'swiper';
@@ -213,65 +213,83 @@ let interval;
 const nameUser = ref('');
 const email = ref('');
 const comment = ref('');
+const isAgree = ref(false);
+
 const errors = ref({
   name: false,
   email: false,
-  comment: false
+  comment: false,
+  agree: false,
 });
 
 const addSuppurt = async () => {
-  errors.value.name = false;
-  errors.value.email = false;
-  errors.value.comment = false;
+  errors.value = {
+    name: false,
+    email: false,
+    comment: false,
+    agree: false,
+  };
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   errors.value.name = !nameUser.value.trim();
   errors.value.email = !email.value.trim();
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  errors.value.email = !email.value.trim();
   errors.value.comment = !comment.value.trim();
-  if (!errors.value.name && !errors.value.email && !errors.value.comment) {
-    if (!emailRegex.test(email.value)) {
-      errors.value.email = !emailRegex.test(email.value);
-      Toastify({
-        text: "Не верный формат почты",
-        duration: 3000,
-        gravity: "top",
-        position: "right",
-        backgroundColor: "#ff4545",
-        stopOnFocus: true,
-      }).showToast();
-      return;
-    }
-    try {
-      const formData = new FormData();
-      formData.append('name', nameUser.value);
-      formData.append('email', email.value);
-      formData.append('comment', comment.value);
-      formData.append('email-type', 3);
+  errors.value.agree = !isAgree.value;
 
-      await axios.post(`/support`, formData);
-      reset();
-      Toastify({
-        text: "Заявка успешно отправлена!",
-        duration: 3000,
-        gravity: "top", // Позиция: "top" или "bottom"
-        position: "right", // Позиция: "left", "center" или "right"
-        backgroundColor: "#28a745",
-        stopOnFocus: true,
-      }).showToast();
-    } catch (error) {
-      console.error('Ошибка:', error.response?.data || error);
-      Toastify({
-        text: "Не удалось отправить заявку. Попробуйте снова.",
-        duration: 3000,
-        gravity: "top",
-        position: "right",
-        backgroundColor: "#ff4545",
-        stopOnFocus: true,
-      }).showToast();
+  if (errors.value.name || errors.value.email || errors.value.comment || errors.value.agree) {
+    let message = 'Заполните все поля!';
+
+    if (errors.value.agree) {
+      message = 'Подтвердите согласие на обработку персональных данных';
     }
-  } else {
+
     Toastify({
-      text: "Заполните все поля!",
+      text: message,
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ff4545",
+      stopOnFocus: true,
+    }).showToast();
+
+    return;
+  }
+
+  if (!emailRegex.test(email.value)) {
+    errors.value.email = true;
+    Toastify({
+      text: "Неверный формат почты",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ff4545",
+      stopOnFocus: true,
+    }).showToast();
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('name', nameUser.value);
+    formData.append('email', email.value);
+    formData.append('comment', comment.value);
+    formData.append('email-type', 3);
+
+    await axios.post(`/support`, formData);
+    reset();
+    Toastify({
+      text: "Заявка успешно отправлена!",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#28a745",
+      stopOnFocus: true,
+    }).showToast();
+  } catch (error) {
+    console.error('Ошибка:', error.response?.data || error);
+    Toastify({
+      text: "Не удалось отправить заявку. Попробуйте снова.",
       duration: 3000,
       gravity: "top",
       position: "right",
@@ -285,6 +303,7 @@ const reset = () => {
   nameUser.value = '';
   email.value = '';
   comment.value = '';
+  isAgree.value = false;
 };
 
 // const onSwiperInit = (swiper) => {
@@ -556,6 +575,25 @@ const findImage = (photos) => {
               <input class="questions__form_input" type="email" v-model="email" placeholder="Введите e-mail" :class="{ error: errors.email }">
               <p class="questions__form_name">Комментарий</p>
               <textarea class="questions__form_textarea" v-model="comment" placeholder="Введите комментарий" :class="{ error: errors.comment }"></textarea>
+            </div>
+            <div class="basket__form_checkbox" style="margin-top: -10px">
+              <input
+                  type="checkbox"
+                  v-model="isAgree"
+                  :class="{ error: errors.agree }"
+              >
+              <div>
+                <p>
+                  Я соглашаюсь на
+                  <a
+                      href="/Политика_в_отношении_обработки_персональных_данных.docx"
+                      target="_blank"
+                      rel="noopener"
+                  >
+                    обработку персональных данных
+                  </a>
+                </p>
+              </div>
             </div>
             <button class="main_btn questions__form_btn" @click="addSuppurt">Отправить заявку</button>
           </div>
