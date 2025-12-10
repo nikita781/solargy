@@ -1,5 +1,5 @@
 <script setup>
-import {onMounted, ref} from "vue";
+import { onMounted, ref, watch } from "vue";
 import axios from 'axios';
 import {useRoute, useRouter} from 'vue-router';
 import Toastify from "toastify-js";
@@ -9,6 +9,7 @@ const route = useRoute();
 const router = useRouter();
 const newsId = ref(null);
 const news = ref([]);
+const promo = ref([]);
 
 const newsIdURL = route.params.newsId;
 if (!newsIdURL) {
@@ -64,8 +65,23 @@ const fetchNews = async (idNews) => {
     const response = await axios.get(`/news/${idNews}`);
     news.value = response.data;
 
+    promo.value = null;
+
+    if (news.value?.promo_id) {
+      await fetchPromos(news.value.promo_id);
+    }
+  } catch (error) {
+    console.error('Ошибка загрузки новости:', error.response?.data || error);
+  }
+};
+
+const fetchPromos = async (idPromo) => {
+  try {
+    const response = await axios.get(`/promos/${idPromo}`);
+    promo.value = response.data;
   } catch (error) {
     console.error('Ошибка загрузки акции:', error.response?.data || error);
+    promo.value = null;
   }
 };
 
@@ -226,6 +242,42 @@ onMounted(() => {
   }
   fetchNews(newsId.value);
 });
+
+function generateSlug(name) {
+  const cyrillicToLatinMap = {
+    а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
+    и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r',
+    с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch',
+    ы: 'y', э: 'e', ю: 'yu', я: 'ya', ъ: '', ь: ''
+  };
+
+  const transliterate = (str) => {
+    return str
+        .toLowerCase()
+        .split('')
+        .map(char => cyrillicToLatinMap[char] || char)
+        .join('');
+  };
+
+  return transliterate(name)
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim();
+}
+
+const convertDateToText = (dateString) => {
+  if (!dateString) return '';
+
+  const parts = dateString.split('-');
+  if (parts.length < 2) return dateString;
+
+  const [year, month, day = '01'] = parts;
+
+  const dd = day.padStart(2, '0');
+  const mm = month.padStart(2, '0');
+
+  return `${dd}.${mm}.${year}`;
+};
 </script>
 
 <template>
@@ -305,6 +357,21 @@ onMounted(() => {
           <img src="/Link.svg" alt="">
         </div>
       </div>
+    </div>
+    <div v-if="promo && promo.id" class="card__tabs_info stocks__container">
+      <NuxtLink
+          class="stocks__item"
+          :to="`/promo/${promo.id}-${generateSlug(promo.title)}/`"
+      >
+        <div class="stocks__item_img">
+          <NuxtImg format="webp" loading="lazy" preload :src="promo.image" alt=""/>
+          <h3 class="stocks__item_title">{{ promo.title }}</h3>
+        </div>
+        <div class="stocks__item_content">
+          <p class="stocks__item_text">{{ promo.description }}</p>
+          <p class="stocks__item_data">До {{ convertDateToText(promo.end) }}</p>
+        </div>
+      </NuxtLink>
     </div>
   </div>
 </template>

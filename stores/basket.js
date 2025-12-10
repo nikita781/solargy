@@ -7,6 +7,7 @@ export const useBasketStore = defineStore('basket', {
             name: '',
             phone: '',
             price: 0,
+            email: '',
         },
     }),
     getters: {
@@ -76,9 +77,10 @@ export const useBasketStore = defineStore('basket', {
             // Обновляем localStorage
             this.saveBasketToStorage();
         },
-        updateUserInfo(name, phone) {
+        updateUserInfo(name, phone, email) {
             this.userInfo.name = name;
             this.userInfo.phone = phone;
+            this.userInfo.email = email;
         },
         updateUserInfoPrice(price) {
             this.userInfo.price = price;

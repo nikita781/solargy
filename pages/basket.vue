@@ -4,6 +4,7 @@ import { useBasketStore } from "@/stores/basket";
 import axios from "axios";
 import { useAsyncData } from '#app';
 import Toastify from "toastify-js";
+import BasketFileUpload from '@/components/BasketFileUpload.vue'
 
 const { data: seos, error } = await useAsyncData("fetchSeos", () =>
     axios.get(`/seos`).then((res) => res.data)
@@ -59,9 +60,24 @@ const basketStore = useBasketStore();
 const basketItems = computed(() => basketStore.items);
 const nameUser = ref("");
 const phoneUser = ref("");
+const emailUser = ref("");
+const agreePdn = ref(false);
+
+const attachedFiles = ref([])
+
+const city = ref("");
+const company_name = ref("");
+const object_address = ref("");
+const description = ref("");
+const contact_method = ref("");
+const request_features = ref([]);
+const isKeoOpen = ref(false);
+
 const errors = ref({
   name: false,
   phone: false,
+  email: false,
+  agreePdn: false,
 });
 
 const totalBasketPrice = computed(() =>
@@ -117,11 +133,18 @@ const formOpen = ref(false);
 const toggleFormOpen = () => {
   errors.value.name = false;
   errors.value.phone = false;
+  errors.value.email = false;
+  errors.value.agreePdn = false;
+
   errors.value.name = !nameUser.value.trim();
   errors.value.phone = !phoneUser.value.trim();
-  if (errors.value.name || errors.value.phone) {
+  errors.value.email = !emailUser.value.trim();
+  errors.value.agreePdn = !agreePdn.value;
+
+  console.log(errors.value)
+  if (errors.value.name || errors.value.phone || errors.value.email || errors.value.agreePdn) {
     Toastify({
-      text: "Заполните все поля!",
+      text: "Заполните все обязательные поля и подтвердите согласие на обработку персональных данных!",
       duration: 3000,
       gravity: "top",
       position: "right",
@@ -142,7 +165,20 @@ const toggleFormOpen = () => {
     }).showToast();
     return;
   }
-  basketStore.updateUserInfo(nameUser.value, phoneUser.value);
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailPattern.test(emailUser.value)) {
+    errors.value.email = true;
+    Toastify({
+      text: "Неверный формат Email!",
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: "#ff4545",
+      stopOnFocus: true,
+    }).showToast();
+    return;
+  }
+  basketStore.updateUserInfo(nameUser.value, phoneUser.value, emailUser.value);
   addOrder();
   basketStore.clearBasket();
   formOpen.value = !formOpen.value;
@@ -170,12 +206,26 @@ function generateSlug(name) {
       .trim();
 }
 
+const toggleKeo = () => {
+  isKeoOpen.value = !isKeoOpen.value;
+};
+
+const toggleRequestFeature = (key) => {
+  const idx = request_features.value.indexOf(key);
+  if (idx === -1) {
+    request_features.value.push(key);
+  } else {
+    request_features.value.splice(idx, 1);
+  }
+};
+
 const addOrder = async () => {
   try {
     const formData = new FormData();
     formData.append('email-type', 1);
     formData.append('userInfo[0][name]', basketStore.userInfo.name);
     formData.append('userInfo[0][phone]', basketStore.userInfo.phone);
+    formData.append('userInfo[0][email]', basketStore.userInfo.email || emailUser.value);
     formData.append('userInfo[0][price]', basketStore.userInfo.price);
 
     basketStore.items.forEach((item, index) => {
@@ -188,6 +238,32 @@ const addOrder = async () => {
         formData.append(`items[${index}][options][${optionIndex}][name]`, option.name);
         formData.append(`items[${index}][options][${optionIndex}][values][0][value]`, option.values.value);
       });
+    });
+
+    const hasKeoData =
+        city.value ||
+        company_name.value ||
+        object_address.value ||
+        description.value ||
+        request_features.value.length ||
+        contact_method.value;
+
+    if (hasKeoData) {
+      formData.append('keoInfo[0][city]', city.value || '');
+      formData.append('keoInfo[0][company_name]', company_name.value || '');
+      formData.append('keoInfo[0][object_address]', object_address.value || '');
+      formData.append('keoInfo[0][description]', description.value || '');
+      formData.append('keoInfo[0][contact_method]', contact_method.value || '');
+
+      request_features.value.forEach((feature, index) => {
+        formData.append(`keoInfo[0][request_features][${index}]`, feature);
+      });
+    }
+
+    // console.log(attachedFiles.value)
+
+    attachedFiles.value.forEach((file, index) => {
+      formData.append(`attachments[${index}]`, file);
     });
 
     await axios.post(`/order`, formData);
@@ -249,7 +325,13 @@ const bestProduct = ref([
               <div class="basket__form_content">
                 <div class="basket__form_input-cont">
                   <p class="basket__form_input-title">Ваше Email <span>*</span></p>
-                  <input type="text" class="basket__form_input" placeholder="Введите Email">
+                  <input
+                      type="email"
+                      class="basket__form_input"
+                      :class="{ error: errors.email }"
+                      v-model="emailUser"
+                      placeholder="Введите Email"
+                  >
                 </div>
                 <div class="basket__form_input-cont">
                   <p class="basket__form_input-title">Ваш телефон <span>*</span></p>
@@ -257,7 +339,11 @@ const bestProduct = ref([
                 </div>
               </div>
               <div class="basket__form_checkbox">
-                <input type="checkbox">
+                <input
+                    type="checkbox"
+                    v-model="agreePdn"
+                    :class="{ error: errors.agreePdn }"
+                >
                 <div>
                   <p>
                     Я соглашаюсь на
@@ -270,6 +356,128 @@ const bestProduct = ref([
                     </a>
                   </p>
                 </div>
+              </div>
+            </div>
+            <div
+                class="basket__form_subtitle"
+                :class="{ 'basket__form_subtitle--open': isKeoOpen }"
+                @click="toggleKeo"
+            >
+              Расчет KEO
+              <IconsArrow color="#171717" />
+            </div>
+
+            <div class="basket__form-container" v-show="isKeoOpen">
+              <div class="basket__form_input-cont">
+                <p class="basket__form_input-title">Город</p>
+                <input
+                    type="text"
+                    class="basket__form_input"
+                    v-model="city"
+                    placeholder="Введите название города"
+                >
+              </div>
+
+              <div class="basket__form_input-cont">
+                <p class="basket__form_input-title">Наименование организации</p>
+                <input
+                    type="text"
+                    class="basket__form_input"
+                    v-model="company_name"
+                    placeholder="Введите ООО организации"
+                >
+              </div>
+
+              <div class="basket__form_input-cont">
+                <p class="basket__form_input-title">Адрес местоположения объекта</p>
+                <input
+                    type="text"
+                    class="basket__form_input"
+                    v-model="object_address"
+                    placeholder="Введите адрес"
+                >
+              </div>
+
+              <div class="basket__form_input-cont">
+                <p class="basket__form_input-title">Выберите способ связи</p>
+                <div class="basket__form_radio-cont-4">
+                  <div
+                      class="basket__form_radio-item"
+                      :class="{ active: contact_method === 'telegram' }"
+                      @click="contact_method = 'telegram'"
+                  >
+                    Telegram
+                  </div>
+                  <div
+                      class="basket__form_radio-item"
+                      :class="{ active: contact_method === 'whatsapp' }"
+                      @click="contact_method = 'whatsapp'"
+                  >
+                    WhatsApp
+                  </div>
+                  <div
+                      class="basket__form_radio-item"
+                      :class="{ active: contact_method === 'phone' }"
+                      @click="contact_method = 'phone'"
+                  >
+                    Звонок
+                  </div>
+                  <div
+                      class="basket__form_radio-item"
+                      :class="{ active: contact_method === 'email' }"
+                      @click="contact_method = 'email'"
+                  >
+                    Email
+                  </div>
+                </div>
+              </div>
+
+              <div class="basket__form_input-cont">
+                <p class="basket__form_input-title">Выберите особенности запроса</p>
+                <div class="basket__form_radio-cont-2">
+                  <div
+                      class="basket__form_radio-item"
+                      :class="{ active: request_features.includes('before_expertise') }"
+                      @click="toggleRequestFeature('before_expertise')"
+                  >
+                    Перед сдачей в экспертизу
+                  </div>
+                  <div
+                      class="basket__form_radio-item"
+                      :class="{ active: request_features.includes('after_expertise') }"
+                      @click="toggleRequestFeature('after_expertise')"
+                  >
+                    Проект после экспертизы
+                  </div>
+                  <div
+                      class="basket__form_radio-item"
+                      :class="{ active: request_features.includes('keo_calc') }"
+                      @click="toggleRequestFeature('keo_calc')"
+                  >
+                    Расчет КЕО
+                  </div>
+                  <div
+                      class="basket__form_radio-item"
+                      :class="{ active: request_features.includes('system_selection') }"
+                      @click="toggleRequestFeature('system_selection')"
+                  >
+                    Подбор системы
+                  </div>
+                </div>
+              </div>
+
+              <div class="basket__form_input-cont">
+                <p class="basket__form_input-title">Описание</p>
+                <textarea
+                    class="basket__form_input basket__form_textarea"
+                    v-model="description"
+                    placeholder="Опишите, что необходимо выполнить"
+                ></textarea>
+              </div>
+
+              <div class="basket__form_input-cont">
+                <p class="basket__form_input-title">Прикрепленные файлы</p>
+                <BasketFileUpload v-model:files="attachedFiles" />
               </div>
             </div>
           </div>

@@ -333,7 +333,7 @@ const addToBasket = () => {
     id: basketStore.items.length + 1,
     name: product.value.name,
     photo: findImage(productPhotos.value),
-    price: totalPrice,
+    price: totalPrice.value,
     url: window.location.href,
     options: Object.values(selectedOptions.value),
     quantity: quantity.value,
@@ -437,13 +437,12 @@ const selectSlide = (slide, index) => {
     // но если у вас логика открытия другая — оставьте как есть.
 };
 
-const totalPrice = computed(() => {
+const basePrice = computed(() => {
   // Базовая цена товара
   let basePrice = parseFloat(product.value?.price || 0);
 
-  // Если нет опций или нет вовсе option_prices — вернём базовую цену
+  // Если нет опций или option_prices — просто возвращаем базу
   if (!product.value?.options?.length) {
-    // При желании можно дописать логику, которая всё равно добавит цену опций.
     return basePrice;
   }
 
@@ -453,18 +452,15 @@ const totalPrice = computed(() => {
     value: selectedOptions.value[optionId]?.values?.value || null,
   }));
 
-  // Структура для хранения «лучшего совпадения»
   let bestMatch = {
-    size: 0,                      // Число совпавших (option_id, value)
-    price: basePrice,            // Какая цена у этого bestMatch
-    matchedPairs: [],            // Какие пары option_id::value попали в это совпадение
+    size: 0,
+    price: basePrice,
+    matchedPairs: [],
   };
 
-  // Перебираем все возможные варианты цен из option_prices
   product.value.option_prices.forEach(optionPrice => {
-    const details = optionPrice.options_details; // массив [{option_id, value}, ...]
+    const details = optionPrice.options_details; // [{option_id, value}, ...]
 
-    // Проверяем, все ли пары в `details` присутствуют в выбранных пользователем
     const isSubset = details.every(detail =>
         selectedOptionsArray.some(sel =>
             sel.optionId == detail.option_id && sel.value == detail.value
@@ -472,51 +468,32 @@ const totalPrice = computed(() => {
     );
 
     if (isSubset) {
-      // Подсчитываем, сколько всего пар совпало
       const matchedCount = details.length;
-      // Если это совпадение больше, чем текущее «лучшее» — обновляем
+
       if (matchedCount > bestMatch.size) {
         bestMatch.size = matchedCount;
         bestMatch.price = parseFloat(optionPrice.price);
-        // Сохраняем конкретные (option_id, value), чтобы потом знать, какие остались «свободные»
-        bestMatch.matchedPairs = details.map(
-            d => `${d.option_id}::${d.value}`
-        );
+        bestMatch.matchedPairs = details.map(d => `${d.option_id}::${d.value}`);
       } else if (matchedCount === bestMatch.size) {
-        // Если нужно логику для «ничья»:
-        // выбираем, например, ту, у которой цена выше
         const newPrice = parseFloat(optionPrice.price);
         if (newPrice > bestMatch.price) {
           bestMatch.price = newPrice;
-          bestMatch.matchedPairs = details.map(
-              d => `${d.option_id}::${d.value}`
-          );
+          bestMatch.matchedPairs = details.map(d => `${d.option_id}::${d.value}`);
         }
-        // Или можно ничего не делать, если нам важен первый найденный
       }
     }
   });
 
-  // После этого в bestMatch лежит «лучшая» (самая полная) подстановка
-  // Если ничего не подошло (size=0), значит будем просто складывать «базовую + все опции»,
-  // но логика ниже это тоже учтёт, т.к. price в этом случае = basePrice
-
-  // Сюда суммируем цены от опций, которые не вошли в bestMatch
   let priceFromUnmatchedOptions = 0;
 
-  // Проходимся по всем выбранным опциям
   selectedOptionsArray.forEach(selected => {
     const pairId = `${selected.optionId}::${selected.value}`;
 
-    // Если эта пара не была учтена в bestMatch (не совпала),
-    // значит нам нужно к цене bestMatch (или basePrice) прибавить цену конкретной опции.
     if (!bestMatch.matchedPairs.includes(pairId)) {
-      // Ищем саму опцию в product.options, чтобы узнать её цену
       const option = product.value.options.find(
           opt => opt.id == selected.optionId
       );
       if (option) {
-        // Ищем выбранное значение
         const selectedValue = option.values.find(
             val => val.value == selected.value
         );
@@ -527,8 +504,26 @@ const totalPrice = computed(() => {
     }
   });
 
-  // Итоговая цена: цена «лучшего совпадения» + цены оставшихся опций
   return bestMatch.price + priceFromUnmatchedOptions;
+});
+
+// 2) Скидочная цена (ТО, что показываем как текущую)
+const totalPrice = computed(() => {
+  const base = basePrice.value;
+  const rawDiscount = Number(product.value?.discount);
+
+  if (!rawDiscount || isNaN(rawDiscount) || rawDiscount <= 0) {
+    return base;
+  }
+
+  // на всякий случай ограничим 0–100
+  const discount = Math.min(Math.max(rawDiscount, 0), 100);
+
+  const discounted = base * (1 - discount / 100);
+
+  // Если нужны целые ₽:
+  return Math.round(discounted);
+  // или, если нужны копейки: return +discounted.toFixed(2);
 });
 
 const visibleRef = ref(false);
@@ -982,7 +977,17 @@ const findImage = (photos) => {
         <div class="card__main_info">
           <div>
             <h1 class="card__main_title">{{ product.name }}</h1>
-            <p class="card__main_price">{{ totalPrice }} ₽</p>
+            <div class="card__main_price-container">
+              <p class="card__main_price">
+                {{ product.discount ? totalPrice : basePrice }} ₽
+              </p>
+              <p
+                  v-if="product.discount"
+                  class="card__main_price card__main_price-old"
+              >
+                {{ basePrice }} ₽
+              </p>
+            </div>
             <div
                 class="card__main_promo"
                 v-if="product?.promos?.[0]"

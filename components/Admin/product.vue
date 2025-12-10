@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref} from "vue";
+import {computed, onMounted, ref, watch} from "vue";
 import axios, {all} from "axios";
 import EditorProd from "~/components/UI/editorProd.vue";
 
@@ -26,6 +26,7 @@ const errors = ref({
   productName: false,
   productSeo: false,
   productCategory: false,
+  productDiscount: false,
 });
 
 const selectedCategory = ref('all');
@@ -35,6 +36,7 @@ const productSeo = ref('');
 const productCategory = ref(null);
 const productDescription = ref('');
 const productPrice = ref(null);
+const productDiscount = ref(null);
 const productTop = ref(false)
 const isEditingProduct = ref(false);
 const currentProductId = ref(null);
@@ -270,10 +272,20 @@ const createProduct = async () => {
   errors.value.productName = false;
   errors.value.productDescription = false;
   errors.value.productPrice = false;
+  errors.value.productDiscount = false;
+
   errors.value.productCategory = !productCategory.value;
   errors.value.productName = !productName.value;
   errors.value.productDescription = !productDescription.value;
   errors.value.productPrice = !productPrice.value;
+
+  if (productDiscount.value !== null && productDiscount.value !== '') {
+    const discountNum = Number(productDiscount.value);
+    if (isNaN(discountNum) || discountNum < 0 || discountNum > 100) {
+      errors.value.productDiscount = true;
+    }
+  }
+
   try {
     const topProd = ref(0);
     if (productTop.value === true) {
@@ -284,6 +296,9 @@ const createProduct = async () => {
     formData.append('name', productName.value);
     formData.append('description', productDescription.value);
     formData.append('price', productPrice.value);
+    if (productDiscount.value) {
+      formData.append('discount', productDiscount.value);
+    }
     formData.append('is_top', topProd.value);
     console.log(productSeo.value)
     if (productSeo.value) {
@@ -309,10 +324,22 @@ const updateProduct = async () => {
   errors.value.productName = false;
   errors.value.productDescription = false;
   errors.value.productPrice = false;
+  errors.value.productDiscount = false;
+
   errors.value.productCategory = !productCategory.value;
   errors.value.productName = !productName.value;
   errors.value.productDescription = !productDescription.value;
   errors.value.productPrice = !productPrice.value;
+
+  if (productDiscount.value !== null && productDiscount.value !== '') {
+    const discountNum = Number(productDiscount.value);
+    if (isNaN(discountNum) || discountNum < 0 || discountNum > 100) {
+      errors.value.productDiscount = true;
+      isLoading.value = false;
+      return;
+    }
+  }
+
   try {
     const topProd = ref(0);
     if (productTop.value === true) {
@@ -324,6 +351,9 @@ const updateProduct = async () => {
     formData.append('name', productName.value);
     formData.append('description', productDescription.value);
     formData.append('price', productPrice.value);
+    if (productDiscount.value !== null && productDiscount.value !== '') {
+      formData.append('discount', productDiscount.value);
+    }
     formData.append('is_top', topProd.value);
     if (productSeo.value) {
       formData.append('keywords', productSeo.value);
@@ -333,6 +363,9 @@ const updateProduct = async () => {
       headers: {},
     });
     await fetchAllProducts();
+    if (isSearch.value) {
+      await fetchSearchProduct();
+    }
     // resetProduct();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
@@ -355,12 +388,20 @@ const editProduct = (product) => {
   isEditingProduct.value = true;
   currentProductId.value = product.id;
   fetchColorPhoto(currentProductId.value);
+
   productName.value = product.name;
   productPrice.value = product.price;
   productDescription.value = product.description;
-  productCategory.value = product.category_id.id;
+
+  productCategory.value =
+      product.category_id?.id
+      ?? product.category?.id
+      ?? null;
+
   productTop.value = product.is_top;
   productSeo.value = product.keywords;
+  productDiscount.value = product.discount ?? null;
+
   errors.value.productCategory = false;
   errors.value.productName = false;
   errors.value.productDescription = false;
@@ -374,6 +415,7 @@ const resetProduct = () => {
   productDescription.value = '';
   productCategory.value = null;
   productPrice.value = null;
+  productDiscount.value = null;
   productSeo.value = '';
   productTop.value = false;
   formattedOptions.value = null;
@@ -383,6 +425,7 @@ const resetProduct = () => {
   errors.value.productName = false;
   errors.value.productDescription = false;
   errors.value.productPrice = false;
+  errors.value.productDiscount = false;
 };
 const fetchProductById = async (productId) => {
   try {
@@ -1090,6 +1133,12 @@ watch(() => currentProductId.value, () => {
   }
 });
 
+watch(productDiscount, () => {
+  if (errors.value.productDiscount) {
+    errors.value.productDiscount = false;
+  }
+});
+
 function toggleTab(title) {
   switch (title) {
     case 'property':
@@ -1628,6 +1677,13 @@ const activeTab = ref("Главная");
               placeholder="Введите цену"
               :class="{ error: errors.productPrice }"
           />
+          <DiscountInput
+              v-model="productDiscount"
+              :popular="[5, 10, 15, 20, 30, 50]"
+              label="Скидка на товар"
+              :required="false"
+              :error="errors.productDiscount ? 'Скидка должна быть от 0 до 100%' : ''"
+          />
           <input
               type="text"
               class="basket__form_input admin-panel__content_input"
@@ -1742,6 +1798,12 @@ const activeTab = ref("Главная");
                 v-model="productPrice"
                 placeholder="Введите цену"
                 :class="{ error: errors.productPrice }"
+            />
+            <DiscountInput
+                v-model="productDiscount"
+                :popular="[5, 10, 15, 20, 30, 50]"
+                label="Скидка на товар"
+                :error="errors.productDiscount ? 'Скидка должна быть от 0 до 100%' : ''"
             />
             <input
                 type="text"

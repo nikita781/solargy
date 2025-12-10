@@ -194,6 +194,7 @@ onMounted(() => {
           <div class="footer__end_pict">
             <IconsFond/>
             <IconsMybusiness/>
+            <img src="/skolcovo.png" alt="" style="height: 52px; width: 178px">
           </div>
           <a href="https://madeinudmurtia.ru/" target="_blank" class="footer__social_info">Сайт разработан в рамках национального проекта «Малое и среднее предпринимательство» при поддержке Центра «МОЙ БИЗНЕС»
           </a>

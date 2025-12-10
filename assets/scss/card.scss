@@ -239,6 +239,17 @@ $x-big: 1829.98px;
         font-size: 18px;
         line-height: 20px;
       }
+      &-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      &-old {
+        font-size: 18px;
+        color: #818181;
+        font-family: unset;
+        text-decoration: line-through;
+      }
     }
     &_promo {
       margin-top: 20px;

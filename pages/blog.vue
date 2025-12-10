@@ -173,6 +173,13 @@ onMounted( () => {
       >
         Блог
       </p>
+      <p
+          class="blog__filter_item"
+          :class="{ active: activeFilter === 'Акция' }"
+          @click="setActiveFilter('Акция')"
+      >
+        Акции
+      </p>
     </div>
     <div class="blog__container">
       <NuxtLink
