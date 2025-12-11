@@ -21,7 +21,11 @@ const errors = ref({
   photoNews: false,
   newsType: false,
   newsStock: false,
+  newsPinned: false,
 });
+
+const newsPinned = ref('');
+const todayStr = new Date().toISOString().split('T')[0];
 
 const page = ref(1);
 const totalPages = ref(0);
@@ -92,29 +96,48 @@ const handleFileChangeNews = (event) => {
 
 const createNews = async () => {
   isLoading.value = true;
+
   errors.value.nameNews = false;
   errors.value.photoNews = false;
   errors.value.newsType = false;
   errors.value.newsStock = false;
+  errors.value.newsPinned = false;
+
   errors.value.nameNews = !nameNews.value;
   errors.value.photoNews = !newsPhoto.value;
-  errors.value.newsStock = !newsStock.value;
-  if (nameNews.value && newsPhoto.value && newsType.value) {
-    try {
-      const today = new Date();
-      const formattedDate = today.toISOString().split('T')[0];
+  errors.value.newsStock = newsType.value === 'Акция' && !newsStock.value;
+  errors.value.newsType = !newsType.value;
 
+  const today = new Date();
+  const formattedDate = today.toISOString().split('T')[0];
+
+  if (newsPinned.value && newsPinned.value < formattedDate) {
+    errors.value.newsPinned = true;
+    isLoading.value = false;
+    return;
+  }
+
+  if (nameNews.value && newsPhoto.value && newsType.value && !errors.value.newsPinned) {
+    try {
       const formData = new FormData();
       formData.append('title', nameNews.value);
       formData.append('image', newsPhoto.value);
       formData.append('type', newsType.value);
+
       if (newsType.value === "Акция" && newsStock.value) {
         formData.append('promo_id', newsStock.value);
       }
+
       formData.append('date', formattedDate);
+
+      if (newsPinned.value) {
+        formData.append('pinned_until', newsPinned.value);
+      }
+
       if (newsVideo.value) {
         formData.append('video', newsVideo.value);
       }
+
       formData.append('html', newsDescription.value);
 
       await axios.post(`/news`, formData, {
@@ -122,34 +145,58 @@ const createNews = async () => {
       });
       await fetchNews();
       resetNews();
-      closeDialogAdd()
+      closeDialogAdd();
     } catch (error) {
       console.error('Ошибка:', error.response?.data || error);
     } finally {
       isLoading.value = false;
     }
+  } else {
+    isLoading.value = false;
   }
 };
+
 const updateNews = async () => {
   isLoading.value = true;
+
   errors.value.nameNews = false;
-  errors.value.nameNews = !nameNews.value;
   errors.value.newsStock = false;
-  errors.value.newsStock = !newsStock.value;
-  if (nameNews.value) {
+  errors.value.newsPinned = false;
+
+  errors.value.nameNews = !nameNews.value;
+  errors.value.newsStock = newsType.value === 'Акция' && !newsStock.value;
+
+  const formattedToday = new Date().toISOString().split('T')[0];
+
+  if (newsPinned.value && newsPinned.value < formattedToday) {
+    errors.value.newsPinned = true;
+    isLoading.value = false;
+    return;
+  }
+
+  if (nameNews.value && !errors.value.newsPinned) {
     try {
       const formData = new FormData();
       formData.append('title', nameNews.value);
+
       if (newsPhoto.value) {
         formData.append('image', newsPhoto.value);
       }
+
       formData.append('type', newsType.value);
+
       if (newsVideo.value) {
         formData.append('video', newsVideo.value);
       }
+
       if (newsType.value === "Акция" && newsStock.value) {
         formData.append('promo_id', newsStock.value);
       }
+
+      if (newsPinned.value) {
+        formData.append('pinned_until', newsPinned.value);
+      }
+
       formData.append('html', newsDescription.value);
 
       await axios.post(`/news/${currentNewsId.value}?_method=patch`, formData, {
@@ -157,14 +204,17 @@ const updateNews = async () => {
       });
       await fetchNews();
       resetNews();
-      closeDialogUpdate()
+      closeDialogUpdate();
     } catch (error) {
       console.error('Ошибка:', error.response?.data || error);
     } finally {
       isLoading.value = false;
     }
+  } else {
+    isLoading.value = false;
   }
 };
+
 const editNews = (news) => {
   console.log(news)
   openDialogUpdate();
@@ -175,11 +225,15 @@ const editNews = (news) => {
   newsDescription.value = news.html;
   newsType.value = news.type;
   newsStock.value = news.promo_id;
+  newsPinned.value = formatFromBackend(news.pinned_until);
+
   errors.value.nameNews = false;
   errors.value.photoNews = false;
   errors.value.newsType = false;
   errors.value.newsStock = false;
+  errors.value.newsPinned = false;
 };
+
 const resetNews = () => {
   currentNewsId.value = null;
   nameNews.value = '';
@@ -190,11 +244,15 @@ const resetNews = () => {
   newsDescription.value = null;
   newsType.value = null;
   newsStock.value = null;
+  newsPinned.value = '';
+
   errors.value.nameNews = false;
   errors.value.photoNews = false;
   errors.value.newsType = false;
   errors.value.newsStock = false;
+  errors.value.newsPinned = false;
 };
+
 const deleteNews = async (idValue) => {
   isLoading.value = true;
   try {
@@ -207,6 +265,18 @@ const deleteNews = async (idValue) => {
   } finally {
     isLoading.value = false;
   }
+};
+
+const formatFromBackend = (dateStr) => {
+  if (!dateStr) return '';
+  const [day, month, year] = dateStr.split('.');
+  return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+};
+
+const formatToBackend = (dateStr) => {
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('-');
+  return `${day}.${month}.${year}`;
 };
 
 const paginatedNews = computed(() => news.value.slice(0, itemsPerPage));
@@ -242,6 +312,7 @@ const pagesInRange = computed(() => {
         <th>Фото</th>
         <th>Видео</th>
         <th>Дата</th>
+        <th>На главной до</th>
         <th>Тип</th>
         <th style="width: 100px">Изменить</th>
         <th style="width: 100px">Удалить</th>
@@ -255,6 +326,7 @@ const pagesInRange = computed(() => {
         </td>
         <td>{{nw.video}}</td>
         <td>{{nw.date}}</td>
+        <td>{{nw.pinned_until}}</td>
         <td>{{nw.type}}</td>
         <td>
           <button @click="editNews(nw)" class="admin-panel__content_btn">Изменить</button>
@@ -339,12 +411,20 @@ const pagesInRange = computed(() => {
               Акция
             </option>
           </select>
-          Привязка к акции
+          <p v-if="newsType === 'Акция'">Привязка к акции</p>
           <select v-if="newsType === 'Акция'" :class="{ error: errors.newsStock }" v-model="newsStock" class="basket__form_input admin-panel__content_select">
             <option v-for="stock in stocks" :value="stock.id">
               {{ stock.title }}
             </option>
           </select>
+          Отображение на главной до (необязательный параметр, по умолчанию месяц)
+          <input
+              type="date"
+              class="basket__form_input admin-panel__content_input"
+              v-model="newsPinned"
+              :min="todayStr"
+              :class="{ error: errors.newsPinned }"
+          />
           Видео в шапку (необязательный параметр)
           <input
               type="text"
@@ -409,6 +489,14 @@ const pagesInRange = computed(() => {
               {{ stock.title }}
             </option>
           </select>
+          Отображение на главной до (необязательный параметр, по умолчанию месяц)
+          <input
+              type="date"
+              class="basket__form_input admin-panel__content_input"
+              v-model="newsPinned"
+              :min="todayStr"
+              :class="{ error: errors.newsPinned }"
+          />
           Видео в шапку (необязательный параметр)
           <input
               type="text"

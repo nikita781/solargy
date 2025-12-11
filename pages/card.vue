@@ -1171,7 +1171,7 @@ const findImage = (photos) => {
                 :href="`/card/${product.id}-${generateSlug(product.name)}/`"
                 v-else
             >
-              <img class="best-product__item_img" src="/S.png" alt=""/>
+              <img class="best-product__item_img contain" src="/S.png" alt=""/>
             </a>
             <div class="best-product__item_content">
               <a :href="`/card/${product.id}-${generateSlug(product.name)}/`"

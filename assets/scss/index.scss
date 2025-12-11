@@ -375,10 +375,13 @@ $x-big: 1829.98px;
     &_img {
       height: 284px;
       width: 100%;
-      object-fit: contain;
+      object-fit: cover;
       border-radius: 20px;
       @media screen and (max-width: $small){
         height: 200px;
+      }
+      &.contain {
+        object-fit: contain;
       }
     }
     &_top {

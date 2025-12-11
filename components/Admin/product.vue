@@ -1,5 +1,5 @@
 <script setup>
-import {computed, onMounted, ref, watch} from "vue";
+import {computed, onMounted, ref, watch, nextTick} from "vue";
 import axios, {all} from "axios";
 import EditorProd from "~/components/UI/editorProd.vue";
 
@@ -47,51 +47,17 @@ const productFile = ref(null);
 const productPreview = ref(null);
 const productOrder = ref(null);
 const productColor = ref(null);
-const productPhoto1 = ref(null);
-const productFile1 = ref(null);
-const productPreview1 = ref(null);
-const productOrder1 = ref(null);
-const productColor1 = ref(null);
-const productPhoto2 = ref(null);
-const productFile2 = ref(null);
-const productPreview2 = ref(null);
-const productOrder2 = ref(null);
-const productColor2 = ref(null);
-const productPhoto3 = ref(null);
-const productFile3 = ref(null);
-const productPreview3 = ref(null);
-const productOrder3 = ref(null);
-const productColor3 = ref(null);
-const productPhoto4 = ref(null);
-const productFile4 = ref(null);
-const productPreview4 = ref(null);
-const productOrder4 = ref(null);
-const productColor4 = ref(null);
-const productPhoto5 = ref(null);
-const productFile5 = ref(null);
-const productPreview5 = ref(null);
-const productOrder5 = ref(null);
-const productColor5 = ref(null);
-const productPhoto6 = ref(null);
-const productFile6 = ref(null);
-const productPreview6 = ref(null);
-const productOrder6 = ref(null);
-const productColor6 = ref(null);
-const productPhoto7 = ref(null);
-const productFile7 = ref(null);
-const productPreview7 = ref(null);
-const productOrder7 = ref(null);
-const productColor7 = ref(null);
-const productPhoto8 = ref(null);
-const productFile8 = ref(null);
-const productPreview8 = ref(null);
-const productOrder8 = ref(null);
-const productColor8 = ref(null);
-const productPhoto9 = ref(null);
-const productFile9 = ref(null);
-const productPreview9 = ref(null);
-const productOrder9 = ref(null);
-const productColor9 = ref(null);
+
+const MAX_IMAGES = 10;
+
+const productImages = ref(
+    Array.from({ length: MAX_IMAGES }, () => ({
+      file: null,
+      preview: null,
+      order: "",
+      color: "",
+    }))
+);
 
 const productVideo = ref('');
 const productVideo1 = ref('');
@@ -134,6 +100,212 @@ const isSearch = ref(false);
 const page = ref(1);
 const totalPages = ref(0);
 const itemsPerPage = 10;
+
+const cropperVisible = ref(false);
+const cropperImageUrl = ref(null);
+const cropperTargetIndex = ref(null);
+const cropperImgEl = ref(null);
+const cropperInstance = ref(null);
+const cropperMode = ref('multi');
+
+let CropperClass = null;
+
+const loadCropper = async () => {
+  if (CropperClass) return CropperClass;
+
+  if (typeof window === 'undefined') return null;
+
+  const module = await import('cropperjs');
+  CropperClass = module.default || module;
+  return CropperClass;
+};
+
+const CROP_WIDTH = 1830;
+const CROP_HEIGHT = 1704;
+
+const ASPECT_RATIO = CROP_WIDTH / CROP_HEIGHT;
+
+watch(cropperVisible, async (visible) => {
+  if (visible) {
+    await nextTick();
+
+    const Cropper = await loadCropper();
+    if (!Cropper || !cropperImgEl.value) return;
+
+    if (cropperInstance.value) {
+      cropperInstance.value.destroy();
+    }
+
+    cropperInstance.value = new Cropper(cropperImgEl.value, {
+      aspectRatio: ASPECT_RATIO,
+      viewMode: 1,
+      autoCropArea: 0,       // не даём кропперу самому растягивать рамку
+      responsive: true,
+      movable: true,
+      zoomable: true,
+      scalable: false,
+      background: false,
+
+      // Важный колбэк — вызывается когда всё инициализировалось
+      ready() {
+        const cropper = this;
+
+        const containerData = cropper.getContainerData();
+        const containerWidth = containerData.width;
+        const containerHeight = containerData.height;
+
+        // Делаем рамку максимально возможной, но с нужной пропорцией
+        let cropBoxWidth = containerWidth;
+        let cropBoxHeight = cropBoxWidth / ASPECT_RATIO;
+
+        if (cropBoxHeight > containerHeight) {
+          cropBoxHeight = containerHeight;
+          cropBoxWidth = cropBoxHeight * ASPECT_RATIO;
+        }
+
+        cropper.setCropBoxData({
+          width: cropBoxWidth,
+          height: cropBoxHeight,
+          left: (containerWidth - cropBoxWidth) / 2,
+          top: (containerHeight - cropBoxHeight) / 2,
+        });
+
+        // Масштабируем картинку так, чтобы она полностью покрывала рамку
+        const imageData = cropper.getImageData();
+        const scale = Math.max(
+            cropBoxWidth / imageData.width,
+            cropBoxHeight / imageData.height,
+        );
+
+        cropper.zoomTo(scale);
+      },
+    });
+  } else if (cropperInstance.value) {
+    cropperInstance.value.destroy();
+    cropperInstance.value = null;
+  }
+});
+
+const openCropper = (index, file, mode = 'multi') => {
+  cropperMode.value = mode;
+  cropperTargetIndex.value = mode === 'multi' ? index : null;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    cropperImageUrl.value = e.target?.result;
+    cropperVisible.value = true;
+  };
+  reader.readAsDataURL(file);
+};
+
+const confirmCrop = async () => {
+  if (!cropperInstance.value) return;
+
+  const cropper = cropperInstance.value;
+  let canvas = null;
+
+  if (typeof cropper.getCroppedCanvas === 'function') {
+    canvas = cropper.getCroppedCanvas({
+      width: CROP_WIDTH,
+      height: CROP_HEIGHT,
+    });
+  } else if (typeof cropper.getCropperSelection === 'function') {
+    const selection = cropper.getCropperSelection();
+
+    if (!selection || typeof selection.$toCanvas !== 'function') {
+      console.error('Не удалось получить selection из Cropper', { cropper, selection });
+      return;
+    }
+
+    canvas = await selection.$toCanvas({
+      width: CROP_WIDTH,
+      height: CROP_HEIGHT,
+    });
+  }
+
+  if (!canvas) {
+    console.error('Не получилось получить canvas из Cropper', cropper);
+    return;
+  }
+
+  canvas.toBlob((blob) => {
+    if (!blob) return;
+
+    const fileName =
+        cropperMode.value === 'single'
+            ? 'product-single.png'
+            : `product-${cropperTargetIndex.value}.png`;
+
+    const file = new File([blob], fileName, {
+      type: 'image/png',
+    });
+
+    const url = URL.createObjectURL(blob);
+
+    if (cropperMode.value === 'single') {
+      // редактирование конкретной фотки
+      if (productPreview.value) {
+        URL.revokeObjectURL(productPreview.value);
+      }
+      productPhoto.value = file;
+      productPreview.value = url;
+    } else {
+      // добавление в список productImages
+      const index = cropperTargetIndex.value;
+      const img = productImages.value[index];
+
+      if (img.preview) {
+        URL.revokeObjectURL(img.preview);
+      }
+      img.file = file;
+      img.preview = url;
+    }
+
+    cropperVisible.value = false;
+    cropperImageUrl.value = null;
+    cropperTargetIndex.value = null;
+    cropperMode.value = 'multi';
+  }, 'image/png');
+};
+
+const cancelCrop = () => {
+  cropperVisible.value = false;
+  cropperImageUrl.value = null;
+  cropperTargetIndex.value = null;
+  cropperMode.value = 'multi';
+};
+
+const handleAddPhotoFileChange = (index, event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const isGif =
+      file.type === 'image/gif' ||
+      /\.gif$/i.test(file.name);
+
+  if (isGif) {
+    const url = URL.createObjectURL(file);
+
+    const img = productImages.value[index];
+
+    if (img.preview) {
+      URL.revokeObjectURL(img.preview);
+    }
+
+    img.file = file;
+    img.preview = url;
+
+    return;
+  }
+  openCropper(index, file);
+};
+
+const shouldShowImageRow = (index) => {
+  if (index === 0) return true
+
+  const prev = productImages.value[index - 1]
+  return !!(prev && prev.file)
+}
 
 const fetchOptions = async () => {
   try {
@@ -452,233 +624,73 @@ const deleteProductPhoto = async (idValue) => {
 };
 
 const handleFileChangeProductPhoto = (event) => {
-  const file = event.target.files[0];
-  if (file) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  const isGif =
+      file.type === 'image/gif' ||
+      /\.gif$/i.test(file.name);
+
+  if (isGif) {
+    if (productPreview.value) {
+      URL.revokeObjectURL(productPreview.value);
+    }
     productPhoto.value = file;
     productPreview.value = URL.createObjectURL(file);
+    return;
   }
+
+  openCropper(null, file, 'single');
 };
-const handleFileChangeProductPhoto1 = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    productPhoto1.value = file;
-    productPreview1.value = URL.createObjectURL(file);
-  }
-};
-const handleFileChangeProductPhoto2 = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    productPhoto2.value = file;
-    productPreview2.value = URL.createObjectURL(file);
-  }
-};
-const handleFileChangeProductPhoto3 = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    productPhoto3.value = file;
-    productPreview3.value = URL.createObjectURL(file);
-  }
-};
-const handleFileChangeProductPhoto4 = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    productPhoto4.value = file;
-    productPreview4.value = URL.createObjectURL(file);
-  }
-};
-const handleFileChangeProductPhoto5 = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    productPhoto5.value = file;
-    productPreview5.value = URL.createObjectURL(file);
-  }
-};
-const handleFileChangeProductPhoto6 = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    productPhoto6.value = file;
-    productPreview6.value = URL.createObjectURL(file);
-  }
-};
-const handleFileChangeProductPhoto7 = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    productPhoto7.value = file;
-    productPreview7.value = URL.createObjectURL(file);
-  }
-};
-const handleFileChangeProductPhoto8 = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    productPhoto8.value = file;
-    productPreview8.value = URL.createObjectURL(file);
-  }
-};
-const handleFileChangeProductPhoto9 = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    productPhoto9.value = file;
-    productPreview9.value = URL.createObjectURL(file);
-  }
+
+const resetAddPhotoForm = () => {
+  productImages.value.forEach((img) => {
+    if (img.preview) {
+      URL.revokeObjectURL(img.preview);
+    }
+    img.file = null;
+    img.preview = null;
+    img.order = "";
+    img.color = "";
+  });
+  cropperVisible.value = false;
+  cropperImageUrl.value = null;
+  cropperTargetIndex.value = null;
 };
 
 const addProductPhoto = async () => {
   isLoading.value = true;
   try {
     const formData = new FormData();
-    formData.append('photos[0][photo]', productPhoto.value);
-    if (productOrder.value) {
-      formData.append('photos[0][order]', productOrder.value);
-    }
-    if (productColor.value) {
-      formData.append('photos[0][value_id]', productColor.value);
-    }
-    if (productPhoto1.value) {
-      formData.append('photos[1][photo]', productPhoto1.value);
-      if (productOrder1.value) {
-        formData.append('photos[1][order]', productOrder1.value);
+
+    productImages.value.forEach((img, index) => {
+      if (!img.file) return;
+
+      formData.append(`photos[${index}][photo]`, img.file);
+      if (img.order !== "" && img.order !== null) {
+        formData.append(`photos[${index}][order]`, img.order);
       }
-      if (productColor1.value) {
-        formData.append('photos[1][value_id]', productColor1.value);
+      if (img.color) {
+        formData.append(`photos[${index}][value_id]`, img.color);
       }
-    }
-    if (productPhoto2.value) {
-      formData.append('photos[2][photo]', productPhoto2.value);
-      if (productOrder2.value) {
-        formData.append('photos[2][order]', productOrder2.value);
-      }
-      if (productColor2.value) {
-        formData.append('photos[2][value_id]', productColor2.value);
-      }
-    }
-    if (productPhoto3.value) {
-      formData.append('photos[3][photo]', productPhoto3.value);
-      if (productOrder3.value) {
-        formData.append('photos[3][order]', productOrder3.value);
-      }
-      if (productColor3.value) {
-        formData.append('photos[3][value_id]', productColor3.value);
-      }
-    }
-    if (productPhoto4.value) {
-      formData.append('photos[4][photo]', productPhoto4.value);
-      if (productOrder4.value) {
-        formData.append('photos[4][order]', productOrder4.value);
-      }
-      if (productColor4.value) {
-        formData.append('photos[4][value_id]', productColor4.value);
-      }
-    }
-    if (productPhoto5.value) {
-      formData.append('photos[5][photo]', productPhoto5.value);
-      if (productOrder5.value) {
-        formData.append('photos[5][order]', productOrder5.value);
-      }
-      if (productColor5.value) {
-        formData.append('photos[5][value_id]', productColor5.value);
-      }
-    }
-    if (productPhoto6.value) {
-      formData.append('photos[6][photo]', productPhoto6.value);
-      if (productOrder6.value) {
-        formData.append('photos[6][order]', productOrder6.value);
-      }
-      if (productColor6.value) {
-        formData.append('photos[6][value_id]', productColor6.value);
-      }
-    }
-    if (productPhoto7.value) {
-      formData.append('photos[7][photo]', productPhoto7.value);
-      if (productOrder7.value) {
-        formData.append('photos[7][order]', productOrder7.value);
-      }
-      if (productColor7.value) {
-        formData.append('photos[7][value_id]', productColor7.value);
-      }
-    }
-    if (productPhoto8.value) {
-      formData.append('photos[8][photo]', productPhoto8.value);
-      if (productOrder8.value) {
-        formData.append('photos[8][order]', productOrder8.value);
-      }
-      if (productColor8.value) {
-        formData.append('photos[8][value_id]', productColor8.value);
-      }
-    }
-    if (productPhoto9.value) {
-      formData.append('photos[9][photo]', productPhoto9.value);
-      if (productOrder9.value) {
-        formData.append('photos[9][order]', productOrder9.value);
-      }
-      if (productColor9.value) {
-        formData.append('photos[9][value_id]', productColor9.value);
-      }
-    }
+    });
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
       headers: {
-
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
+
     await fetchProductById(currentProductId.value);
+    resetAddPhotoForm();
     closeDialogAddPhoto();
-    productPhoto.value = null;
-    productFile.value.value = ''
-    productPreview.value = null
-    productOrder.value = '';
-    productColor.value = '';
-    productPhoto1.value = null;
-    productFile1.value.value = ''
-    productPreview1.value = null
-    productOrder1.value = '';
-    productColor1.value = '';
-    productPhoto2.value = null;
-    productFile2.value.value = ''
-    productPreview2.value = null
-    productOrder2.value = '';
-    productColor2.value = '';
-    productPhoto3.value = null;
-    productFile3.value.value = ''
-    productPreview3.value = null
-    productOrder3.value = '';
-    productColor3.value = '';
-    productPhoto4.value = null;
-    productFile4.value.value = ''
-    productPreview4.value = null
-    productOrder4.value = '';
-    productColor4.value = '';
-    productPhoto5.value = null;
-    productFile5.value.value = ''
-    productPreview5.value = null
-    productOrder5.value = '';
-    productColor5.value = '';
-    productPhoto6.value = null;
-    productFile6.value.value = ''
-    productPreview6.value = null
-    productOrder6.value = '';
-    productColor6.value = '';
-    productPhoto7.value = null;
-    productFile7.value.value = ''
-    productPreview7.value = null
-    productOrder7.value = '';
-    productColor7.value = '';
-    productPhoto8.value = null;
-    productFile8.value.value = ''
-    productPreview8.value = null
-    productOrder8.value = '';
-    productColor8.value = '';
-    productPhoto9.value = null;
-    productFile9.value.value = ''
-    productPreview9.value = null
-    productOrder9.value = '';
-    productColor9.value = '';
   } catch (error) {
-    console.error('Ошибка:', error.response?.data || error);
+    console.error("Ошибка:", error.response?.data || error);
   } finally {
     isLoading.value = false;
   }
-}
+};
+
 const addProductVideo = async () => {
   isLoading.value = true;
   try {
@@ -758,12 +770,17 @@ const updateProductPhoto = async () => {
       },
     });
     await fetchProductById(currentProductId.value);
+
     productPhoto.value = null;
-    productFile.value.value = ''
-    productPreview.value = null
+    if (productFile.value) {
+      productFile.value.value = '';
+    }
+    productPreview.value = null;
     productOrder.value = '';
     productColor.value = null;
+
     await resetProductPhoto();
+    visibleDialogEditPhoto.value = false;
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
@@ -777,6 +794,7 @@ const resetProductPhoto = async () => {
   productOrder.value = null;
   productPreview.value = null
 }
+
 const editProductPhoto = async (photo) => {
   await resetProductVideo();
   currentProductPhotoId.value = photo.id;
@@ -785,7 +803,10 @@ const editProductPhoto = async (photo) => {
   productOrder.value = photo.order;
   productPreview.value = photo.photo;
   productColor.value = photo.value_id;
-}
+
+  openDialogEditPhoto();
+};
+
 const updateProductVideo = async () => {
   isLoading.value = true;
   try {
@@ -1386,56 +1407,22 @@ const openDialogAddPhoto = () => {
 };
 const closeDialogAddPhoto = () => {
   visibleDialogAddPhoto.value = false;
-  productPhoto.value = null;
-  productFile.value.value = ''
-  productPreview.value = null
-  productOrder.value = '';
-  productColor.value = '';
-  productPhoto1.value = null;
-  productFile1.value.value = ''
-  productPreview1.value = null
-  productOrder1.value = '';
-  productColor1.value = '';
-  productPhoto2.value = null;
-  productFile2.value.value = ''
-  productPreview2.value = null
-  productOrder2.value = '';
-  productColor2.value = '';
-  productPhoto3.value = null;
-  productFile3.value.value = ''
-  productPreview3.value = null
-  productOrder3.value = '';
-  productColor3.value = '';
-  productPhoto4.value = null;
-  productFile4.value.value = ''
-  productPreview4.value = null
-  productOrder4.value = '';
-  productColor4.value = '';
-  productPhoto5.value = null;
-  productFile5.value.value = ''
-  productPreview5.value = null
-  productOrder5.value = '';
-  productColor5.value = '';
-  productPhoto6.value = null;
-  productFile6.value.value = ''
-  productPreview6.value = null
-  productOrder6.value = '';
-  productColor6.value = '';
-  productPhoto7.value = null;
-  productFile7.value.value = ''
-  productPreview7.value = null
-  productOrder7.value = '';
-  productColor7.value = '';
-  productPhoto8.value = null;
-  productFile8.value.value = ''
-  productPreview8.value = null
-  productOrder8.value = '';
-  productColor8.value = '';
-  productPhoto9.value = null;
-  productFile9.value.value = ''
-  productPreview9.value = null
-  productOrder9.value = '';
-  productColor9.value = '';
+  resetAddPhotoForm();
+};
+
+const visibleDialogEditPhoto = ref(false);
+
+const openDialogEditPhoto = () => {
+  visibleDialogEditPhoto.value = true;
+};
+
+const closeDialogEditPhoto = () => {
+  visibleDialogEditPhoto.value = false;
+  resetProductPhoto();
+  cropperVisible.value = false;
+  cropperImageUrl.value = null;
+  cropperTargetIndex.value = null;
+  cropperMode.value = 'multi';
 };
 
 const visibleDialogAddVideo = ref(false);
@@ -1828,7 +1815,7 @@ const activeTab = ref("Главная");
             v-if="activeTab === 'Картинки'"
         >
           <h3 class="admin__dialog_title">Картинки / Видео</h3>
-          <div class="admin__dialog_grid" v-if="!isEditingProductPhoto && !isEditingProductVideo">
+          <div class="admin__dialog_grid" v-if="!isEditingProductVideo">
             <div>
               <button class="main_btn" @click="openDialogAddPhoto" style="width: 100%">Добавить фото</button>
             </div>
@@ -1836,54 +1823,6 @@ const activeTab = ref("Главная");
               <button class="main_btn" @click="openDialogAddVideo" style="width: 100%">Добавить видео</button>
             </div>
           </div>
-          <form class="admin-panel__content_form-dialog" v-if="isEditingProductPhoto"
-                @submit.prevent="updateProductPhoto">
-            <div class="admin__dialog_grid">
-              <div class="input__wrapper">
-                <input ref="productFile" type="file" id="input__file" class="input input__file"
-                       @change="handleFileChangeProductPhoto" accept="image/*" multiple>
-                <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview" class="input__file-icon" :src="productPreview" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-                  <span class="input__file-button-text">Выберите картинку</span>
-                </label>
-              </div>
-              <input
-                  style="height: 100%"
-                  type="number" :min="0"
-                  class="basket__form_input admin-panel__content_input"
-                  v-model="productOrder"
-                  placeholder="Введите порядок фото"
-              />
-              <select
-                  v-model="productColor"
-                  class="basket__form_input admin-panel__content_select"
-              >
-                <option value="" disabled>Выберите значение</option>
-                <option
-                    v-for="value in colorProd"
-                    :value="value.id"
-                >
-                  {{ value.value }}
-                </option>
-              </select>
-            </div>
-            <div class="admin__dialog_grid">
-              <button
-                  class="main_btn"
-                  type="submit"
-                  :disabled="isLoading"
-                  :class="{ 'loading': isLoading }"
-                  :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-              >
-                <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-                <span v-else>Изменить</span>
-              </button>
-              <button class="main_btn" @click="resetProductPhoto" v-if="!isLoading">Отмена</button>
-            </div>
-          </form>
           <form class="admin-panel__content_form-dialog" v-if="isEditingProductVideo"
                 @submit.prevent="updateProductVideo">
             <div class="admin__dialog_grid">
@@ -2347,332 +2286,204 @@ const activeTab = ref("Главная");
       </div>
     </div>
     <div class="admin__dialog" v-if="visibleDialogAddPhoto" @click="closeDialogAddPhoto">
-      <div class="admin__dialog_container admin__dialog_container-small" @click.stop>
+      <div class="admin__dialog_container" @click.stop>
         <h3 style="margin: 0">Добавление фото</h3>
-        <form class="admin-panel__content_form-dialog"
-              @submit.prevent="addProductPhoto">
-          <div class="input__wrapper">
-            <input ref="productFile" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeProductPhoto" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview" class="input__file-icon" :src="productPreview" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
+
+        <div v-if="cropperVisible" class="cropper-modal">
+          <div class="cropper-modal__inner">
+            <p class="cropper-modal__title">
+              Обрезка изображения
+            </p>
+            <div class="cropper-modal__body">
+              <img
+                  ref="cropperImgEl"
+                  :src="cropperImageUrl"
+                  alt="Crop preview"
+                  class="cropper-modal__image"
+              />
+            </div>
+            <div class="cropper-modal__actions">
+              <button type="button" class="main_btn" @click="confirmCrop">
+                Обрезать и сохранить
+              </button>
+              <button type="button" class="main_btn" @click="cancelCrop">
+                Отмена
+              </button>
+            </div>
           </div>
-          <input
-              type="number" :min="0"
-              class="basket__form_input admin-panel__content_input"
-              v-model="productOrder"
-              placeholder="Введите порядок фото"
-          />
-          <label>Привязка к цвету</label>
-          <select
-              v-model="productColor"
-              class="basket__form_input admin-panel__content_select"
-          >
-            <option value="" disabled>Выберите значение</option>
-            <option
-                v-for="value in colorProd"
-                :value="value.id"
+        </div>
+
+        <form class="admin-panel__content_form-dialog" @submit.prevent="addProductPhoto">
+          <template v-for="(img, index) in productImages" :key="index">
+            <div
+                v-if="shouldShowImageRow(index)"
+                class="admin-panel__content_form-dialog"
             >
-              {{ value.value }}
-            </option>
-          </select>
-          <div class="input__wrapper" v-if="productPhoto">
-            <input ref="productFile1" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeProductPhoto1" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
+              <div class="input__wrapper">
+                <input
+                    type="file"
+                    class="input input__file"
+                    accept="image/*"
+                    @change="(e) => handleAddPhotoFileChange(index, e)"
+                />
+                <label class="input__file-button">
           <span class="input__file-icon-wrapper">
-            <img v-if="productPreview1" class="input__file-icon" :src="productPreview1" alt="Выбрать файл"
-                 width="50" height="50px">
+            <img
+                v-if="img.preview"
+                class="input__file-icon"
+                :src="img.preview"
+                alt="Выбрать файл"
+                width="50"
+                height="50"
+            />
           </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
-          </div>
-          <input
-              v-if="productPhoto"
-              type="number" :min="0"
-              class="basket__form_input admin-panel__content_input"
-              v-model="productOrder1"
-              placeholder="Введите порядок фото"
-          />
-          <select
-              v-if="productPhoto"
-              v-model="productColor1"
-              class="basket__form_input admin-panel__content_select"
-          >
-            <option value="" disabled>Выберите значение</option>
-            <option
-                v-for="value in colorProd"
-                :value="value.id"
-            >
-              {{ value.value }}
-            </option>
-          </select>
-          <div class="input__wrapper" v-if="productPhoto1">
-            <input ref="productFile2" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeProductPhoto2" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview2" class="input__file-icon" :src="productPreview2" alt="Выбрать файл"
-                 width="50" height="50px">
+                  <span class="input__file-button-text">
+            {{ img.preview ? 'Выбрать другое фото' : 'Выберите картинку' }}
           </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
-          </div>
-          <input
-              v-if="productPhoto1"
-              type="number" :min="0"
-              class="basket__form_input admin-panel__content_input"
-              v-model="productOrder2"
-              placeholder="Введите порядок фото"
-          />
-          <select
-              v-if="productPhoto1"
-              v-model="productColor2"
-              class="basket__form_input admin-panel__content_select"
-          >
-            <option value="" disabled>Выберите значение</option>
-            <option
-                v-for="value in colorProd"
-                :value="value.id"
-            >
-              {{ value.value }}
-            </option>
-          </select>
-          <div class="input__wrapper" v-if="productPhoto2">
-            <input ref="productFile3" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeProductPhoto3" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview3" class="input__file-icon" :src="productPreview3" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
-          </div>
-          <input
-              v-if="productPhoto2"
-              type="number" :min="0"
-              class="basket__form_input admin-panel__content_input"
-              v-model="productOrder3"
-              placeholder="Введите порядок фото"
-          />
-          <select
-              v-if="productPhoto2"
-              v-model="productColor3"
-              class="basket__form_input admin-panel__content_select"
-          >
-            <option value="" disabled>Выберите значение</option>
-            <option
-                v-for="value in colorProd"
-                :value="value.id"
-            >
-              {{ value.value }}
-            </option>
-          </select>
-          <div class="input__wrapper" v-if="productPhoto3">
-            <input ref="productFile4" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeProductPhoto4" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview4" class="input__file-icon" :src="productPreview4" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
-          </div>
-          <input
-              v-if="productPhoto3"
-              type="number" :min="0"
-              class="basket__form_input admin-panel__content_input"
-              v-model="productOrder4"
-              placeholder="Введите порядок фото"
-          />
-          <select
-              v-if="productPhoto3"
-              v-model="productColor4"
-              class="basket__form_input admin-panel__content_select"
-          >
-            <option value="" disabled>Выберите значение</option>
-            <option
-                v-for="value in colorProd"
-                :value="value.id"
-            >
-              {{ value.value }}
-            </option>
-          </select>
-          <div class="input__wrapper" v-if="productPhoto4">
-            <input ref="productFile5" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeProductPhoto5" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview5" class="input__file-icon" :src="productPreview5" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
-          </div>
-          <input
-              v-if="productPhoto4"
-              type="number" :min="0"
-              class="basket__form_input admin-panel__content_input"
-              v-model="productOrder5"
-              placeholder="Введите порядок фото"
-          />
-          <select
-              v-if="productPhoto4"
-              v-model="productColor5"
-              class="basket__form_input admin-panel__content_select"
-          >
-            <option value="" disabled>Выберите значение</option>
-            <option
-                v-for="value in colorProd"
-                :value="value.id"
-            >
-              {{ value.value }}
-            </option>
-          </select>
-          <div class="input__wrapper" v-if="productPhoto5">
-            <input ref="productFile6" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeProductPhoto6" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview6" class="input__file-icon" :src="productPreview6" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
-          </div>
-          <input
-              v-if="productPhoto5"
-              type="number" :min="0"
-              class="basket__form_input admin-panel__content_input"
-              v-model="productOrder6"
-              placeholder="Введите порядок фото"
-          />
-          <select
-              v-if="productPhoto5"
-              v-model="productColor6"
-              class="basket__form_input admin-panel__content_select"
-          >
-            <option value="" disabled>Выберите значение</option>
-            <option
-                v-for="value in colorProd"
-                :value="value.id"
-            >
-              {{ value.value }}
-            </option>
-          </select>
-          <div class="input__wrapper" v-if="productPhoto6">
-            <input ref="productFile7" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeProductPhoto7" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview7" class="input__file-icon" :src="productPreview7" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
-          </div>
-          <input
-              v-if="productPhoto6"
-              type="number" :min="0"
-              class="basket__form_input admin-panel__content_input"
-              v-model="productOrder7"
-              placeholder="Введите порядок фото"
-          />
-          <select
-              v-if="productPhoto6"
-              v-model="productColor7"
-              class="basket__form_input admin-panel__content_select"
-          >
-            <option value="" disabled>Выберите значение</option>
-            <option
-                v-for="value in colorProd"
-                :value="value.id"
-            >
-              {{ value.value }}
-            </option>
-          </select>
-          <div class="input__wrapper" v-if="productPhoto7">
-            <input ref="productFile8" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeProductPhoto8" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview8" class="input__file-icon" :src="productPreview8" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
-          </div>
-          <input
-              v-if="productPhoto7"
-              type="number" :min="0"
-              class="basket__form_input admin-panel__content_input"
-              v-model="productOrder8"
-              placeholder="Введите порядок фото"
-          />
-          <select
-              v-if="productPhoto7"
-              v-model="productColor8"
-              class="basket__form_input admin-panel__content_select"
-          >
-            <option value="" disabled>Выберите значение</option>
-            <option
-                v-for="value in colorProd"
-                :value="value.id"
-            >
-              {{ value.value }}
-            </option>
-          </select>
-          <div class="input__wrapper" v-if="productPhoto8">
-            <input ref="productFile9" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeProductPhoto9" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="productPreview9" class="input__file-icon" :src="productPreview9" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
-          </div>
-          <input
-              v-if="productPhoto8"
-              type="number" :min="0"
-              class="basket__form_input admin-panel__content_input"
-              v-model="productOrder9"
-              placeholder="Введите порядок фото"
-          />
-          <select
-              v-if="productPhoto8"
-              v-model="productColor9"
-              class="basket__form_input admin-panel__content_select"
-          >
-            <option value="" disabled>Выберите значение</option>
-            <option
-                v-for="value in colorProd"
-                :value="value.id"
-            >
-              {{ value.value }}
-            </option>
-          </select>
+                </label>
+              </div>
+
+              <input
+                  type="number"
+                  :min="0"
+                  class="basket__form_input admin-panel__content_input"
+                  v-model="img.order"
+                  placeholder="Введите порядок фото"
+              />
+
+              <select
+                  v-model="img.color"
+                  class="basket__form_input admin-panel__content_select"
+              >
+                <option value="" disabled>Выберите значение</option>
+                <option
+                    v-for="value in colorProd"
+                    :key="value.id"
+                    :value="value.id"
+                >
+                  {{ value.value }}
+                </option>
+              </select>
+            </div>
+          </template>
+
           <button
               class="main_btn"
               type="submit"
               :disabled="isLoading"
-              :class="{ 'loading': isLoading }"
+              :class="{ loading: isLoading }"
               :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
           >
-            <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+            <span v-if="isLoading">
+              <img src="../../public/loading.gif" alt="Загрузка" width="50" />
+            </span>
             <span v-else>Добавить</span>
           </button>
         </form>
       </div>
     </div>
+    <div class="admin__dialog" v-if="visibleDialogEditPhoto" @click="closeDialogEditPhoto">
+      <div class="admin__dialog_container" @click.stop>
+        <h3 style="margin: 0">Редактирование фото</h3>
+
+        <div v-if="cropperVisible" class="cropper-modal">
+          <div class="cropper-modal__inner">
+            <p class="cropper-modal__title">
+              Обрезка изображения
+            </p>
+            <div class="cropper-modal__body">
+              <img
+                  ref="cropperImgEl"
+                  :src="cropperImageUrl"
+                  alt="Crop preview"
+                  class="cropper-modal__image"
+              />
+            </div>
+            <div class="cropper-modal__actions">
+              <button type="button" class="main_btn" @click="confirmCrop">
+                Обрезать и сохранить
+              </button>
+              <button type="button" class="main_btn" @click="cancelCrop">
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <form class="admin-panel__content_form-dialog" @submit.prevent="updateProductPhoto">
+          <div class="admin__dialog_grid">
+            <div class="input__wrapper">
+              <input
+                  ref="productFile"
+                  type="file"
+                  class="input input__file"
+                  accept="image/*"
+                  @change="handleFileChangeProductPhoto"
+              />
+              <label class="input__file-button">
+            <span class="input__file-icon-wrapper">
+              <img
+                  v-if="productPreview"
+                  class="input__file-icon"
+                  :src="productPreview"
+                  alt="Выбрать файл"
+                  width="50"
+                  height="50"
+              />
+            </span>
+                <span class="input__file-button-text">
+              {{ productPreview ? 'Выбрать другое фото' : 'Выберите картинку' }}
+            </span>
+              </label>
+            </div>
+
+            <input
+                style="height: 100%"
+                type="number"
+                :min="0"
+                class="basket__form_input admin-panel__content_input"
+                v-model="productOrder"
+                placeholder="Введите порядок фото"
+            />
+
+            <select
+                v-model="productColor"
+                class="basket__form_input admin-panel__content_select"
+            >
+              <option value="" disabled>Выберите значение</option>
+              <option
+                  v-for="value in colorProd"
+                  :key="value.id"
+                  :value="value.id"
+              >
+                {{ value.value }}
+              </option>
+            </select>
+          </div>
+
+          <div class="admin__dialog_grid">
+            <button
+                class="main_btn"
+                type="submit"
+                :disabled="isLoading"
+                :class="{ 'loading': isLoading }"
+                :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
+            >
+              <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
+              <span v-else>Изменить</span>
+            </button>
+            <button
+                class="main_btn"
+                v-if="!isLoading"
+                @click.prevent="closeDialogEditPhoto"
+            >
+              Отмена
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div class="admin__dialog" v-if="visibleDialogAddVideo" @click="closeDialogAddVideo">
       <div class="admin__dialog_container admin__dialog_container-small" @click.stop>
         <h3 style="margin: 0">Добавление видео</h3>
@@ -2775,6 +2586,67 @@ $large: 1199.98px;
 $x-large: 1399.98px;
 $big: 1592.98px;
 $x-big: 1829.98px;
+
+.cropper-modal__body ::v-deep(cropper-canvas) {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cropper-modal {
+  margin-bottom: 16px;
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 12px;
+
+  &__inner {
+    width: 100%;
+  }
+
+  &__title {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  &__hint {
+    font-size: 14px;
+    color: #777;
+  }
+
+  &__body {
+    height: min(70vh, 300px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  &__image {
+    max-width: 100%;
+    display: block;
+  }
+
+  &__actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+}
+
+.admin__dialog_image-row {
+  display: grid;
+  grid-template-columns: 1fr 120px 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  @media screen and (max-width: $small) {
+    grid-template-columns: 1fr;
+  }
+}
 
 .option-block {
   display: flex;

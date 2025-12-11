@@ -235,7 +235,7 @@ const findImage = (photos) => {
               :to="`/card/${product.id}-${generateSlug(product.name)}/`"
               v-else
           >
-            <NuxtImg format="webp" preload class="best-product__item_img" src="/S.png" alt=""/>
+            <NuxtImg format="webp" preload class="best-product__item_img contain" src="/S.png" alt=""/>
             <p class="best-product__item_top" v-if='product?.is_top'>Хит</p>
           </NuxtLink>
           <div class="best-product__item_content">

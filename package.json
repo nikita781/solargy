@@ -25,6 +25,7 @@
     "@qirolab/nuxt-sanctum-authentication": "^0.1.15",
     "@tinymce/tinymce-vue": "^4.0.7",
     "axios": "^1.7.9",
+    "cropperjs": "^2.1.0",
     "editor-js-alignment-tune": "^1.0.1",
     "editorjs-html": "^3.4.3",
     "editorjs-layout": "^1.2.5",
