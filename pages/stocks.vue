@@ -185,32 +185,53 @@ onMounted(async () => {
 
     <div class="card__tabs_content">
       <div v-if="activeTab === 0" class="card__tabs_info stocks__container">
-        <NuxtLink v-for="block in blocksNotArchive" :key="block.id" class="stocks__item"
-                  :to="`/promo/${block.id}-${generateSlug(block.title)}/`"
-        >
-          <div class="stocks__item_img">
-            <NuxtImg format="webp" loading="lazy" preload :src="block.image" alt=""/>
-            <h3 class="stocks__item_title">{{ block.title }}</h3>
-          </div>
-          <div class="stocks__item_content">
-            <p class="stocks__item_text">{{ block.description }}</p>
-            <p class="stocks__item_data">До {{ convertDateToText(block.end) }}</p>
-          </div>
-        </NuxtLink>
+        <template v-if="blocksNotArchive.length">
+          <NuxtLink
+              v-for="block in blocksNotArchive"
+              :key="block.id"
+              class="stocks__item"
+              :to="`/promo/${block.id}-${generateSlug(block.title)}/`"
+          >
+            <div class="stocks__item_img">
+              <NuxtImg format="webp" loading="lazy" preload :src="block.image" alt="" />
+              <h3 class="stocks__item_title">{{ block.title }}</h3>
+            </div>
+            <div class="stocks__item_content">
+              <p class="stocks__item_text">{{ block.description }}</p>
+              <p class="stocks__item_data">До {{ convertDateToText(block.end) }}</p>
+            </div>
+          </NuxtLink>
+        </template>
+
+        <div v-else class="stocks__empty">
+          <img src="/main_logo.png" alt="">
+          Сейчас нет действующих акций
+        </div>
       </div>
+
       <div v-if="activeTab === 1" class="card__tabs_info stocks__container">
-        <NuxtLink v-for="block in blocksArchive" :key="block.id" class="stocks__item"
-                  :to="`/promo/${block.id}-${generateSlug(block.title)}/`"
-        >
-          <div class="stocks__item_img">
-            <NuxtImg format="webp" loading="lazy" preload :src="block.image" alt=""/>
-            <h3 class="stocks__item_title">{{ block.title }}</h3>
-          </div>
-          <div class="stocks__item_content">
-            <p class="stocks__item_text">{{ block.description }}</p>
-            <p class="stocks__item_data">До {{ convertDateToText(block.end) }}</p>
-          </div>
-        </NuxtLink>
+        <template v-if="blocksArchive.length">
+          <NuxtLink
+              v-for="block in blocksArchive"
+              :key="block.id"
+              class="stocks__item"
+              :to="`/promo/${block.id}-${generateSlug(block.title)}/`"
+          >
+            <div class="stocks__item_img">
+              <NuxtImg format="webp" loading="lazy" preload :src="block.image" alt="" />
+              <h3 class="stocks__item_title">{{ block.title }}</h3>
+            </div>
+            <div class="stocks__item_content">
+              <p class="stocks__item_text">{{ block.description }}</p>
+              <p class="stocks__item_data">До {{ convertDateToText(block.end) }}</p>
+            </div>
+          </NuxtLink>
+        </template>
+
+        <div v-else class="stocks__empty">
+          <img src="/main_logo.png" alt="">
+          Архивных акций пока нет
+        </div>
       </div>
     </div>
   </div>
@@ -218,5 +239,18 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-
+.stocks__empty{
+  width: 100%;
+  padding: 24px;
+  text-align: center;
+  color: #EF7F1A;
+  opacity: 0.8;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  img {
+    width: 70px;
+  }
+}
 </style>
