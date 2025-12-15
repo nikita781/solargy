@@ -263,7 +263,7 @@ const addOrder = async () => {
     // console.log(attachedFiles.value)
 
     attachedFiles.value.forEach((file, index) => {
-      formData.append(`attachments[${index}]`, file);
+      formData.append(`attachment[${index}]`, file);
     });
 
     await axios.post(`/order`, formData);
