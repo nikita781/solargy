@@ -5,12 +5,17 @@ const pageData = useState('pageData');
 <template>
   <div class="container">
     <UIHeader />
+
     <div class="container-content">
       <div class="container-content__page">
-        <NuxtPage :style="{ display: pageData ? 'none' : '' }"/>
+        <NuxtPage :style="{ display: pageData ? 'none' : '' }" />
       </div>
-      <UIFooter :style="{ display: pageData ? 'none' : 'flex' }"/>
+
+      <UIFooter :style="{ display: pageData ? 'none' : 'flex' }" />
     </div>
+
+    <UICookieConsent v-if="!pageData" policy-url="/privacy-policy" />
+
     <noscript>
       <div>
         <img src="https://mc.yandex.ru/watch/100325209" style="position:absolute; left:-9999px;" alt="" />
@@ -18,6 +23,3 @@ const pageData = useState('pageData');
     </noscript>
   </div>
 </template>
-
-<style scoped lang="scss">
-</style>
