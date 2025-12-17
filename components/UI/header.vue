@@ -514,8 +514,10 @@ onBeforeUnmount(() => {
             :key="blockIndex"
             class="header__menu_container"
         >
-          <NuxtImg format="webp" loading="lazy" preload :src="block.photo" alt=""/>
-          <div class="header__menu_info">
+          <div>
+            <NuxtImg format="webp" loading="lazy" preload :src="block.photo" alt=""/>
+          </div>
+          <div class="header__menu_info" style="width: 100%">
             <NuxtLink :to="`/catalog/${block.id}-${generateSlug(block.name)}/`" class="header__menu_name">{{
                 block.name
               }}
