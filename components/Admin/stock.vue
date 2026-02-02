@@ -2,6 +2,7 @@
 import Editor from "~/components/editor.vue";
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import PromoStockDialog from "~/components/Admin/PromoStockDialog.vue";
 
 onMounted(async () => {
   const token = localStorage.getItem('authToken');
@@ -165,14 +166,15 @@ const stockEnd = ref('')
 const stockArchived = ref(false);
 const currentStockId = ref(null);
 
-const fetchStocks = async () => {
+const fetchStocks = async (opts = {}) => {
   try {
     const response = await axios.get(`/promos`, {
-      headers: {},
+      params: opts.bust ? { _ts: Date.now() } : undefined,
+      headers: opts.bust ? { "Cache-Control": "no-cache", Pragma: "no-cache" } : undefined,
     });
     stocks.value = response.data;
   } catch (error) {
-    console.error('Ошибка:', error.response?.data || error);
+    console.error("Ошибка:", error.response?.data || error);
   }
 };
 const fetchStocksOne = async (idPromo) => {
@@ -207,76 +209,6 @@ const handleFileChangeStock = (event) => {
     stockPreview.value = URL.createObjectURL(file);
   }
 };
-const createStock = async () => {
-  isLoading.value = true;
-  errors.value.stockTitle = false;
-  errors.value.stockDescription = false;
-  errors.value.stockImage = false;
-  errors.value.stockStart = false;
-  errors.value.stockEnd = false;
-  errors.value.stockTitle = !stockTitle.value;
-  errors.value.stockDescription = !stockDescription.value;
-  errors.value.stockImage = !stockImage.value;
-  errors.value.stockStart = !stockStart.value;
-  errors.value.stockEnd = !stockEnd.value;
-  try {
-    const formData = new FormData();
-    formData.append('title', stockTitle.value);
-    formData.append('description', stockDescription.value);
-    formData.append('image', stockImage.value);
-    formData.append('start', stockStart.value);
-    formData.append('end', stockEnd.value);
-    formData.append('is_archived', stockArchived.value);
-
-    await axios.post(`/promos`, formData, {
-      headers: {
-
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    await fetchStocks();
-    resetStock();
-  } catch (error) {
-    console.error('Ошибка:', error.response?.data || error);
-  } finally {
-    isLoading.value = false;
-  }
-}
-const updateStock = async () => {
-  isLoading.value = true;
-  errors.value.stockTitle = false;
-  errors.value.stockDescription = false;
-  errors.value.stockStart = false;
-  errors.value.stockEnd = false;
-  errors.value.stockTitle = !stockTitle.value;
-  errors.value.stockDescription = !stockDescription.value;
-  errors.value.stockStart = !stockStart.value;
-  errors.value.stockEnd = !stockEnd.value;
-  try {
-    const formData = new FormData();
-    formData.append('title', stockTitle.value);
-    formData.append('description', stockDescription.value);
-    if (stockImage.value) {
-      formData.append('image', stockImage.value);
-    }
-    formData.append('start', stockStart.value);
-    formData.append('end', stockEnd.value);
-    formData.append('is_archived', stockArchived.value);
-
-    await axios.post(`/promos/${currentStockId.value}?_method=patch`, formData, {
-      headers: {
-
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    await fetchStocks();
-    closeDialogUpdate();
-  } catch (error) {
-    console.error('Ошибка:', error.response?.data || error);
-  } finally {
-    isLoading.value = false;
-  }
-}
 const deleteStock = async (idStock) => {
   isLoading.value = true;
   try {
@@ -291,10 +223,6 @@ const deleteStock = async (idStock) => {
   }
 };
 const stockProd = ref([]);
-const editStock = (stock) => {
-  fetchStocksOne(stock.id);
-  openDialogUpdate();
-};
 const resetStock = () => {
   stockPreview.value = null;
   isEditingStock.value = false;
@@ -357,7 +285,6 @@ const deletePromoProd = async (isProd) => {
   }
 };
 
-const visibleDialogUpdate = ref(false);
 const openDialogUpdate = () => {
   visibleDialogUpdate.value = true;
 };
@@ -368,6 +295,82 @@ const closeDialogUpdate = () => {
   fetchStocks();
 };
 const activeTab = ref("Главная");
+
+const visibleDialogUpdate = ref(false);
+const dialogMode = ref("create"); // "create" | "edit"
+const dialogPromoId = ref(null);
+const dialogSeed = ref(null);
+
+const openCreateStock = () => {
+  dialogMode.value = "create";
+  dialogPromoId.value = null;
+  dialogSeed.value = null;
+  visibleDialogUpdate.value = true;
+};
+
+const editStock = (stock) => {
+  dialogMode.value = "edit";
+  dialogPromoId.value = stock.id;
+  dialogSeed.value = null;
+  visibleDialogUpdate.value = true;
+};
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+const getNewestPromoId = () => {
+  let maxId = null;
+  for (const p of stocks.value || []) {
+    const n = Number(p?.id);
+    if (Number.isFinite(n)) maxId = maxId === null ? n : Math.max(maxId, n);
+  }
+  return maxId;
+};
+
+const duplicateStock = async (stock) => {
+  isLoading.value = true;
+  try {
+    // 1) создаем дубликат на бэке
+    const resp = await axios.post(`/promos/${stock.id}/duplicate`);
+
+    // 2) если бэк вернул id — супер
+    const newIdFromResp = resp?.data?.id ?? resp?.data?.data?.id ?? null;
+
+    // 3) обновляем список (и даем бэку время, если там задержка/кэш)
+    for (let i = 0; i < 6; i++) {
+      await fetchStocks({ bust: true });
+
+      // если знаем id — ждем пока появится в списке
+      if (newIdFromResp) {
+        const exists = (stocks.value || []).some((p) => String(p.id) === String(newIdFromResp));
+        if (exists) break;
+      } else {
+        // если id не знаем — просто подождем 1-2 попытки, чтобы список обновился
+        if ((stocks.value || []).length) break;
+      }
+
+      await sleep(200 + i * 150);
+    }
+
+    const fallbackId = getNewestPromoId();
+    const idToOpen = newIdFromResp || fallbackId;
+    if (!idToOpen) return;
+
+    // 4) открываем модалку сразу в edit на новом id
+    dialogMode.value = "edit";
+    dialogPromoId.value = idToOpen;
+    dialogSeed.value = null;
+    visibleDialogUpdate.value = true;
+  } catch (e) {
+    console.error("Ошибка дублирования:", e?.response?.data || e);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+
+const onSavedStock = async () => {
+  await fetchStocks({ bust: true });
+};
 </script>
 
 <template>
@@ -464,64 +467,9 @@ const activeTab = ref("Главная");
     </tbody>
   </table>
   <h3>Акции</h3>
-  <form class="admin-panel__content_form" @submit.prevent="createStock">
-    <input
-        type="text"
-        class="basket__form_input admin-panel__content_input"
-        v-model="stockTitle"
-        placeholder="Введите название"
-        :class="{ error: errors.stockTitle }"
-    />
-    <input
-        type="text"
-        class="basket__form_input admin-panel__content_input"
-        v-model="stockDescription"
-        placeholder="Введите описание"
-        :class="{ error: errors.stockDescription }"
-    />
-    <input
-        type="date"
-        class="basket__form_input admin-panel__content_input"
-        v-model="stockStart"
-        placeholder="Введите дату начала"
-        :class="{ error: errors.stockStart }"
-    />
-    <input
-        type="date"
-        class="basket__form_input admin-panel__content_input"
-        v-model="stockEnd"
-        placeholder="Введите дату конца"
-        :class="{ error: errors.stockEnd }"
-    />
-    В архив
-    <input
-        type="checkbox"
-        class="basket__form_input admin-panel__content_input"
-        v-model="stockArchived"
-        placeholder="Архив"
-    />
-    <div class="input__wrapper">
-      <input ref="stockFile" type="file" id="input__file" class="input input__file"
-             @change="handleFileChangeStock" accept="image/*" multiple>
-      <label for="input__file" class="input__file-button" :class="{ error: errors.stockImage }">
-          <span class="input__file-icon-wrapper">
-            <img v-if="stockPreview" class="input__file-icon" :src="stockPreview" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-        <span class="input__file-button-text">Выберите картинку</span>
-      </label>
-    </div>
-    <button
-        class="main_btn"
-        type="submit"
-        :disabled="isLoading"
-        :class="{ 'loading': isLoading }"
-        :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-    >
-      <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-      <span v-else>Создать акцию</span>
-    </button>
-  </form>
+  <button class="main_btn" type="button" @click="openCreateStock" style="width: fit-content">
+    Создать акцию
+  </button>
   <table>
     <thead>
     <tr>
@@ -532,6 +480,7 @@ const activeTab = ref("Главная");
       <th>Дата окончания</th>
       <th>В архиве</th>
       <th style="width: 100px">Изменить</th>
+      <th style="width: 110px">Дублировать</th>
       <th style="width: 100px">Удалить</th>
     </tr>
     </thead>
@@ -549,140 +498,24 @@ const activeTab = ref("Главная");
         <button @click="editStock(stock)" class="admin-panel__content_btn">Изменить</button>
       </td>
       <td>
+        <button @click="duplicateStock(stock)" class="admin-panel__content_btn" :disabled="isLoading">
+          Дублировать
+        </button>
+      </td>
+      <td>
         <button @click="deleteStock(stock.id)" class="admin-panel__content_btn">Удалить</button>
       </td>
     </tr>
     </tbody>
   </table>
-  <div class="admin__dialog" v-if="visibleDialogUpdate" @click="closeDialogUpdate">
-    <div class="admin__dialog_container admin__dialog_container-prod" @click.stop>
-      <div class="admin__dialog_tabs">
-        <p
-            class="admin__dialog_tabs-item"
-            :class="{ active: activeTab === 'Главная' }"
-            @click="activeTab = 'Главная'"
-        >
-          Главная
-        </p>
-        <p
-            class="admin__dialog_tabs-item"
-            :class="{ active: activeTab === 'Товары' }"
-            @click="activeTab = 'Товары'"
-        >
-          Товары
-        </p>
-      </div>
-      <div
-          class="admin__dialog_content"
-          v-if="activeTab === 'Главная'"
-      >
-        <h3 class="admin__dialog_title">Изменение акции</h3>
-        <form class="admin-panel__content_form-dialog" @submit.prevent="updateStock">
-          <input
-              type="text"
-              class="basket__form_input admin-panel__content_input"
-              v-model="stockTitle"
-              placeholder="Введите название"
-              :class="{ error: errors.stockTitle }"
-          />
-          <input
-              type="text"
-              class="basket__form_input admin-panel__content_input"
-              v-model="stockDescription"
-              placeholder="Введите описание"
-              :class="{ error: errors.stockDescription }"
-          />
-          <input
-              type="date"
-              class="basket__form_input admin-panel__content_input"
-              v-model="stockStart"
-              placeholder="Введите дату начала"
-              :class="{ error: errors.stockStart }"
-          />
-          <input
-              type="date"
-              class="basket__form_input admin-panel__content_input"
-              v-model="stockEnd"
-              placeholder="Введите дату конца"
-              :class="{ error: errors.stockEnd }"
-          />
-          В архив
-          <input
-              type="checkbox"
-              class="basket__form_input admin-panel__content_input"
-              v-model="stockArchived"
-              placeholder="Архив"
-          />
-          <div class="input__wrapper">
-            <input ref="stockFile" type="file" id="input__file" class="input input__file"
-                   @change="handleFileChangeStock" accept="image/*" multiple>
-            <label for="input__file" class="input__file-button">
-          <span class="input__file-icon-wrapper">
-            <img v-if="stockPreview" class="input__file-icon" :src="stockPreview" alt="Выбрать файл"
-                 width="50" height="50px">
-          </span>
-              <span class="input__file-button-text">Выберите картинку</span>
-            </label>
-          </div>
-          <button
-              class="main_btn"
-              type="submit"
-              :disabled="isLoading"
-              :class="{ 'loading': isLoading }"
-              :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-          >
-            <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-            <span v-else>Изменить акцию</span>
-          </button>
-        </form>
-      </div>
-      <div
-          class="admin__dialog_content"
-          v-if="activeTab === 'Товары'"
-      >
-        <h3 class="admin__dialog_title">Привязанные товары</h3>
-        <form
-            class="admin-panel__content_form-dialog"
-            @submit.prevent="addPromoProd"
-        >
-          <div class="admin__dialog_grid">
-            <select v-model="productProd" class="basket__form_input admin-panel__content_select"  style="height: 100%">
-              <option value="" disabled>Выберите товар</option>
-              <option v-for="prod in allProductsFull" :key="prod.id" :value="prod.id">
-                {{ prod.name }}
-              </option>
-            </select>
-            <button
-                class="main_btn"
-                type="submit"
-                :disabled="isLoading"
-                :class="{ 'loading': isLoading }"
-                :style="{ padding: isLoading ? '2px 50px' : '18px 50px' }"
-            >
-              <span v-if="isLoading"><img src="../../public/loading.gif" alt="Загрузка" width="50"/></span>
-              <span v-else>Добавить товар</span>
-            </button>
-          </div>
-        </form>
-        <table>
-          <thead>
-          <tr>
-            <th>Название</th>
-            <th style="width: 100px">Удалить</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="prod in stockProd" :key="prod.id">
-            <td>{{ prod.name }}</td>
-            <td>
-              <button @click="deletePromoProd(prod.id)" class="admin-panel__content_btn">Удалить</button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
+  <PromoStockDialog
+      v-model="visibleDialogUpdate"
+      :mode="dialogMode"
+      :promo-id="dialogPromoId"
+      :seed="dialogSeed"
+      :all-products="allProductsFull"
+      @saved="onSavedStock"
+  />
 </div>
 </template>
 

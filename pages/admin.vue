@@ -129,7 +129,7 @@ const errors = ref({
               :class="{ active: activeTab === 'Товары' }"
               @click="activeTab = 'Товары'"
           >
-            Товары
+            Товары / Услуги
           </p>
           <p
               class="admin-panel__menu_item"

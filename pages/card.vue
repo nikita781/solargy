@@ -674,6 +674,10 @@ function copyLink() {
   }).showToast();
 }
 
+const promosNotArchived = computed(() => {
+  return (product.value?.promos || []).filter(promo => !promo.is_archived);
+});
+
 // Показывать / скрывать диалог «Перед скачиванием PDF»
 const visibleDialogDownload = ref(false)
 
@@ -988,17 +992,14 @@ const findImage = (photos) => {
                 {{ basePrice }} ₽
               </p>
             </div>
-            <div
-                class="card__main_promo"
-                v-if="product?.promos?.[0]"
-            >
+            <div class="card__main_promo" v-if="promosNotArchived.length">
               <NuxtLink
-                  v-for="(promo, index) in product.promos"
-                  :key="index.id"
+                  v-for="promo in promosNotArchived"
+                  :key="promo.id"
                   :title="promo.title"
                   :to="`/promo/${promo.id}-${generateSlug(promo.title)}/`"
               >
-                {{promo.title}}
+                {{ promo.title }}
               </NuxtLink>
             </div>
           </div>
@@ -1151,7 +1152,7 @@ const findImage = (photos) => {
     <div class="card__product__cont" v-if="product.related_products">
       <div class="card__product" v-if="product.related_products.length > 0">
         <div class="card__product__header">
-          <h2 class="main_title">Сопутствующие товары</h2>
+          <h2 class="main_title">Сопутствующие товары и услуги</h2>
         </div>
         <div class="best-product__items">
           <div

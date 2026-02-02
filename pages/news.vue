@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, computed } from "vue";
 import axios from 'axios';
 import {useRoute, useRouter} from 'vue-router';
 import Toastify from "toastify-js";
@@ -63,7 +63,7 @@ useHead(() => {
 const fetchNews = async (idNews) => {
   try {
     const response = await axios.get(`/news/${idNews}`);
-    news.value = response.data;
+    news.value = response.data || null;
 
     promo.value = null;
 
@@ -72,6 +72,7 @@ const fetchNews = async (idNews) => {
     }
   } catch (error) {
     console.error('Ошибка загрузки новости:', error.response?.data || error);
+    news.value = null;
   }
 };
 
@@ -243,6 +244,21 @@ onMounted(() => {
   fetchNews(newsId.value);
 });
 
+const newsProducts = computed(() => {
+  if (!news.value || !Array.isArray(news.value.products)) return [];
+  return news.value.products;
+});
+
+const hasNewsProducts = computed(() => newsProducts.value.length > 0);
+
+const findImage = (photos) => {
+  if (photos?.length) {
+    const image = photos.find((item) => item.type === "image" || item.type === null);
+    return image ? image.photo : "/S.png";
+  }
+  return "/S.png";
+};
+
 function generateSlug(name) {
   const cyrillicToLatinMap = {
     а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo', ж: 'zh', з: 'z',
@@ -372,6 +388,69 @@ const convertDateToText = (dateString) => {
           <p class="stocks__item_data">До {{ convertDateToText(promo.end) }}</p>
         </div>
       </NuxtLink>
+    </div>
+    <div class="promo__prod" v-if="hasNewsProducts">
+      <div class="best-product__header">
+        <h2 class="main_title">Сопутствующие товары</h2>
+      </div>
+
+      <div class="best-product__items">
+        <div
+            class="best-product__item"
+            v-for="product in newsProducts"
+            :key="product.id"
+        >
+          <NuxtLink
+              :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+              v-if="product?.photos?.length && product?.photos?.[0]?.photo"
+          >
+            <NuxtImg
+                format="webp"
+                preload
+                loading="lazy"
+                class="best-product__item_img"
+                :src="findImage(product.photos)"
+                alt=""
+            />
+            <p class="best-product__item_top" v-if="product?.is_top">Хит</p>
+          </NuxtLink>
+
+          <NuxtLink
+              :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+              v-else
+          >
+            <NuxtImg
+                format="webp"
+                preload
+                loading="lazy"
+                class="best-product__item_img contain"
+                src="/S.png"
+                alt=""
+            />
+            <p class="best-product__item_top" v-if="product?.is_top">Хит</p>
+          </NuxtLink>
+
+          <div class="best-product__item_content">
+            <NuxtLink
+                :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+                class="best-product__item_title"
+            >
+              {{ product?.name }}
+            </NuxtLink>
+            <p class="best-product__item_desc">{{ product?.description }}</p>
+          </div>
+
+          <div class="best-product__item_container">
+            <p class="best-product__item_price">от {{ product?.price }} ₽</p>
+            <NuxtLink
+                class="best-product__item_btn"
+                :to="`/card/${product.id}-${generateSlug(product.name)}/`"
+            >
+              Заказать
+            </NuxtLink>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>

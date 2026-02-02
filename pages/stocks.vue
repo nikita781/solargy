@@ -164,6 +164,7 @@ onMounted(async () => {
     <div class="stocks__main_info">
       <div  v-for="(section, index) in sections" :key="index">
         <div class="editor__content" v-html="section.html"></div>
+        <img v-if="section.image" :src="section.image" alt="" class="stocks__main_pict">
       </div>
     </div>
   </div>

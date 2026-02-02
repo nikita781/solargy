@@ -1459,8 +1459,8 @@ const activeTab = ref("Главная");
 
 <template>
   <div class="admin-panel__content admin-panel__content-prod">
-    <h2>Управление товарами</h2>
-    <button class="main_btn" @click="openDialogAdd" style="width: fit-content">Создать товар</button>
+    <h2>Управление товарами / услугами</h2>
+    <button class="main_btn" @click="openDialogAdd" style="width: fit-content">Создать товар / услугу</button>
     <div class="admin__filter">
       <input
           type="text"
@@ -1631,7 +1631,7 @@ const activeTab = ref("Главная");
               type="text"
               class="basket__form_input admin-panel__content_input"
               v-model="productName"
-              placeholder="Введите имя товара"
+              placeholder="Введите имя"
               :class="{ error: errors.productName }"
           />
           <textarea
@@ -1753,7 +1753,7 @@ const activeTab = ref("Главная");
                 type="text"
                 class="basket__form_input admin-panel__content_input"
                 v-model="productName"
-                placeholder="Введите имя товара"
+                placeholder="Введите имя"
                 :class="{ error: errors.productName }"
             />
             <textarea
@@ -2242,7 +2242,7 @@ const activeTab = ref("Главная");
             class="admin__dialog_content"
             v-if="activeTab === 'Товары'"
         >
-          <h3 class="admin__dialog_title">Сопутствующие товары</h3>
+          <h3 class="admin__dialog_title">Сопутствующие товары и услуги</h3>
           <form
               class="admin-panel__content_form-dialog"
               @submit.prevent="addProductProd"
@@ -2338,7 +2338,7 @@ const activeTab = ref("Главная");
             />
           </span>
                   <span class="input__file-button-text">
-            {{ img.preview ? 'Выбрать другое фото' : 'Выберите картинку' }}
+            {{ img.preview ? 'Выбрать другое фото' : 'Выберите картинку (jpeg, png, jpg, gif до 10 Мб)' }}
           </span>
                 </label>
               </div>
@@ -2432,7 +2432,7 @@ const activeTab = ref("Главная");
               />
             </span>
                 <span class="input__file-button-text">
-              {{ productPreview ? 'Выбрать другое фото' : 'Выберите картинку' }}
+              {{ productPreview ? 'Выбрать другое фото' : 'Выберите картинку (jpeg, png, jpg, gif до 10 Мб)' }}
             </span>
               </label>
             </div>

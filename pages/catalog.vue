@@ -87,6 +87,8 @@ const flattenCategoriesWithChildren = (categories) => {
   return result;
 };
 
+const normalizeName = (v) => String(v ?? "").trim().toLowerCase();
+
 const fetchTabs = async () => {
   try {
     const response = await axios.get('/categories');
@@ -94,9 +96,18 @@ const fetchTabs = async () => {
 
     allCategories.value = flattenCategoriesWithChildren(categories);
 
+    const services = allCategories.value.find(
+        (c) => normalizeName(c.name) === normalizeName("Услуги")
+    );
+
+    const rest = allCategories.value.filter(
+        (c) => normalizeName(c.name) !== normalizeName("Услуги")
+    );
+
     tabs.value = [
-      {id: 0, name: 'Все'},
-      ...allCategories.value,
+      { id: 0, name: "Товары" },
+      ...(services ? [services] : []),
+      ...rest,
     ];
   } catch (error) {
     console.error('Ошибка загрузки категорий:', error.response?.data || error);

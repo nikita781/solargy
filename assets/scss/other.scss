@@ -74,6 +74,12 @@ $x-big: 1829.98px;
         }
       }
     }
+    &_pict {
+      max-width: 500px;
+      max-height: 500px;
+      object-fit: contain;
+      margin-top: 20px;
+    }
   }
   &__content {
     max-width: 1440px;
