@@ -2289,30 +2289,6 @@ const activeTab = ref("Главная");
       <div class="admin__dialog_container" @click.stop>
         <h3 style="margin: 0">Добавление фото</h3>
 
-        <div v-if="cropperVisible" class="cropper-modal">
-          <div class="cropper-modal__inner">
-            <p class="cropper-modal__title">
-              Обрезка изображения
-            </p>
-            <div class="cropper-modal__body">
-              <img
-                  ref="cropperImgEl"
-                  :src="cropperImageUrl"
-                  alt="Crop preview"
-                  class="cropper-modal__image"
-              />
-            </div>
-            <div class="cropper-modal__actions">
-              <button type="button" class="main_btn" @click="confirmCrop">
-                Обрезать и сохранить
-              </button>
-              <button type="button" class="main_btn" @click="cancelCrop">
-                Отмена
-              </button>
-            </div>
-          </div>
-        </div>
-
         <form class="admin-panel__content_form-dialog" @submit.prevent="addProductPhoto">
           <template v-for="(img, index) in productImages" :key="index">
             <div
@@ -2385,30 +2361,6 @@ const activeTab = ref("Главная");
     <div class="admin__dialog" v-if="visibleDialogEditPhoto" @click="closeDialogEditPhoto">
       <div class="admin__dialog_container" @click.stop>
         <h3 style="margin: 0">Редактирование фото</h3>
-
-        <div v-if="cropperVisible" class="cropper-modal">
-          <div class="cropper-modal__inner">
-            <p class="cropper-modal__title">
-              Обрезка изображения
-            </p>
-            <div class="cropper-modal__body">
-              <img
-                  ref="cropperImgEl"
-                  :src="cropperImageUrl"
-                  alt="Crop preview"
-                  class="cropper-modal__image"
-              />
-            </div>
-            <div class="cropper-modal__actions">
-              <button type="button" class="main_btn" @click="confirmCrop">
-                Обрезать и сохранить
-              </button>
-              <button type="button" class="main_btn" @click="cancelCrop">
-                Отмена
-              </button>
-            </div>
-          </div>
-        </div>
 
         <form class="admin-panel__content_form-dialog" @submit.prevent="updateProductPhoto">
           <div class="admin__dialog_grid">
@@ -2575,6 +2527,30 @@ const activeTab = ref("Главная");
         </form>
       </div>
     </div>
+
+    <div v-if="cropperVisible" class="cropper-overlay" @click.stop>
+      <div class="cropper-modal" @click.stop>
+        <p class="cropper-modal__title">Обрезка изображения</p>
+
+        <div class="cropper-modal__body">
+          <img
+              ref="cropperImgEl"
+              :src="cropperImageUrl"
+              class="cropper-modal__image"
+              alt="Crop preview"
+          />
+        </div>
+
+        <div class="cropper-modal__actions">
+          <button type="button" class="main_btn" @click="confirmCrop">
+            Обрезать и сохранить
+          </button>
+          <button type="button" class="main_btn" @click="cancelCrop">
+            Отмена
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -2586,6 +2562,58 @@ $large: 1199.98px;
 $x-large: 1399.98px;
 $big: 1592.98px;
 $x-big: 1829.98px;
+
+.cropper-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.cropper-modal__body ::v-deep(cropper-canvas) {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cropper-modal {
+  width: min(900px, 100%);
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 16px;
+
+  &__title {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  &__body {
+    height: min(70vh, 420px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #fff;
+    border-radius: 10px;
+  }
+
+  &__image {
+    max-width: 100%;
+    display: block;
+  }
+
+  &__actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+  }
+}
+
 
 .cropper-modal__body ::v-deep(cropper-canvas) {
   display: block;

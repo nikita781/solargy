@@ -17,10 +17,16 @@ const isLoading = ref(false);
 
 const errors = ref({
   nameOptions: false,
-
   optionValue: false,
-  optionPrice: false,
 });
+
+const refreshOptionsList = async () => {
+  if (isSearch.value && optionSearch.value.trim()) {
+    await fetchSearchOption();
+  } else {
+    await fetchOptions();
+  }
+};
 
 const options = ref([]);
 const optionsSearch = ref([]);
@@ -124,7 +130,7 @@ const createOptions = async () => {
     await axios.post(`/options`, formData, {
       headers: {},
     });
-    await fetchOptions();
+    await refreshOptionsList()
     resetOptions();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
@@ -138,7 +144,7 @@ const cloneOption = async (optionId) => {
     await axios.post(`/values/${optionId}/copy`, {
       headers: {},
     });
-    await fetchOptions();
+    await refreshOptionsList()
     resetOptions();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
@@ -158,7 +164,7 @@ const updateOptions = async () => {
     await axios.post(`/options/${currentOptionsId.value}?_method=PATCH`, formData, {
       headers: {},
     });
-    await fetchOptions();
+    await refreshOptionsList()
     resetOptions();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
@@ -188,7 +194,7 @@ const deleteOptions = async (idOptions) => {
     await axios.delete(`/options/${idOptions}`, {
       headers: {},
     });
-    await fetchOptions();
+    await refreshOptionsList()
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
@@ -238,11 +244,11 @@ const createOptionValue = async () => {
   errors.value.optionValue = false;
   errors.value.optionPrice = false;
   errors.value.optionValue = !optionValue.value.trim();
-  errors.value.optionPrice = !optionPrice.value;
   try {
     const formData = new FormData();
     formData.append('values[0][value]', optionValue.value);
-    formData.append('values[0][price]', optionPrice.value);
+    const price = optionPrice.value === null || optionPrice.value === '' ? 0 : Number(optionPrice.value);
+    formData.append('values[0][price]', String(price));
     if (optionPhotoImg.value) {
       formData.append('values[0][from-library]', true);
       formData.append('values[0][image-library]', optionPhotoImg.value);
@@ -259,7 +265,7 @@ const createOptionValue = async () => {
         'Content-Type': 'multipart/form-data',
       },
     });
-    await fetchOptions();
+    await refreshOptionsList()
     resetOptionValue();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
@@ -279,7 +285,8 @@ const updateOptionValue = async () => {
     const formData = new FormData();
     formData.append('values[0][id]', currentOptionValueId.value);
     formData.append('values[0][value]', optionValue.value);
-    formData.append('values[0][price]', optionPrice.value);
+    const price = optionPrice.value === null || optionPrice.value === '' ? 0 : Number(optionPrice.value);
+    formData.append('values[0][price]', String(price));
     if (optionPhotoImg.value) {
       formData.append('values[0][from-library]', true);
       formData.append('values[0][image-library]', optionPhotoImg.value);
@@ -296,7 +303,7 @@ const updateOptionValue = async () => {
         'Content-Type': 'multipart/form-data',
       },
     });
-    await fetchOptions();
+    await refreshOptionsList()
     resetOptionValue();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
@@ -313,7 +320,7 @@ const deleteOptionValue = async (idOptions, idValue) => {
     await axios.delete(`/options/${idOptions}/values/${idValue}`, {
       headers: {},
     });
-    await fetchOptions();
+    await refreshOptionsList()
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
@@ -428,7 +435,7 @@ const importOptions = async () => {
         'Content-Type': 'multipart/form-data',
       },
     });
-    await fetchOptions();
+    await refreshOptionsList()
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
@@ -654,11 +661,11 @@ const importOptions = async () => {
               :class="{ error: errors.optionValue }"
           />
           <input
-              type="number" :min="0"
+              type="number"
+              :min="0"
               class="basket__form_input admin-panel__content_input"
               v-model="optionPrice"
-              placeholder="Введите цену пункта"
-              :class="{ error: errors.optionPrice }"
+              placeholder="Введите цену пункта (необязательно, по умолчанию 0)"
           />
           <button type="button" class="main_btn" @click="openDialog">Библиотека изображений</button>
           <button v-if="optionPhotoImg" type="button" class="main_btn" @click="resetPhoto">Отменить выбор</button>
