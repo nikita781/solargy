@@ -38,7 +38,7 @@ onMounted(async () => {
   const { default: AlignmentTune } = await import("editor-js-alignment-tune");
   const { default: EditorJSHTML } = await import("editorjs-html");
 
-  // ---- helpers for LIST (Start with / Counter type) ----
+  // ---------------- LIST helpers (Start with / Counter type) ----------------
   const counterTypeToOlType = (counterType?: string) => {
     switch (counterType) {
       case "lower-alpha":
@@ -55,39 +55,36 @@ onMounted(async () => {
     }
   };
 
-  const renderListItems = (
-      items: any[] = [],
-      style: string,
-      counterType?: string
-  ): string => {
-    const tag = style === "ordered" ? "ol" : "ul";
+  const getItemContent = (it: any) =>
+      typeof it === "string" ? it : (it?.content ?? it?.text ?? "");
 
+  const getItemChecked = (it: any) => !!(it?.checked ?? it?.meta?.checked);
+
+  const getItemChildren = (it: any) => (Array.isArray(it?.items) ? it.items : []);
+
+  const renderListItems = (items: any[] = [], style: string): string => {
     return items
         .map((it) => {
-          // @editorjs/list v2: { content, items, meta }
-          // на всякий случай поддержим и строковый формат
-          const content =
-              typeof it === "string" ? it : (it?.content ?? it?.text ?? "");
-          const checked = style === "checklist" ? !!it?.meta?.checked : false;
+          const content = getItemContent(it);
+          const checked = style === "checklist" ? getItemChecked(it) : false;
 
           const checkbox =
               style === "checklist"
                   ? `<input type="checkbox" disabled ${checked ? "checked" : ""} /> `
                   : "";
 
+          const children = getItemChildren(it);
           const nested =
-              Array.isArray(it?.items) && it.items.length
-                  ? `<${tag}>${renderListItems(it.items, style, counterType)}</${tag}>`
-                  : "";
+              children.length > 0 ? `<ul>${renderListItems(children, style)}</ul>` : "";
 
           return `<li>${checkbox}${content}${nested}</li>`;
         })
         .join("");
   };
 
-  // ---- HTML parser ----
+  // ---------------- HTML parser ----------------
   const htmlParser = EditorJSHTML({
-    // ✅ ВАЖНО: кастомный list — учитывает meta.start и meta.counterType
+    // ✅ фикс: list с meta.start/meta.counterType и без падения на формат items
     list: (block: any) => {
       const style = block?.data?.style || "unordered";
       const items = block?.data?.items || [];
@@ -107,11 +104,7 @@ onMounted(async () => {
       const startAttr = start !== 1 ? ` start="${start}"` : "";
       const type = typeAttr && typeAttr !== "1" ? ` type="${typeAttr}"` : "";
 
-      return `<ol${startAttr}${type}>${renderListItems(
-          items,
-          "ordered",
-          counterType
-      )}</ol>`;
+      return `<ol${startAttr}${type}>${renderListItems(items, "ordered")}</ol>`;
     },
 
     table: (block: any) => {
@@ -185,7 +178,43 @@ onMounted(async () => {
     },
   });
 
-  // ---- tools for columns ----
+  // ---------------- tools for columns ----------------
+  const uploadImage = async (file: File) => {
+    const token = localStorage.getItem("authToken");
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await fetch("https://api.solargy.shop/api/upload-image", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token || ""}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        console.error("Ошибка загрузки:", await response.text());
+        throw new Error("Загрузка изображения не удалась");
+      }
+
+      const result = await response.json();
+
+      if (!result.success || !result.file?.url) {
+        console.error("Неверный ответ от API:", result);
+        throw new Error("Некорректный формат ответа от API");
+      }
+
+      return {
+        success: 1,
+        file: { url: result.file.url },
+      };
+    } catch (error) {
+      console.error("Ошибка при загрузке изображения:", error);
+      return { success: 0 };
+    }
+  };
+
   const column_tools = {
     header: Header,
     image: {
@@ -195,47 +224,13 @@ onMounted(async () => {
           byFile: "https://api.solargy.shop/api/upload-image",
         },
         uploader: {
-          uploadByFile: async (file: File) => {
-            const token = localStorage.getItem("authToken");
-            const formData = new FormData();
-            formData.append("image", file);
-
-            try {
-              const response = await fetch("https://api.solargy.shop/api/upload-image", {
-                method: "POST",
-                headers: {
-                  Authorization: `Bearer ${token || ""}`,
-                },
-                body: formData,
-              });
-
-              if (!response.ok) {
-                console.error("Ошибка загрузки:", await response.text());
-                throw new Error("Загрузка изображения не удалась");
-              }
-
-              const result = await response.json();
-
-              if (!result.success || !result.file?.url) {
-                console.error("Неверный ответ от API:", result);
-                throw new Error("Некорректный формат ответа от API");
-              }
-
-              return {
-                success: 1,
-                file: { url: result.file.url },
-              };
-            } catch (error) {
-              console.error("Ошибка при загрузке изображения:", error);
-              return { success: 0 };
-            }
-          },
+          uploadByFile: uploadImage,
         },
       },
     },
   };
 
-  // ---- EditorJS ----
+  // ---------------- EditorJS ----------------
   editorInstance = new EditorJS({
     holder: editor.value!,
     tools: {
@@ -279,41 +274,7 @@ onMounted(async () => {
             byFile: "https://api.solargy.shop/api/upload-image",
           },
           uploader: {
-            uploadByFile: async (file: File) => {
-              const token = localStorage.getItem("authToken");
-              const formData = new FormData();
-              formData.append("image", file);
-
-              try {
-                const response = await fetch("https://api.solargy.shop/api/upload-image", {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${token || ""}`,
-                  },
-                  body: formData,
-                });
-
-                if (!response.ok) {
-                  console.error("Ошибка загрузки:", await response.text());
-                  throw new Error("Загрузка изображения не удалась");
-                }
-
-                const result = await response.json();
-
-                if (!result.success || !result.file?.url) {
-                  console.error("Неверный ответ от API:", result);
-                  throw new Error("Некорректный формат ответа от API");
-                }
-
-                return {
-                  success: 1,
-                  file: { url: result.file.url },
-                };
-              } catch (error) {
-                console.error("Ошибка при загрузке изображения:", error);
-                return { success: 0 };
-              }
-            },
+            uploadByFile: uploadImage,
           },
           captionPlaceholder: "",
           caption: false,
@@ -335,41 +296,7 @@ onMounted(async () => {
             byFile: "https://api.solargy.shop/api/upload-image",
           },
           uploader: {
-            uploadByFile: async (file: File) => {
-              const token = localStorage.getItem("authToken");
-              const formData = new FormData();
-              formData.append("image", file);
-
-              try {
-                const response = await fetch("https://api.solargy.shop/api/upload-image", {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${token || ""}`,
-                  },
-                  body: formData,
-                });
-
-                if (!response.ok) {
-                  console.error("Ошибка загрузки:", await response.text());
-                  throw new Error("Загрузка изображения не удалась");
-                }
-
-                const result = await response.json();
-
-                if (!result.success || !result.file?.url) {
-                  console.error("Неверный ответ от API:", result);
-                  throw new Error("Некорректный формат ответа от API");
-                }
-
-                return {
-                  success: 1,
-                  file: { url: result.file.url },
-                };
-              } catch (error) {
-                console.error("Ошибка при загрузке изображения:", error);
-                return { success: 0 };
-              }
-            },
+            uploadByFile: uploadImage,
           },
         },
       },
@@ -383,7 +310,6 @@ onMounted(async () => {
           const blocks = parseHtmlToEditorBlocks(props.initialHtml);
           editorInstance.blocks.render({ blocks });
         } catch {
-          // fallback
           editorInstance.blocks.renderFromHTML(props.initialHtml);
         }
       }
@@ -420,6 +346,10 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
     }
   };
 
+  const stripDirectNestedLists = (liEl: HTMLElement) => {
+    liEl.querySelectorAll(":scope > ul, :scope > ol").forEach((x) => x.remove());
+  };
+
   doc.body.childNodes.forEach((node) => {
     if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
       blocks.push({
@@ -453,29 +383,53 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
           node.classList.contains("checklist") ||
           !!node.querySelector('input[type="checkbox"]');
 
-      const items = Array.from(node.querySelectorAll(":scope > li")).map((li) => {
-        const liEl = li as HTMLElement;
+      if (isChecklist) {
+        const items = Array.from(node.querySelectorAll(":scope > li")).map((li) => {
+          const liEl = li as HTMLElement;
 
-        // если checklist — убираем input из content, а checked кладём в meta
-        const checkbox = liEl.querySelector('input[type="checkbox"]') as HTMLInputElement | null;
-        if (isChecklist && checkbox) {
-          checkbox.remove();
-        }
+          const checkbox = liEl.querySelector(
+              'input[type="checkbox"]'
+          ) as HTMLInputElement | null;
+          const checked = !!checkbox?.checked;
+          if (checkbox) checkbox.remove();
 
-        return {
-          content: liEl.innerHTML.trim(),
-          items: [],
-          meta: isChecklist ? { checked: !!checkbox?.checked } : {},
-        };
-      });
+          stripDirectNestedLists(liEl);
 
-      blocks.push({
-        type: "list",
-        data: {
-          style: isChecklist ? "checklist" : "unordered",
-          items,
-        },
-      });
+          const text = liEl.innerHTML.trim();
+
+          return {
+            text,
+            content: text,
+            checked,
+            meta: { checked },
+            items: [],
+          };
+        });
+
+        blocks.push({
+          type: "list",
+          data: {
+            style: "checklist",
+            items,
+          },
+        });
+      } else {
+        // ⬅️ ВАЖНО: unordered items должны быть string[]
+        const items = Array.from(node.querySelectorAll(":scope > li")).map((li) => {
+          const liEl = li as HTMLElement;
+          stripDirectNestedLists(liEl);
+          return liEl.innerHTML.trim();
+        });
+
+        blocks.push({
+          type: "list",
+          data: {
+            style: "unordered",
+            items,
+          },
+        });
+      }
+
       return;
     }
 
@@ -484,13 +438,11 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
       const start = parseInt(node.getAttribute("start") || "1", 10) || 1;
       const typeAttr = (node.getAttribute("type") || "1").trim();
 
+      // ⬅️ ВАЖНО: ordered items тоже делаем string[]
       const items = Array.from(node.querySelectorAll(":scope > li")).map((li) => {
         const liEl = li as HTMLElement;
-        return {
-          content: liEl.innerHTML.trim(),
-          items: [],
-          meta: {},
-        };
+        stripDirectNestedLists(liEl);
+        return liEl.innerHTML.trim();
       });
 
       blocks.push({
@@ -501,6 +453,7 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
           items,
         },
       });
+
       return;
     }
 
@@ -592,6 +545,7 @@ onBeforeUnmount(() => {
 
 const exportHtml = async () => {
   if (!editorInstance) return;
+
   const data = await editorInstance.save();
   const html = editorInstance.htmlParser.parse(data).join("");
   emit("export-html", html);
