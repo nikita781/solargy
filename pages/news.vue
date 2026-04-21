@@ -169,12 +169,80 @@ const showImg = () => {
 };
 const onHide = () => (visibleRef.value = false);
 
+function parseEditorImageMeta(rawSrc) {
+  const src = String(rawSrc || '');
+  const hashIndex = src.indexOf('#');
+  if (hashIndex < 0) return { cleanSrc: src, meta: null };
+
+  const hash = src.slice(hashIndex + 1);
+  if (!hash.startsWith('sgimg:')) return { cleanSrc: src, meta: null };
+
+  const boolValue = (value) => {
+    const normalized = String(value ?? '').trim().toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on';
+  };
+
+  const params = new URLSearchParams(hash.slice('sgimg:'.length));
+  const rawAlignment = String(params.get('a') || '').toLowerCase();
+  const alignment = ['left', 'center', 'right'].includes(rawAlignment) ? rawAlignment : 'left';
+
+  return {
+    cleanSrc: src.slice(0, hashIndex),
+    meta: {
+      alignment,
+      stretched: boolValue(params.get('s')),
+      wrapped: boolValue(params.get('w')),
+    },
+  };
+}
+
+function applyEditorImageMeta(img, meta) {
+  if (!meta) return;
+
+  const wrapper = img.closest('.image-block, .image-block-group') || (img.parentElement?.tagName === 'DIV' ? img.parentElement : null);
+  const layoutEl = wrapper || img;
+  const isWrapped = meta.wrapped && !meta.stretched && (meta.alignment === 'left' || meta.alignment === 'right');
+
+  layoutEl.classList.remove(
+      'image-block--align-left',
+      'image-block--align-center',
+      'image-block--align-right',
+      'image-block--stretched',
+      'image-block--wrap'
+  );
+  layoutEl.classList.add('image-block', `image-block--align-${meta.alignment}`);
+  if (meta.stretched) layoutEl.classList.add('image-block--stretched');
+  if (isWrapped) layoutEl.classList.add('image-block--wrap');
+
+  layoutEl.setAttribute('data-img-align', meta.alignment);
+  layoutEl.setAttribute('data-img-stretched', meta.stretched ? '1' : '0');
+  layoutEl.setAttribute('data-img-wrapped', meta.wrapped ? '1' : '0');
+  img.setAttribute('data-img-align', meta.alignment);
+  img.setAttribute('data-img-stretched', meta.stretched ? '1' : '0');
+  img.setAttribute('data-img-wrapped', meta.wrapped ? '1' : '0');
+
+  layoutEl.style.setProperty('--sg-img-align', meta.alignment);
+  layoutEl.style.setProperty('--sg-img-stretched', meta.stretched ? '1' : '0');
+  layoutEl.style.setProperty('--sg-img-wrapped', meta.wrapped ? '1' : '0');
+
+  ['width', 'max-width', 'float', 'margin', 'margin-left', 'margin-right'].forEach((prop) => {
+    layoutEl.style.removeProperty(prop);
+  });
+}
+
 function transformAllImagesInHtml(html) {
   if (!html) return '';
 
   // 1. Парсим HTML-строку в DOM
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
+
+  doc.querySelectorAll('img').forEach((img) => {
+    const rawSrc = img.getAttribute('src') || img.src || '';
+    const { cleanSrc, meta } = parseEditorImageMeta(rawSrc);
+    img.setAttribute('src', cleanSrc || rawSrc);
+    applyEditorImageMeta(img, meta);
+  });
 
 
   // Проверка на .columns с двумя .column
@@ -204,13 +272,13 @@ const handleImageClickHtml = (event) => {
   const target = event.target;
   // Проверяем, кликнули ли по IMG
   if (target.tagName === 'IMG') {
-    // Ищем ближайший контейнер .image-block ИЛИ .gallery
-    const parent = target.closest('.image-block, .gallery');
+    // Ищем ближайший контейнер .image-block / .image-block-group ИЛИ .gallery
+    const parent = target.closest('.image-block, .image-block-group, .gallery, img.image-block');
     if (parent) {
-      // Собираем ВСЕ изображения из .image-block и .gallery
+      // Собираем ВСЕ изображения из .image-block / .image-block-group и .gallery
       const imgElements = Array.from(
           document.querySelectorAll(
-              '.editor__content .image-block img, .editor__content .gallery img'
+              '.editor__content .image-block img, .editor__content .image-block-group img, .editor__content .gallery img, .editor__content img.image-block'
           )
       );
 
