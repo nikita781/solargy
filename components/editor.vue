@@ -1,7 +1,6 @@
 <template>
   <client-only>
     <div ref="editor" class="editor"></div>
-    <!-- <button @click="exportHtml" type="button" class="main_btn">Применить редактор</button> -->
   </client-only>
 </template>
 
@@ -28,7 +27,6 @@ onMounted(async () => {
   const { default: Table } = await import("@editorjs/table");
   const { default: EditorJSHTML } = await import("editorjs-html");
 
-  // ---------- LIST helpers (Start with / Counter type) ----------
   const counterTypeToOlType = (counterType?: string) => {
     switch (counterType) {
       case "lower-alpha":
@@ -48,8 +46,6 @@ onMounted(async () => {
   const renderListItems = (items: any[] = [], style: string): string => {
     return items
         .map((it) => {
-          // @editorjs/list v2: { content, items, meta }
-          // запасной вариант для старого формата
           const content =
               typeof it === "string" ? it : (it?.content ?? it?.text ?? "");
           const checked = style === "checklist" ? !!it?.meta?.checked : false;
@@ -69,9 +65,7 @@ onMounted(async () => {
         .join("");
   };
 
-  // ---------- HTML parser ----------
   const htmlParser = EditorJSHTML({
-    // ✅ фикс: сохраняем "Start with" и "Counter type" в HTML
     list: (block: any) => {
       const style = block?.data?.style || "unordered";
       const items = block?.data?.items || [];
@@ -108,7 +102,6 @@ onMounted(async () => {
     },
   });
 
-  // ---------- EditorJS ----------
   editorInstance = new EditorJS({
     holder: editor.value!,
     tools: {
@@ -134,11 +127,9 @@ onMounted(async () => {
     onReady: () => {
       if (props.initialHtml) {
         try {
-          // если вам реально прилетает JSON EditorJS
           const initialData = JSON.parse(props.initialHtml);
           editorInstance.blocks.render(initialData);
         } catch {
-          // иначе HTML
           editorInstance.blocks.renderFromHTML(props.initialHtml);
         }
       }

@@ -44,7 +44,6 @@ const fetchAllProductsFull = async () => {
   allProductsFull.value = resp.data;
 };
 
-// pagination (как у тебя)
 const paginatedNews = computed(() => news.value.slice(0, itemsPerPage));
 const goToPage = (newPage) => {
   if (newPage >= 1 && newPage <= totalPages.value) {
@@ -53,9 +52,8 @@ const goToPage = (newPage) => {
   }
 };
 
-// ---- dialog state ----
 const visibleDialog = ref(false);
-const dialogMode = ref("create"); // create | edit
+const dialogMode = ref("create");
 const dialogNewsId = ref(null);
 const dialogSeed = ref(null);
 
@@ -80,16 +78,12 @@ const duplicateNews = async (nw) => {
   try {
     const topBefore = news.value?.[0]?.id;
 
-    // 1) дублируем
     const resp = await axios.post(`/news/${nw.id}/duplicate`);
 
-    // 2) идем на 1 страницу
     page.value = 1;
 
-    // 3) если бэк вернул id — супер, будем ждать именно его
     const newId = resp?.data?.id ?? null;
 
-    // 4) пробуем несколько раз обновить список, пока новый не появится
     for (let i = 0; i < 8; i++) {
       await fetchNews({ bust: true });
 
@@ -99,11 +93,9 @@ const duplicateNews = async (nw) => {
 
       if (appeared) break;
 
-      // маленькая пауза, чтобы бэк успел "дописать" запись
       await sleep(250);
     }
 
-    // 5) открываем edit-модалку
     const fallbackId = news.value?.[0]?.id;
     const idToOpen = newId || fallbackId;
     if (!idToOpen) return;

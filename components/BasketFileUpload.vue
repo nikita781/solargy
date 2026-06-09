@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import Toastify from 'toastify-js'
 
 const props = defineProps({
-  // v-model:files
   files: {
     type: Array,
     default: () => []
@@ -15,7 +14,7 @@ const emit = defineEmits(['update:files'])
 const isDragOver = ref(false)
 const fileInput = ref(null)
 
-const MAX_SIZE = 50 * 1024 * 1024 // 50 МБ
+const MAX_SIZE = 50 * 1024 * 1024
 const ALLOWED_EXT = ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg', 'zip']
 
 const showError = (text) => {
@@ -56,7 +55,6 @@ const validateAndAddFiles = (fileList) => {
 const onInputChange = (event) => {
   const files = event.target.files
   validateAndAddFiles(files)
-  // чтобы можно было выбрать тот же файл ещё раз
   event.target.value = ''
 }
 

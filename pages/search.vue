@@ -18,7 +18,7 @@ const handleSearchFull = async () => {
   }
 };
 
-const urls = ref({}); // Хранилище для URL
+const urls = ref({});
 
 const getUrl = async (page_id) => {
   try {
@@ -26,7 +26,7 @@ const getUrl = async (page_id) => {
     return response.data.url;
   } catch (error) {
     console.error("Ошибка:", error.response?.data || error);
-    return ""; // Возвращаем пустую строку в случае ошибки
+    return "";
   }
 };
 

@@ -60,49 +60,18 @@ const tabs = [
   { title: 'ТОО «Торговый дом Art Group»' },
 ];
 
-// const contacts = ref([])
-// const companies = ref([])
-// const socials = ref([]);
-
 const { data: socials } = await useAsyncData("socials", async () => {
   const response = await axios.get(`/socials`);
   return response.data;
 });
-// const fetchSocials = async () => {
-//   try {
-//     const response = await axios.get(`/socials`);
-//     socials.value = response.data;
-//   } catch (error) {
-//     console.error('Ошибка:', error.response?.data || error);
-//   }
-// };
 const { data: contacts } = await useAsyncData("contacts", async () => {
   const response = await axios.get(`/contacts`);
   return response.data[0];
 });
-// const fetchContacts = async () => {
-//   try {
-//     const response = await axios.get(`/contacts`);
-//     contacts.value = response.data[0];
-//
-//   } catch (error) {
-//     console.error('Ошибка с сервера:', error.response.data);
-//     console.error('Ошибка загрузки баннеров:', error);
-//   }
-// };
 const { data: companies } = await useAsyncData("companies", async () => {
   const response = await axios.get(`/companies`);
   return response.data;
 });
-// const fetchCompanies = async () => {
-//   try {
-//     const response = await axios.get(`/companies`);
-//     companies.value = response.data;
-//   } catch (error) {
-//     console.error('Ошибка с сервера:', error.response.data);
-//     console.error('Ошибка загрузки баннеров:', error);
-//   }
-// };
 
 const activeTab = ref(0);
 
@@ -231,14 +200,11 @@ const onInput = (event) => {
 };
 
 onMounted(async () => {
-  // await fetchSocials();
-  // await fetchContacts();
   if (contacts.value.map) {
     contacts.value.map = contacts.value.map
         .split(',')
         .map(coord => parseFloat(coord.trim()));
   }
-  // await fetchCompanies();
 
   await nextTick(() => {
     tabsRef.value = document.querySelectorAll('.card__tabs_item');

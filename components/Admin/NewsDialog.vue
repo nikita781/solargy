@@ -4,11 +4,11 @@ import axios from "axios";
 import EditorProd from "~/components/UI/editorProd.vue";
 
 const props = defineProps({
-  modelValue: { type: Boolean, default: false }, // v-model visible
-  mode: { type: String, default: "create" }, // "create" | "edit"
-  newsId: { type: [Number, String, null], default: null }, // для edit
-  promos: { type: Array, default: () => [] }, // список акций для select
-  allProducts: { type: Array, default: () => [] }, // товары для привязки
+  modelValue: { type: Boolean, default: false },
+  mode: { type: String, default: "create" },
+  newsId: { type: [Number, String, null], default: null },
+  promos: { type: Array, default: () => [] },
+  allProducts: { type: Array, default: () => [] },
 });
 
 const emit = defineEmits(["update:modelValue", "saved"]);
@@ -31,28 +31,25 @@ const errors = ref({
   pinned: false,
 });
 
-// ---- form state ----
 const currentId = ref(null);
 
 const title = ref("");
-const type = ref(null); // Новости | Блог | Акция
+const type = ref(null);
 const promoId = ref(null);
 
-const pinnedUntil = ref(""); // yyyy-mm-dd
+const pinnedUntil = ref("");
 const video = ref("");
 const html = ref("");
 
-const imageFile = ref(null); // File (только если выбрали/обрезали)
-const imagePreview = ref(null); // url (backend или blob:)
+const imageFile = ref(null);
+const imagePreview = ref(null);
 const fileInputRef = ref(null);
 
-// ---- products state ----
-const linkedProducts = ref([]); // [{id,name}] (как приходит с backend)
+const linkedProducts = ref([]);
 const productToAdd = ref(null);
 
 const canEditProducts = computed(() => props.mode === "edit" && !!currentId.value);
 
-// ---- helpers ----
 const destroyPreviewIfBlob = (url) => {
   if (url && typeof url === "string" && url.startsWith("blob:")) {
     try {
@@ -93,7 +90,6 @@ const resetForm = () => {
 };
 
 const formatFromBackend = (dateStr) => {
-  // pinned_until приходит "dd.mm.yyyy"
   if (!dateStr) return "";
   const [day, month, year] = String(dateStr).split(".");
   if (!day || !month || !year) return "";
@@ -110,7 +106,6 @@ const getLinkedProductIds = () =>
         .map((p) => (typeof p === "object" && p !== null ? Number(p.id) : Number(p)))
         .filter((n) => Number.isFinite(n));
 
-// ---- cropper modal ----
 const cropperVisible = ref(false);
 const cropperImageUrl = ref(null);
 const cropperImgEl = ref(null);
@@ -224,12 +219,10 @@ const cancelCrop = () => {
   cropperImageUrl.value = null;
 };
 
-// ---- image handling ----
 const handleFileChange = (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
 
-  // GIF не режем
   const isGif = file.type === "image/gif" || /\.gif$/i.test(file.name);
   if (isGif) {
     destroyPreviewIfBlob(imagePreview.value);
@@ -241,7 +234,6 @@ const handleFileChange = (event) => {
   openCropper(file);
 };
 
-// ---- api ----
 const loadNews = async (id) => {
   const { data } = await axios.get(`/news/${id}`);
   currentId.value = data.id;
@@ -255,7 +247,6 @@ const loadNews = async (id) => {
 
   pinnedUntil.value = formatFromBackend(data.pinned_until);
 
-  // картинка с бэка (строка url)
   destroyPreviewIfBlob(imagePreview.value);
   imagePreview.value = data.image || null;
   imageFile.value = null;
@@ -263,12 +254,10 @@ const loadNews = async (id) => {
   linkedProducts.value = Array.isArray(data.products) ? data.products : [];
 };
 
-// PATCH only products[] (для вкладки "Товары")
 const syncProducts = async (newsId = currentId.value, ids = getLinkedProductIds()) => {
   const targetId = newsId;
   const arr = Array.isArray(ids) ? ids : [];
 
-  // 1) JSON
   try {
     await axios.post(
         `/news/${targetId}?_method=patch`,
@@ -277,7 +266,6 @@ const syncProducts = async (newsId = currentId.value, ids = getLinkedProductIds(
     );
     return;
   } catch (e) {
-    // 2) fallback multipart
     const fd = new FormData();
     if (arr.length === 0) {
       fd.append("products", "[]");
@@ -291,7 +279,6 @@ const syncProducts = async (newsId = currentId.value, ids = getLinkedProductIds(
   }
 };
 
-// ---- open watcher ----
 watch(
     () => props.modelValue,
     async (open) => {
@@ -310,7 +297,6 @@ watch(
     }
 );
 
-// если меняется newsId пока модалка открыта (например после duplicate)
 watch(
     () => props.newsId,
     async (id) => {
@@ -327,12 +313,10 @@ watch(
     }
 );
 
-// если поменяли type и это не "Акция" — сбросим promoId (чтобы не улетало случайно)
 watch(type, (v) => {
   if (v !== "Акция") promoId.value = null;
 });
 
-// ---- validation ----
 const validateMain = () => {
   errors.value.title = !title.value;
   errors.value.type = !type.value;
@@ -340,7 +324,6 @@ const validateMain = () => {
   errors.value.promo = type.value === "Акция" && !promoId.value;
   errors.value.pinned = !isPinnedValid();
 
-  // create: картинка обязательна (File)
   errors.value.image = props.mode === "create" ? !imageFile.value : false;
 
   return !(
@@ -352,7 +335,6 @@ const validateMain = () => {
   );
 };
 
-// ---- save ----
 const save = async () => {
   if (!validateMain()) return;
 
@@ -363,7 +345,6 @@ const save = async () => {
     formData.append("type", type.value);
     formData.append("html", html.value || "");
 
-    // create: у тебя было — ставим дату
     if (props.mode === "create") {
       formData.append("date", todayStr);
     }
@@ -378,8 +359,6 @@ const save = async () => {
       formData.append("pinned_until", pinnedUntil.value);
     }
 
-    // ✅ products[] отправляем в update под ключом products
-    // (на create, как правило, товары привязываются уже в edit после сохранения)
     if (props.mode === "edit") {
       const ids = getLinkedProductIds();
       ids.forEach((id, idx) => formData.append(`products[${idx}]`, id));
@@ -397,7 +376,6 @@ const save = async () => {
       return;
     }
 
-    // update
     if (imageFile.value) formData.append("image", imageFile.value);
 
     await axios.post(`/news/${currentId.value}?_method=patch`, formData, {
@@ -413,7 +391,6 @@ const save = async () => {
   }
 };
 
-// ---- products actions (через products[]) ----
 const addProduct = async () => {
   if (!canEditProducts.value) return;
   if (!productToAdd.value) return;
@@ -461,7 +438,6 @@ const close = () => {
   isOpen.value = false;
 };
 
-// cleanup
 onBeforeUnmount(() => {
   destroyPreviewIfBlob(imagePreview.value);
   if (cropperInstance.value) {
@@ -493,7 +469,6 @@ onBeforeUnmount(() => {
         </p>
       </div>
 
-      <!-- CROP MODAL -->
       <div v-if="cropperVisible" class="cropper-overlay" @click.stop>
         <div class="cropper-modal">
           <p class="cropper-modal__title">Обрезка изображения</p>
@@ -518,7 +493,6 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- MAIN -->
       <div class="admin__dialog_content" v-if="activeTab === 'Главная'">
         <h3 class="admin__dialog_title">
           {{ props.mode === "create" ? "Создание записи" : "Изменение записи" }}
@@ -624,7 +598,6 @@ onBeforeUnmount(() => {
         </form>
       </div>
 
-      <!-- PRODUCTS TAB -->
       <div class="admin__dialog_content" v-if="activeTab === 'Товары'">
         <h3 class="admin__dialog_title">Привязанные товары</h3>
 

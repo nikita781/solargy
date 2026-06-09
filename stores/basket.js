@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 export const useBasketStore = defineStore('basket', {
     state: () => ({
-        items: [], // Список товаров в корзине
+        items: [],
         userInfo: {
             name: '',
             phone: '',
@@ -18,7 +18,6 @@ export const useBasketStore = defineStore('basket', {
             ),
     },
     actions: {
-        // Инициализация корзины из localStorage при загрузке
         loadBasketFromStorage() {
             if (process.client) {
                 const storedItems = localStorage.getItem('basketItems');
@@ -28,12 +27,10 @@ export const useBasketStore = defineStore('basket', {
             }
         },
 
-        // Сохранение корзины в localStorage
         saveBasketToStorage() {
             localStorage.setItem('basketItems', JSON.stringify(this.items));
         },
 
-        // Добавление товара в корзину
         addToBasket(item) {
             const existingItem = this.items.find((i) => {
                 if (i.name !== item.name) return false;
@@ -48,33 +45,26 @@ export const useBasketStore = defineStore('basket', {
             });
 
             if (existingItem) {
-                // Если товар с такими же параметрами уже есть, увеличиваем количество
                 existingItem.quantity += item.quantity;
             } else {
-                // Если товара нет, добавляем его в корзину
                 this.items.push(item);
             }
 
-            // Обновляем localStorage
             this.saveBasketToStorage();
         },
 
-        // Удаление товара из корзины
         removeItem(itemId) {
             this.items = this.items.filter((item) => item.id !== itemId);
 
-            // Обновляем localStorage
             this.saveBasketToStorage();
         },
 
-        // Обновление количества товара
         updateQuantity(itemId, quantity) {
             const item = this.items.find((i) => i.id === itemId);
             if (item) {
                 item.quantity = quantity;
             }
 
-            // Обновляем localStorage
             this.saveBasketToStorage();
         },
         updateUserInfo(name, phone, email) {
@@ -85,14 +75,12 @@ export const useBasketStore = defineStore('basket', {
         updateUserInfoPrice(price) {
             this.userInfo.price = price;
         },
-        // Очистка корзины
         clearBasket() {
             this.items = [];
             this.userInfo.name = '';
             this.userInfo.phone = '';
             this.userInfo.price = 0;
 
-            // Обновляем localStorage
             this.saveBasketToStorage();
         },
     },

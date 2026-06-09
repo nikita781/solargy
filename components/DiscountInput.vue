@@ -33,7 +33,6 @@ const value = computed({
     return props.modelValue ?? '';
   },
   set(v) {
-    // Можно оставить как строку, если хочешь — тут я мягко привожу к числу
     const num = v === '' ? '' : Number(v);
     emit('update:modelValue', isNaN(num) ? v : num);
   }
@@ -44,7 +43,6 @@ const onFocus = () => {
 };
 
 const onBlur = () => {
-  // Даём время mousedown по кнопкам, чтобы клик не потерялся
   setTimeout(() => {
     isOpen.value = false;
   }, 150);
@@ -103,11 +101,9 @@ const selectDiscount = (val) => {
 </template>
 
 <style scoped lang="scss">
-/* базовый инпут — по сути твой &_input */
-
 .form_input {
   height: 40px;
-  padding: 0 40px 0 16px; // добавил место под значок %
+  padding: 0 40px 0 16px;
   outline: none;
   background-color: #f5f5f5;
   border-radius: 8px;
@@ -149,8 +145,6 @@ const selectDiscount = (val) => {
   }
 }
 
-/* обёртка скидочного инпута */
-
 .discount {
   position: relative;
 
@@ -185,7 +179,7 @@ const selectDiscount = (val) => {
   }
 
   &__item {
-    flex: 0 0 calc(25% - 6px); // 4 в ряд
+    flex: 0 0 calc(25% - 6px);
     padding: 6px 10px;
     border-radius: 999px;
     border: none;
@@ -207,8 +201,6 @@ const selectDiscount = (val) => {
     color: red;
   }
 }
-
-/* простая анимация раскрытия */
 
 .fade-down-enter-active,
 .fade-down-leave-active {

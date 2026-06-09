@@ -3,11 +3,11 @@ import { computed, ref, watch, nextTick, onBeforeUnmount } from "vue";
 import axios from "axios";
 
 const props = defineProps({
-  modelValue: { type: Boolean, default: false }, // v-model visible
-  mode: { type: String, default: "create" }, // "create" | "edit"
-  promoId: { type: [Number, String, null], default: null }, // для edit
-  allProducts: { type: Array, default: () => [] }, // товары для select
-  seed: { type: Object, default: null }, // если где-то ещё используешь "seed-дубликат"
+  modelValue: { type: Boolean, default: false },
+  mode: { type: String, default: "create" },
+  promoId: { type: [Number, String, null], default: null },
+  allProducts: { type: Array, default: () => [] },
+  seed: { type: Object, default: null },
 });
 
 const emit = defineEmits(["update:modelValue", "saved"]);
@@ -28,7 +28,6 @@ const errors = ref({
   end: false,
 });
 
-// form state
 const currentId = ref(null);
 const title = ref("");
 const description = ref("");
@@ -36,18 +35,16 @@ const start = ref("");
 const end = ref("");
 const isArchived = ref(false);
 
-const imageFile = ref(null); // File
-const imagePreview = ref(null); // url
+const imageFile = ref(null);
+const imagePreview = ref(null);
 const fileInputRef = ref(null);
 
 const imageAutoError = ref(false);
 
-// products state
-const linkedProducts = ref([]); // [{id,name}]
+const linkedProducts = ref([]);
 const productToAdd = ref(null);
 const canEditProducts = computed(() => props.mode === "edit" && !!currentId.value);
 
-// ---- utils ----
 const destroyPreviewIfBlob = (url) => {
   if (url && typeof url === "string" && url.startsWith("blob:")) {
     try { URL.revokeObjectURL(url); } catch {}
@@ -55,7 +52,6 @@ const destroyPreviewIfBlob = (url) => {
 };
 
 const toProxiedStorageUrl = (url) => {
-  // если есть прокси на /storage
   try {
     const u = new URL(url);
     if (u.pathname.startsWith("/storage/")) return u.pathname + u.search;
@@ -78,7 +74,6 @@ const urlToFile = async (url, filename = "promo-image") => {
   return new File([blob], `${filename}.${ext}`, { type });
 };
 
-// ---- reset ----
 const resetForm = () => {
   activeTab.value = "Главная";
   currentId.value = null;
@@ -101,7 +96,6 @@ const resetForm = () => {
   imageAutoError.value = false;
   errors.value = { title: false, description: false, image: false, start: false, end: false };
 
-  // cropper cleanup
   cropperVisible.value = false;
   cropperImageUrl.value = null;
   if (cropperInstance.value) {
@@ -110,14 +104,12 @@ const resetForm = () => {
   }
 };
 
-// ---- cropper (как в NewsDialog) ----
 const cropperVisible = ref(false);
 const cropperImageUrl = ref(null);
 const cropperImgEl = ref(null);
 const cropperInstance = ref(null);
 let CropperClass = null;
 
-// размеры 1:1 с NewsDialog
 const CROP_WIDTH = 1830;
 const CROP_HEIGHT = 1704;
 const ASPECT_RATIO = CROP_WIDTH / CROP_HEIGHT;
@@ -227,13 +219,11 @@ const cancelCrop = () => {
   cropperImageUrl.value = null;
 };
 
-// ---- open lifecycle ----
 const applySeed = async (seed) => {
   title.value = seed?.title || "";
   description.value = seed?.description || "";
   imagePreview.value = seed?.image || null;
 
-  // если seed — обычно хотели пустые даты/архив false
   start.value = "";
   end.value = "";
   isArchived.value = false;
@@ -243,7 +233,6 @@ const applySeed = async (seed) => {
   imageFile.value = null;
   imageAutoError.value = false;
 
-  // попробуем подтянуть картинку в File (может упасть из-за CORS)
   if (seed?.image) {
     try {
       imageFile.value = await urlToFile(seed.image, "promo-duplicate");
@@ -287,7 +276,6 @@ watch(
         return;
       }
 
-      // create mode
       if (props.seed) {
         isLoading.value = true;
         try {
@@ -299,12 +287,10 @@ watch(
     }
 );
 
-// ---- image handling (с cropper) ----
 const handleFileChange = (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
 
-  // GIF не режем
   const isGif = file.type === "image/gif" || /\.gif$/i.test(file.name);
   if (isGif) {
     destroyPreviewIfBlob(imagePreview.value);
@@ -316,7 +302,6 @@ const handleFileChange = (event) => {
   openCropper(file);
 };
 
-// если seed притащил preview, но нет file — попробуем сделать file
 const ensureImageFile = async () => {
   if (props.mode !== "create") return;
   if (imageFile.value) return;
@@ -331,7 +316,6 @@ const ensureImageFile = async () => {
   }
 };
 
-// ---- validation/save ----
 const validateMain = () => {
   errors.value.title = !title.value;
   errors.value.description = !description.value;
@@ -369,7 +353,6 @@ const save = async () => {
 
       const newId = resp?.data?.id;
 
-      // если create был через seed — привяжем товары (старое поведение)
       if (newId && linkedProducts.value.length) {
         for (const p of linkedProducts.value) {
           await axios.post(`/promos/${newId}/products/${p.id}`);
@@ -381,7 +364,6 @@ const save = async () => {
       return;
     }
 
-    // update: image optional
     if (imageFile.value) formData.append("image", imageFile.value);
 
     await axios.post(`/promos/${currentId.value}?_method=patch`, formData, {
@@ -397,7 +379,6 @@ const save = async () => {
   }
 };
 
-// ---- products actions (edit only) ----
 const addProduct = async () => {
   if (!canEditProducts.value) return;
   if (!productToAdd.value) return;
@@ -432,7 +413,6 @@ const close = () => {
   isOpen.value = false;
 };
 
-// cleanup
 onBeforeUnmount(() => {
   destroyPreviewIfBlob(imagePreview.value);
   if (cropperInstance.value) {
@@ -464,7 +444,6 @@ onBeforeUnmount(() => {
         </p>
       </div>
 
-      <!-- CROP MODAL (как в NewsDialog) -->
       <div v-if="cropperVisible" class="cropper-overlay" @click.stop>
         <div class="cropper-modal">
           <p class="cropper-modal__title">Обрезка изображения</p>
@@ -558,7 +537,6 @@ onBeforeUnmount(() => {
             Не удалось подхватить картинку автоматически (CORS/доступ). Выберите файл вручную.
           </p>
 
-          <!-- если это create от seed и товары есть -->
           <div v-if="props.mode === 'create' && linkedProducts.length" style="margin-top: 10px;">
             <b>Товары (будут привязаны после сохранения):</b>
             <ul style="margin: 6px 0 0 18px;">
@@ -646,7 +624,6 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-/* ✅ стили cropper-overlay 1:1 как в NewsDialog */
 .cropper-overlay {
   position: fixed;
   inset: 0;

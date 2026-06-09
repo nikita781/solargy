@@ -316,14 +316,6 @@ const resetSubBanners = () => {
           {{ product.name }}
         </option>
       </select>
-<!--      <input-->
-<!--          type="file"-->
-<!--          ref="fileBanners"-->
-<!--          :class="{ error: errors.photoBanners }"-->
-<!--          class="basket__form_input admin-panel__content_input"-->
-<!--          @change="handleFileChangeMainBanner"-->
-<!--          accept="image/*"-->
-<!--      />-->
       <div class="input__wrapper">
         <input ref="fileBanners" type="file" id="input__file" class="input input__file"  @change="handleFileChangeMainBanner" accept="image/*" multiple>
         <label for="input__file" class="input__file-button" :class="{ error: errors.photoBanners }">

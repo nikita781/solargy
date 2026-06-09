@@ -54,8 +54,6 @@ if (seos.value) {
 }
 
 const blocks = ref([]);
-// const patents = ref([]);
-// const teams = ref([]);
 
 const fetchBlocks = async () => {
   try {
@@ -70,28 +68,10 @@ const { data: patents } = await useAsyncData("patents", async () => {
   const response = await axios.get(`/patents`);
   return response.data.data;
 });
-// const fetchPatents = async () => {
-//   try {
-//     const response = await axios.get(`/patents`);
-//     patents.value = response.data.data;
-//   } catch (error) {
-//     console.error('Ошибка с сервера:', error.response.data);
-//     console.error('Ошибка загрузки баннеров:', error);
-//   }
-// };
 const { data: teams } = await useAsyncData("teams", async () => {
   const response = await axios.get(`/teams`);
   return response.data;
 });
-// const fetchTeams = async () => {
-//   try {
-//     const response = await axios.get(`/teams`);
-//     teams.value = response.data;
-//   } catch (error) {
-//     console.error('Ошибка с сервера:', error.response.data);
-//     console.error('Ошибка загрузки баннеров:', error);
-//   }
-// };
 const handleDownload = async (fileUrl, file_name) => {
   try {
     const fileName = fileUrl.split('/').pop();
@@ -118,8 +98,6 @@ const handleDownload = async (fileUrl, file_name) => {
 
 onMounted(() => {
   fetchBlocks();
-  // fetchPatents();
-  // fetchTeams();
 });
 
 function formatDate(dateString) {

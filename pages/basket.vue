@@ -291,15 +291,12 @@ const addOrder = async () => {
   }
 };
 
-/* --------------------------
-   ДОП. УСЛУГИ: как в каталоге
---------------------------- */
 const servicesCategoryId = ref(null);
 
 const servicesProducts = ref([]);
 const servicesPage = ref(1);
 const servicesTotalPages = ref(0);
-const servicesItemsPerPage = 8; // как в каталоге
+const servicesItemsPerPage = 8;
 
 const normalizeName = (v) => String(v ?? "").trim().toLowerCase();
 
@@ -341,7 +338,6 @@ const fetchServicesProducts = async () => {
       return;
     }
 
-    // дорога как в каталоге: /products?page=...&category=...
     const resp = await axios.get(`/products?page=${servicesPage.value}&category=${servicesCategoryId.value}`);
     servicesTotalPages.value = resp.data.meta?.last_page || 0;
     servicesProducts.value = resp.data.data || [];
@@ -605,7 +601,6 @@ onMounted(async () => {
       <NuxtLink to="/" class="main_btn basket__successfully_btn">На главную</NuxtLink>
     </div>
 
-    <!-- ДОП. УСЛУГИ: как в каталоге -->
     <div class="card__product__cont" v-if="!application && servicesCategoryId">
       <div class="card__product" style="padding-top: unset">
         <div class="card__product__header">
@@ -672,7 +667,6 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- ПАГИНАЦИЯ: как в каталоге -->
         <div class="pagination" v-if="servicesTotalPages > 1">
           <button
               class="arrow-left"
@@ -730,7 +724,6 @@ $x-large: 1399.98px;
 $big: 1592.98px;
 $x-big: 1829.98px;
 
-/* пагинация — ровно как в каталоге */
 .pagination {
   display: flex;
   flex-wrap: wrap;

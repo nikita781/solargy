@@ -489,7 +489,6 @@ const seedImageWrappedByUrlFromHtml = (html: string) => {
       }
     });
   } catch {
-    // ignore
   }
 };
 
@@ -795,9 +794,6 @@ const handleImageSelection = (e: Event) => {
   syncActiveImageStateById(id);
 };
 
-/**
- * ✅ Хранилище Start with по ID блока списка.
- */
 const orderedStartByBlockId = new Map<string, number>();
 
 let popoverObserver: MutationObserver | null = null;
@@ -819,9 +815,6 @@ const getFocusedBlockId = () => {
   return el?.getAttribute("data-id") || "";
 };
 
-/**
- * ✅ ВАЖНО: ordered list в EditorJS часто НЕ <ol>, а .cdx-list--ordered
- */
 const isFocusedBlockOrderedList = () => {
   const el = getFocusedBlockEl();
   if (!el) return false;
@@ -837,10 +830,6 @@ const getPopoverEl = () => {
   ) as HTMLElement | null;
 };
 
-/**
- * Надежнее находим input "Start with" по тексту (Start with / Начать с),
- * иначе fallback — числовой input не Filter.
- */
 const findStartWithInput = (): HTMLInputElement | null => {
   const popover = getPopoverEl();
   if (!popover) return null;
@@ -860,7 +849,6 @@ const findStartWithInput = (): HTMLInputElement | null => {
     if (inp) return inp;
   }
 
-  // fallback
   const inputs = Array.from(popover.querySelectorAll("input")) as HTMLInputElement[];
 
   const candidates = inputs.filter((inp) => {
@@ -879,9 +867,6 @@ const findStartWithInput = (): HTMLInputElement | null => {
   return numeric || null;
 };
 
-/**
- * ✅ Применяем start из Map в UI поповера
- */
 const applyStartToPopoverIfNeeded = () => {
   const blockId = getFocusedBlockId();
   if (!blockId) return;
@@ -901,28 +886,16 @@ const applyStartToPopoverIfNeeded = () => {
   }
 };
 
-/**
- * ✅ Получить DOM контейнер ordered-списка в блоке.
- * (ol или .cdx-list--ordered)
- */
 const getOrderedListDomEl = (blockEl: HTMLElement): HTMLElement | null => {
-  // чаще всего именно так
   const cdx = blockEl.querySelector(".cdx-list--ordered") as HTMLElement | null;
   if (cdx) return cdx;
 
-  // иногда бывает нативный ol
   const ol = blockEl.querySelector("ol") as HTMLElement | null;
   if (ol) return ol;
 
   return null;
 };
 
-/**
- * ✅ Ключевой фикс: если список рисуется CSS counter-ами,
- * то start нужно задавать через counter-reset.
- *
- * Работает и для .cdx-list--ordered, и для ol (если ol стилизован counter-ами).
- */
 const applyStartToDomList = (blockId: string, start: number) => {
   const root = editor.value;
   if (!root) return;
@@ -936,28 +909,20 @@ const applyStartToDomList = (blockId: string, start: number) => {
   const desiredStart = Number.isFinite(start) ? start : 1;
   const resetValue = Math.max(0, desiredStart - 1);
 
-  // 1) если это ol — поставим и атрибут start (на всякий случай)
   if (listEl.tagName === "OL") {
     const ol = listEl as HTMLOListElement;
     if (desiredStart > 1) ol.setAttribute("start", String(desiredStart));
     else ol.removeAttribute("start");
   }
 
-  // 2) главное: counter-reset
-  // читаем какой именно counter используется (чтобы не гадать имя)
   const computed = window.getComputedStyle(listEl);
-  const cr = (computed.counterReset || "").trim(); // например: "item 0" или "cdx-list-counter 0"
-  // берем первый counter (если их несколько, разделяются запятыми)
+  const cr = (computed.counterReset || "").trim();
   const first = cr && cr !== "none" ? cr.split(",")[0].trim() : "";
   const counterName = first ? first.split(/\s+/)[0] : "item";
 
-  // ставим inline override
   listEl.style.counterReset = `${counterName} ${resetValue}`;
 };
 
-/**
- * Рекурсивный обход блоков (для columns и т.п.)
- */
 const walkBlocks = (blocks: any[], cb: (b: any) => void) => {
   for (const b of blocks || []) {
     if (!b) continue;
@@ -973,9 +938,6 @@ const walkBlocks = (blocks: any[], cb: (b: any) => void) => {
   }
 };
 
-/**
- * ✅ Патчим start перед экспортом (и вложенные тоже)
- */
 const patchOrderedListMetaBeforeExport = (data: any) => {
   if (!data?.blocks?.length) return data;
 
@@ -1043,7 +1005,6 @@ onMounted(async () => {
   const { default: AlignmentTune } = await import("editor-js-alignment-tune");
   const { default: EditorJSHTML } = await import("editorjs-html");
 
-  // ---------------- LIST helpers ----------------
   const counterTypeToOlType = (counterType?: string) => {
     switch (counterType) {
       case "lower-alpha":
@@ -1095,7 +1056,6 @@ onMounted(async () => {
         .join("");
   };
 
-  // ---------------- HTML parser ----------------
   const htmlParser = EditorJSHTML({
     paragraph: (block: any) => {
       const alignment = getBlockAlignment(block, "left");
@@ -1257,7 +1217,6 @@ onMounted(async () => {
     },
   });
 
-  // ---------------- upload image helper ----------------
   const getUploadImageUrl = () => {
     const base = axios.defaults.baseURL;
     if (base) return `${String(base).replace(/\/$/, "")}/upload-image`;
@@ -1334,9 +1293,6 @@ onMounted(async () => {
     },
   };
 
-  /**
-   * ✅ Собираем "семена" start из initial blocks (и вложенных тоже), в порядке появления.
-   */
   const collectOrderedSeeds = (blocks: any[]) => {
     const seeds: number[] = [];
     walkBlocks(blocks, (b) => {
@@ -1359,10 +1315,6 @@ onMounted(async () => {
     return seeds;
   };
 
-  /**
-   * ✅ Привязываем seeds к реальным id блоков после render()
-   * и применяем к DOM (counter-reset), чтобы в редакторе было 7, а не 1.
-   */
   const applyOrderedSeedsToRealBlockIds = async (seeds: number[]) => {
     if (!seeds.length) return;
 
@@ -1383,11 +1335,9 @@ onMounted(async () => {
           orderedStartByBlockId.delete(b.id);
         }
 
-        // ✅ DOM apply чуть позже, чтобы точно уже отрисовано
         requestAnimationFrame(() => applyStartToDomList(b.id, seed));
       });
     } catch {
-      // ignore
     }
   };
 
@@ -1408,11 +1358,9 @@ onMounted(async () => {
         setImageWrappedByUrl(String(b?.data?.file?.url || ""), wrapped);
       });
     } catch {
-      // ignore
     }
   };
 
-  // ---------------- EditorJS ----------------
   editorInstance = new EditorJS({
     holder: editor.value!,
     tools: {
@@ -1491,7 +1439,6 @@ onMounted(async () => {
           editorInstance.blocks.renderFromHTML(props.initialHtml);
         }
       } finally {
-        // ✅ после render() маппим seeds -> реальные id и применяем counter-reset
         setTimeout(async () => {
           await applyOrderedSeedsToRealBlockIds(orderedSeeds);
           await applyImageWrappedSeedsToRealBlockIds(imageWrappedSeeds);
@@ -1502,7 +1449,6 @@ onMounted(async () => {
     onChange: async () => {
       const data = await editorInstance.save();
 
-      // ✅ подмешиваем start из Map перед экспортом
       const patched = patchImageWrappedMetaBeforeExport(
         patchOrderedListMetaBeforeExport(data)
       );
@@ -1519,7 +1465,6 @@ onMounted(async () => {
 
   editorInstance.htmlParser = htmlParser;
 
-  // ---------------- UI hook: Start with input persistence ----------------
   inputListener = (e: Event) => {
     const t = e.target as HTMLElement | null;
     if (!t || !(t instanceof HTMLInputElement)) return;
@@ -1697,7 +1642,6 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
       return;
     }
 
-    // UL (unordered / checklist)
     if (node.tagName === "UL") {
       const isChecklist =
           node.classList.contains("checklist") || !!node.querySelector('input[type="checkbox"]');
@@ -1728,7 +1672,6 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
           tunes: getAlignmentTuneForElement(node),
         });
       } else {
-        // ✅ unordered: objects (list v2 format)
         const items = Array.from(node.querySelectorAll(":scope > li")).map((li) => {
           const liEl = li as HTMLElement;
           stripDirectNestedLists(liEl);
@@ -1745,13 +1688,11 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
       return;
     }
 
-    // OL (ordered + start/type)
     if (node.tagName === "OL") {
       const start = parseInt(node.getAttribute("start") || "1", 10) || 1;
       const typeAttr = (node.getAttribute("type") || "1").trim();
       const counterType = olTypeToCounterType(typeAttr);
 
-      // ✅ ordered: objects (list v2 format)
       const items = Array.from(node.querySelectorAll(":scope > li")).map((li) => {
         const liEl = li as HTMLElement;
         stripDirectNestedLists(liEl);
@@ -1774,7 +1715,6 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
       return;
     }
 
-    // table-container -> table
     if (node.tagName === "DIV" && node.classList.contains("table-container")) {
       const table = node.querySelector("table");
       if (table) {
@@ -1803,7 +1743,6 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
       return;
     }
 
-    // image-block / image-block-group
     if (
         node.tagName === "DIV" &&
         (node.classList.contains("image-block") || node.classList.contains("image-block-group"))
@@ -1815,7 +1754,6 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
       return;
     }
 
-    // Fallback: wrapper class can be stripped on save, keep image settings from data/style/src meta.
     if (
         node.tagName === "DIV" &&
         node.children.length === 1 &&
@@ -1830,7 +1768,6 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
       return;
     }
 
-    // columns
     if (node.tagName === "DIV" && node.classList.contains("columns")) {
       const columns = Array.from(node.querySelectorAll(":scope > .column")).map((column) => {
         const blocksInColumn = parseHtmlToEditorBlocks((column as HTMLElement).innerHTML);
@@ -1841,7 +1778,6 @@ function parseHtmlToEditorBlocks(html: string): { type: string; data: any; tunes
       return;
     }
 
-    // gallery
     if (node.tagName === "DIV" && node.classList.contains("gallery")) {
       const images = Array.from(node.querySelectorAll("img")).map((img) => ({
         url: (img as HTMLImageElement).src,

@@ -20,7 +20,7 @@ const isLoading = ref(false);
 const formatDate = (dateString) => {
   const date = new Date(dateString);
   const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // Месяцы начинаются с 0
+  const month = String(date.getMonth() + 1).padStart(2, '0');
   const year = date.getFullYear();
   return `${day}.${month}.${year}`;
 };
@@ -297,7 +297,7 @@ const closeDialogUpdate = () => {
 const activeTab = ref("Главная");
 
 const visibleDialogUpdate = ref(false);
-const dialogMode = ref("create"); // "create" | "edit"
+const dialogMode = ref("create");
 const dialogPromoId = ref(null);
 const dialogSeed = ref(null);
 
@@ -329,22 +329,17 @@ const getNewestPromoId = () => {
 const duplicateStock = async (stock) => {
   isLoading.value = true;
   try {
-    // 1) создаем дубликат на бэке
     const resp = await axios.post(`/promos/${stock.id}/duplicate`);
 
-    // 2) если бэк вернул id — супер
     const newIdFromResp = resp?.data?.id ?? resp?.data?.data?.id ?? null;
 
-    // 3) обновляем список (и даем бэку время, если там задержка/кэш)
     for (let i = 0; i < 6; i++) {
       await fetchStocks({ bust: true });
 
-      // если знаем id — ждем пока появится в списке
       if (newIdFromResp) {
         const exists = (stocks.value || []).some((p) => String(p.id) === String(newIdFromResp));
         if (exists) break;
       } else {
-        // если id не знаем — просто подождем 1-2 попытки, чтобы список обновился
         if ((stocks.value || []).length) break;
       }
 
@@ -355,7 +350,6 @@ const duplicateStock = async (stock) => {
     const idToOpen = newIdFromResp || fallbackId;
     if (!idToOpen) return;
 
-    // 4) открываем модалку сразу в edit на новом id
     dialogMode.value = "edit";
     dialogPromoId.value = idToOpen;
     dialogSeed.value = null;

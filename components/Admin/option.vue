@@ -73,12 +73,10 @@ const ExportOptions = async (option) => {
       responseType: 'blob',
     });
 
-    // Создаем Blob-объект с Excel-файлом
     const blob = new Blob([response.data], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     });
 
-    // Сохраняем файл с помощью FileSaver.js
     saveAs(blob, `${option.name}.xlsx`);
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);

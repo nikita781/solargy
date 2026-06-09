@@ -102,20 +102,15 @@ function removeEmojis(text) {
 function getVkEmbedLink(url) {
   if (!url) return '';
 
-  // Ищем и обычные видео, и клипы:
-  //     video-192371408_456243321
-  //     clip-50151764_456246819
   const match = url.match(/(?:video|clip)-(-?\d+)_([0-9]+)/);
 
   if (!match) {
-    // Если не нашли нужный формат — отдаем как есть
     return url;
   }
 
-  let oid = match[1]; // может быть '50151764' или '-50151764'
+  let oid = match[1];
   const id = match[2];
 
-  // В embed oid должен быть с минусом (для сообществ)
   if (!oid.startsWith('-')) {
     oid = '-' + oid;
   }
@@ -138,8 +133,8 @@ function copyLink() {
   Toastify({
     text: "Ссылка скопирована!",
     duration: 3000,
-    gravity: "top", // Позиция: "top" или "bottom"
-    position: "right", // Позиция: "left", "center" или "right"
+    gravity: "top",
+    position: "right",
     backgroundColor: "#28a745",
     stopOnFocus: true,
   }).showToast();
@@ -233,7 +228,6 @@ function applyEditorImageMeta(img, meta) {
 function transformAllImagesInHtml(html) {
   if (!html) return '';
 
-  // 1. Парсим HTML-строку в DOM
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
@@ -245,7 +239,6 @@ function transformAllImagesInHtml(html) {
   });
 
 
-  // Проверка на .columns с двумя .column
   doc.querySelectorAll('.columns').forEach((columns) => {
     const columnChildren = columns.querySelectorAll(':scope > .column');
     if (columnChildren.length === 2) {
@@ -253,7 +246,6 @@ function transformAllImagesInHtml(html) {
     }
   });
 
-  // 3. Возвращаем обновлённую HTML-строку
   return doc.body.innerHTML;
 }
 
@@ -270,25 +262,19 @@ const onHideHtml = () => {
 
 const handleImageClickHtml = (event) => {
   const target = event.target;
-  // Проверяем, кликнули ли по IMG
   if (target.tagName === 'IMG') {
-    // Ищем ближайший контейнер .image-block / .image-block-group ИЛИ .gallery
     const parent = target.closest('.image-block, .image-block-group, .gallery, img.image-block');
     if (parent) {
-      // Собираем ВСЕ изображения из .image-block / .image-block-group и .gallery
       const imgElements = Array.from(
           document.querySelectorAll(
               '.editor__content .image-block img, .editor__content .image-block-group img, .editor__content .gallery img, .editor__content img.image-block'
           )
       );
 
-      // Формируем массив src для лайтбокса
       imgsHtml.value = imgElements.map((img) => img.src);
 
-      // Находим индекс кликнутого изображения
       const clickedIndex = imgElements.findIndex((img) => img === target);
 
-      // Если индекс найден, показываем изображение в лайтбоксе
       if (clickedIndex !== -1) {
         showImgHtml(clickedIndex);
       }

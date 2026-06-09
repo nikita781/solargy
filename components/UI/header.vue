@@ -20,16 +20,6 @@ const isSearch = ref(false);
 const showSearch = ref(false);
 const searchQuery = ref('');
 const searchResult = ref([]);
-// const categories = ref([])
-//
-// const fetchCategory = async () => {
-//   try {
-//     const response = await axios.get('/categories');
-//     categories.value = response.data;
-//   } catch (error) {
-//     console.error('Ошибка:', error.response?.data || error);
-//   }
-// };
 
 const { data: categories } = await useAsyncData("categories", async () => {
   const response = await axios.get(`/categories`);
@@ -39,26 +29,6 @@ const { data: contacts } = await useAsyncData("contacts", async () => {
   const response = await axios.get(`/contacts`);
   return response.data[0];
 });
-// const contacts = ref([]);
-// const fetchContact = async () => {
-//   try {
-//     const response = await axios.get(`/contacts`);
-//     contacts.value = response.data[0];
-//   } catch (error) {
-//     console.error('Ошибка:', error.response?.data || error);
-//   }
-// };
-
-// const tabs = ref([]);
-// const fetchTabs = async () => {
-//   try {
-//     const response = await axios.get('/categories');
-//     tabs.value = response.data;
-//     // console.log(tabs.value)
-//   } catch (error) {
-//     console.error('Ошибка загрузки категорий:', error.response?.data || error);
-//   }
-// };
 
 const handleSearch = async () => {
   if (!searchQuery.value.trim()) {
@@ -114,14 +84,6 @@ watch(isMenuOpen, (newValue) => {
       container.classList.remove('active');
     }
   }
-  // const containerMain = document.querySelector('.container');
-  // if (containerMain) {
-  //   if (newValue) {
-  //     containerMain.classList.add('active');
-  //   } else {
-  //     containerMain.classList.remove('active');
-  //   }
-  // }
 });
 watch(isSearchOpen, (newValue) => {
   const container = document.querySelector('.container-content');
@@ -132,23 +94,12 @@ watch(isSearchOpen, (newValue) => {
       container.classList.remove('active');
     }
   }
-  // const containerMain = document.querySelector('.container');
-  // if (containerMain) {
-  //   if (newValue) {
-  //     containerMain.classList.add('active');
-  //   } else {
-  //     containerMain.classList.remove('active');
-  //   }
-  // }
 });
 
-// Состояние раскрытия для каждого блока
 const expandedBlocks = ref([]);
 
-// Инициализируем массив `expandedBlocks` в зависимости от количества категорий
 categories.value.forEach(() => expandedBlocks.value.push(false));
 
-// Возвращаем видимые элементы для каждого блока
 const getVisibleItems = (blockIndex) => {
   const block = categories.value[blockIndex];
   if (expandedBlocks.value[blockIndex]) {
@@ -157,7 +108,6 @@ const getVisibleItems = (blockIndex) => {
   return block.products.slice(0, 4);
 };
 
-// Переключение состояния меню для конкретного блока
 function toggleMenu(blockIndex) {
   expandedBlocks.value[blockIndex] = !expandedBlocks.value[blockIndex];
 }
@@ -248,13 +198,6 @@ const convertDateToText = (dateString) => {
 };
 
 onMounted(() => {
-  // fetchCategory();
-  // fetchContact();
-  // fetchTabs();
-  // const container = document.querySelector('.container');
-  // if (container) {
-  //   container.addEventListener('click', handleContainerClick);
-  // }
   const containerContent = document.querySelector('.container-content');
   if (containerContent) {
     containerContent.addEventListener('mouseenter', handleContainerClick);
@@ -262,10 +205,6 @@ onMounted(() => {
   }
 });
 onBeforeUnmount(() => {
-  // const container = document.querySelector('.container');
-  // if (container) {
-  //   container.removeEventListener('click', handleContainerClick);
-  // }
   const containerContent = document.querySelector('.container-content');
   if (containerContent) {
     containerContent.addEventListener('mouseenter', handleContainerClick);
@@ -398,7 +337,6 @@ onBeforeUnmount(() => {
                                     class="header__menu_item">
                             {{ menuItem.name }}
                           </NuxtLink>
-                          <!--              <IconsArrow v-if="menuItem.subitems.length" color="#EF7F1A" />-->
                         </div>
                       </div>
                     </div>

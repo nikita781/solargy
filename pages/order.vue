@@ -58,24 +58,12 @@ const { data: place } = await useAsyncData("place", async () => {
   const response = await axios.get(`/purchase-place`);
   return response.data;
 });
-// const place = ref([]);
 const marketplacesPlace = ref([]);
 const partnersPlace = ref([]);
 const retailersPlace = ref([]);
 const storesPlace = ref([]);
 
-// const fetchPlace = async () => {
-//   try {
-//     const response = await axios.get(`/purchase-place`);
-//     place.value = response.data;
-//
-//   } catch (error) {
-//     console.error('Ошибка:', error.response?.data || error);
-//   }
-// };
-
 onMounted(() => {
-  // fetchPlace();
   marketplacesPlace.value = place.value.filter((item) => item.type === "marketplace");
   partnersPlace.value = place.value.filter((item) => item.type === "partner");
   retailersPlace.value = place.value.filter((item) => item.type === "retailer");

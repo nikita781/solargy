@@ -6,17 +6,7 @@ const { data: tabs } = await useAsyncData("tabs", async () => {
   const response = await axios.get(`/categories`);
   return response.data;
 });
-// const tabs = ref([]);
-// const fetchTabs = async () => {
-//   try {
-//     const response = await axios.get('/categories');
-//     tabs.value = response.data;
-//   } catch (error) {
-//     console.error('Ошибка загрузки категорий:', error.response?.data || error);
-//   }
-// };
 
-// const place = ref([]);
 const marketplacesPlace = ref([]);
 
 const { data: place } = await useAsyncData("place", async () => {
@@ -24,42 +14,14 @@ const { data: place } = await useAsyncData("place", async () => {
   return response.data;
 });
 
-// const fetchPlace = async () => {
-//   try {
-//     const response = await axios.get(`/purchase-place`);
-//     place.value = response.data;
-//
-//   } catch (error) {
-//     console.error('Ошибка:', error.response?.data || error);
-//   }
-// };
 const { data: socials } = await useAsyncData("socials", async () => {
   const response = await axios.get(`/socials`);
   return response.data;
 });
-// const socials = ref([]);
-//
-// const fetchSocials = async () => {
-//   try {
-//     const response = await axios.get(`/socials`);
-//     socials.value = response.data;
-//   } catch (error) {
-//     console.error('Ошибка:', error.response?.data || error);
-//   }
-// };
 const { data: contacts } = await useAsyncData("contacts", async () => {
   const response = await axios.get(`/contacts`);
   return response.data[0];
 });
-// const contacts = ref([]);
-// const fetchContact = async () => {
-//   try {
-//     const response = await axios.get(`/contacts`);
-//     contacts.value = response.data[0];
-//   } catch (error) {
-//     console.error('Ошибка:', error.response?.data || error);
-//   }
-// };
 
 function generateSlug(name) {
   const cyrillicToLatinMap = {
@@ -90,10 +52,6 @@ function capitalize(text) {
 
 onMounted(() => {
   marketplacesPlace.value = place.value.filter((item) => item.type === "marketplace" && item.image !== null);
-  // fetchContact();
-  // fetchSocials();
-  // fetchPlace();
-  // fetchTabs();
 });
 </script>
 
@@ -109,8 +67,6 @@ onMounted(() => {
           <div class="footer__social_item">
             <p class="footer__social_item_text">Мы в соцсетях</p>
             <div class="footer__social_container">
-  <!--            <IconsVk />-->
-  <!--            <IconsTg />-->
               <div
                   v-for="place in socials"
                   :key="place.id"
@@ -124,8 +80,6 @@ onMounted(() => {
           <div class="footer__social_item">
             <p class="footer__social_item_text">Мы на маркетплейсах</p>
             <div class="footer__social_container">
-  <!--            <IconsOzon />-->
-  <!--            <IconsYa />-->
               <div
                   v-for="place in marketplacesPlace"
                   :key="place.id"

@@ -139,14 +139,13 @@ watch(cropperVisible, async (visible) => {
     cropperInstance.value = new Cropper(cropperImgEl.value, {
       aspectRatio: ASPECT_RATIO,
       viewMode: 1,
-      autoCropArea: 0,       // не даём кропперу самому растягивать рамку
+      autoCropArea: 0,
       responsive: true,
       movable: true,
       zoomable: true,
       scalable: false,
       background: false,
 
-      // Важный колбэк — вызывается когда всё инициализировалось
       ready() {
         const cropper = this;
 
@@ -154,7 +153,6 @@ watch(cropperVisible, async (visible) => {
         const containerWidth = containerData.width;
         const containerHeight = containerData.height;
 
-        // Делаем рамку максимально возможной, но с нужной пропорцией
         let cropBoxWidth = containerWidth;
         let cropBoxHeight = cropBoxWidth / ASPECT_RATIO;
 
@@ -170,7 +168,6 @@ watch(cropperVisible, async (visible) => {
           top: (containerHeight - cropBoxHeight) / 2,
         });
 
-        // Масштабируем картинку так, чтобы она полностью покрывала рамку
         const imageData = cropper.getImageData();
         const scale = Math.max(
             cropBoxWidth / imageData.width,
@@ -243,14 +240,12 @@ const confirmCrop = async () => {
     const url = URL.createObjectURL(blob);
 
     if (cropperMode.value === 'single') {
-      // редактирование конкретной фотки
       if (productPreview.value) {
         URL.revokeObjectURL(productPreview.value);
       }
       productPhoto.value = file;
       productPreview.value = url;
     } else {
-      // добавление в список productImages
       const index = cropperTargetIndex.value;
       const img = productImages.value[index];
 
@@ -538,7 +533,6 @@ const updateProduct = async () => {
     if (isSearch.value) {
       await fetchSearchProduct();
     }
-    // resetProduct();
   } catch (error) {
     console.error('Ошибка:', error.response?.data || error);
   } finally {
@@ -857,7 +851,6 @@ const addProductOption = async () => {
   try {
     const valueId = await getIdByName(productOption.value);
     const formData = new FormData();
-    // formData.append('options[0][id]', productOption.value);
     formData.append('options[0][id]', valueId);
 
     await axios.post(`/products/${oneProd.value.id}?_method=patch`, formData, {
@@ -887,7 +880,6 @@ const fetchOptionsById = async (optionId) => {
 const deleteProductOptionFull = async (idOption) => {
   isLoading.value = true;
   try {
-    // const valueId = await fetchOptionsById(idOption);
     await axios.delete(`/products/${oneProd.value.id}/options/${idOption}`, {
       headers: {},
     });
@@ -901,7 +893,6 @@ const deleteProductOptionFull = async (idOption) => {
 const deleteProductOption = async (idOption) => {
   isLoading.value = true;
   try {
-    // const valueId = await fetchOptionsById(idOption);
     await axios.delete(`/products/${oneProd.value.id}/values/${idOption}`, {
       headers: {},
     });
@@ -1308,23 +1299,19 @@ const addProductPrice = async () => {
   try {
     console.log(formattedOptions.value);
 
-    // Формируем объект JSON вместо FormData
     const payload = {
       product_id: oneProd.value.id,
       price: totalPrice.value,
-      options: formattedOptions.value, // Должен быть объект типа {6: 40, 24: 48}
+      options: formattedOptions.value,
     };
 
-    // console.log(payload);
 
-    // Отправка данных с Content-Type: application/json
     await axios.post(`/product-option-prices`, payload, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
     await fetchProductById(currentProductId.value)
-    // Сбрасываем значения после успешной отправки
     formattedOptions.value = null;
     selectedValues.value = {};
     totalPrice.value = '';
@@ -1887,19 +1874,6 @@ const activeTab = ref("Главная");
           <h3 class="admin__dialog_title">Параметры</h3>
           <form class="admin-panel__content_form-dialog" @submit.prevent="addProductOption">
             <div class="admin__dialog_grid">
-              <!--    <input-->
-              <!--        v-model="searchQuery"-->
-              <!--        @input="handleSearch"-->
-              <!--        class="basket__form_input admin-panel__content_input"-->
-              <!--        type="text"-->
-              <!--        placeholder="Введите запрос для поиска"-->
-              <!--    />-->
-              <!--    <select v-model="productOption" class="basket__form_input admin-panel__content_select">-->
-              <!--      <option value="" disabled>Выберите категорию</option>-->
-              <!--      <option v-for="option in options" :key="option.id" :value="option.id">-->
-              <!--        {{ option.name }}-->
-              <!--      </option>-->
-              <!--    </select>-->
               <input list="test" placeholder="Введите запрос для поиска"
                      class="basket__form_input admin-panel__content_input"
                      v-model="productOption" style="height: 100%">
@@ -2207,7 +2181,6 @@ const activeTab = ref("Главная");
             <thead>
             <tr>
               <th>Название</th>
-<!--              <th>Контент</th>-->
               <th style="width: 100px">Изменить</th>
               <th style="width: 100px">Удалить</th>
             </tr>
@@ -2215,7 +2188,6 @@ const activeTab = ref("Главная");
             <tbody>
             <tr v-for="propertie in oneProd?.properties" :key="propertie.id">
               <td>{{ toggleTab(propertie.title) }}</td>
-<!--              <td>{{ propertie.html }}</td>-->
               <td>
                 <button
                     @click="editProductPropertie(propertie)"

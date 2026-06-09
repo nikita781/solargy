@@ -44,12 +44,10 @@ defineProps({
   display: inline-block;
 
   svg path {
-    //fill: #EF7F1A;
     transition: fill 0.3s ease;
   }
 
   svg polygon {
-    //fill: #EF7F1A;
     transition: fill 0.3s ease;
   }
 

@@ -68,8 +68,8 @@ const swiperConfig = reactive({
   loop: true,
   speed: 500,
   navigation: {
-    nextEl: null, // Будет настроено в onMounted
-    prevEl: null, // Будет настроено в onMounted
+    nextEl: null,
+    prevEl: null,
   },
   pagination: {
     el: '.swiper__pagination',
@@ -87,19 +87,16 @@ const swiperConfigNews = reactive({
   speed: 500,
   slidesPerView: 3,
   navigation: {
-    nextEl: null, // Будет настроено в onMounted
-    prevEl: null, // Будет настроено в onMounted
+    nextEl: null,
+    prevEl: null,
   },
   breakpoints: {
-    // когда ширина экрана >= 320px
     1: {
       slidesPerView: 1,
     },
-    // когда ширина экрана >= 640px
     640: {
       slidesPerView: 2,
     },
-    // когда ширина экрана >= 1024px
     1024: {
       slidesPerView: 3,
     },
@@ -134,17 +131,6 @@ const { data: banners } = await useAsyncData("banners", async () => {
   const response = await axios.get(`/main-banners`);
   return response.data;
 });
-// const banners = ref([]);
-//
-// const fetchBanners = async () => {
-//   try {
-//     const response = await axios.get('/main-banners');
-//     banners.value = response.data;
-//   } catch (error) {
-//     console.error('Ошибка с сервера:', error.response.data);
-//     console.error('Ошибка загрузки баннеров:', error);
-//   }
-// };
 const { data: topProduct } = await useAsyncData("topProduct", async () => {
   const response = await axios.get(`/products?top=1`);
   return response.data;
@@ -154,47 +140,14 @@ const { data: news } = await useAsyncData("news", async () => {
   const response = await axios.get(`/news?last_month=true`);
   return response.data.data;
 });
-// const topProduct = ref([]);
-//
-// const fetchTopProducts = async () => {
-//   try {
-//     const response = await axios.get('/products?top=1');
-//     topProduct.value = response.data;
-//   } catch (error) {
-//     console.error('Ошибка с сервера:', error.response.data);
-//     console.error('Ошибка загрузки баннеров:', error);
-//   }
-// };
 const { data: types } = await useAsyncData("types", async () => {
   const response = await axios.get(`/sub-banners`);
   return response.data;
 });
-// const types = ref([]);
-//
-// const fetchTypes = async () => {
-//   try {
-//     const response = await axios.get('/sub-banners');
-//     types.value = response.data;
-//   } catch (error) {
-//     console.error('Ошибка с сервера:', error.response.data);
-//     console.error('Ошибка загрузки баннеров:', error);
-//   }
-// };
 const { data: categories } = await useAsyncData("categories", async () => {
   const response = await axios.get(`/categories`);
   return response.data;
 });
-// const categories = ref([]);
-//
-// const fetchCategories = async () => {
-//   try {
-//     const response = await axios.get('/categories');
-//     categories.value = response.data;
-//   } catch (error) {
-//     console.error('Ошибка с сервера:', error.response.data);
-//     console.error('Ошибка загрузки баннеров:', error);
-//   }
-// };
 
 const currentSlideIndex = ref(0);
 
@@ -306,17 +259,7 @@ const reset = () => {
   isAgree.value = false;
 };
 
-// const onSwiperInit = (swiper) => {
-//   nextTick(() => {
-//     swiper.slideNext(0); // Переходим на следующий слайд
-//   });
-// };
-
 onMounted(() => {
-  // fetchBanners();
-  // fetchTopProducts();
-  // fetchTypes();
-  // fetchCategories();
   interval = setInterval(changeSlide, 5000);
   swiperConfig.navigation.nextEl = swiperRight.value;
   swiperConfig.navigation.prevEl = swiperLeft.value;

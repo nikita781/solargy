@@ -162,21 +162,17 @@ const openMenu = async (select, index) => {
   currentSelect.value = select;
   currentIndex.value = index;
 
-  // Проверяем, есть ли уже выбранный элемент. Если нет, устанавливаем текущий выбранный элемент
   if (!currentSelectedId.value || currentSelect.value.id !== select.id) {
     currentSelectedId.value = select.values[0].id;
   }
 
-  // Если в меню только один элемент, просто выходим
   if (select.values.length <= 1) {
     return;
   }
 
-  // Делаем меню видимым
   menuVisible.value = true;
   await nextTick();
 
-  // Добавляем CSS-класс с небольшой задержкой
   setTimeout(() => {
     const menu = document.querySelector(".slide-out-menu");
     if (menu) {
@@ -216,9 +212,7 @@ const selectItem = (item) => {
 
   quantity.value = 1;
 
-  // Если это цветовая опция – делаем запрос на фотографии
   if (currentSelect.value.is_color) {
-    // Здесь, например, вызываем fetchPhoto по `item.value`
     fetchPhoto(item.value);
   }
 
@@ -230,7 +224,7 @@ const getSelectedValue = (select) => {
   if (selectedOption) {
     return selectedOption.values;
   }
-  return select.values[0]; // Фоллбэк, если ничего не выбрано
+  return select.values[0];
 };
 
 const quantity = ref(1);
@@ -412,41 +406,29 @@ onMounted(async () => {
 });
 
 const photosNoVideo = computed(() => {
-  // Если product.value или product.value.photos ещё не доступны,
-  // подставляем пустой массив, иначе фильтруем
   return (productPhotos.value || []).filter(item => item.type !== 'video');
 });
 
 watch(() => product.value, () => {
-  // Обновляем imgs
   imgs.value = photosNoVideo.value.map(photo => photo.photo);
 }, { immediate: true });
 
 const indexRef = ref(0);
 const selectSlide = (slide, index) => {
   selectedSlide.value = slide;
-  // Если это фото (image), то найдём индекс в photosNoVideo
-    // Смотрим, где он лежит в «безвидео» массивах
     const idx = photosNoVideo.value.findIndex(item => item.id === slide.id);
     if (idx !== -1) {
       indexRef.value = idx;
     }
-
-    // Если хотим сразу открыть лайтбокс:
-    // visibleRef.value = true;
-    // но если у вас логика открытия другая — оставьте как есть.
 };
 
 const basePrice = computed(() => {
-  // Базовая цена товара
   let basePrice = parseFloat(product.value?.price || 0);
 
-  // Если нет опций или option_prices — просто возвращаем базу
   if (!product.value?.options?.length) {
     return basePrice;
   }
 
-  // Массив выбранных опций вида [{ optionId, value }, ...]
   const selectedOptionsArray = Object.keys(selectedOptions.value).map(optionId => ({
     optionId,
     value: selectedOptions.value[optionId]?.values?.value || null,
@@ -459,7 +441,7 @@ const basePrice = computed(() => {
   };
 
   product.value.option_prices.forEach(optionPrice => {
-    const details = optionPrice.options_details; // [{option_id, value}, ...]
+    const details = optionPrice.options_details;
 
     const isSubset = details.every(detail =>
         selectedOptionsArray.some(sel =>
@@ -507,7 +489,6 @@ const basePrice = computed(() => {
   return bestMatch.price + priceFromUnmatchedOptions;
 });
 
-// 2) Скидочная цена (ТО, что показываем как текущую)
 const totalPrice = computed(() => {
   const base = basePrice.value;
   const rawDiscount = Number(product.value?.discount);
@@ -516,14 +497,11 @@ const totalPrice = computed(() => {
     return base;
   }
 
-  // на всякий случай ограничим 0–100
   const discount = Math.min(Math.max(rawDiscount, 0), 100);
 
   const discounted = base * (1 - discount / 100);
 
-  // Если нужны целые ₽:
   return Math.round(discounted);
-  // или, если нужны копейки: return +discounted.toFixed(2);
 });
 
 const visibleRef = ref(false);
@@ -598,25 +576,19 @@ function removeFromBasket(itemId) {
 
 const handleImageClickHtml = (event) => {
   const target = event.target;
-  // Проверяем, кликнули ли по IMG
   if (target.tagName === 'IMG') {
-    // Ищем ближайший контейнер .image-block / .image-block-group ИЛИ .gallery
     const parent = target.closest('.image-block, .image-block-group, .gallery, img.image-block');
     if (parent) {
-      // Собираем ВСЕ изображения из .image-block / .image-block-group и .gallery
       const imgElements = Array.from(
           document.querySelectorAll(
               '.editor__content .image-block img, .editor__content .image-block-group img, .editor__content .gallery img, .editor__content img.image-block'
           )
       );
 
-      // Формируем массив src для лайтбокса
       imgsHtml.value = imgElements.map((img) => img.src);
 
-      // Находим индекс кликнутого изображения
       const clickedIndex = imgElements.findIndex((img) => img === target);
 
-      // Если индекс найден, показываем изображение в лайтбоксе
       if (clickedIndex !== -1) {
         showImgHtml(clickedIndex);
       }
@@ -625,16 +597,12 @@ const handleImageClickHtml = (event) => {
 };
 
 function getVkEmbedLink(url) {
-  // Пытаемся найти в ссылке шаблон 'video-<oid>_<id>'
   const match = url.match(/video\-([\-0-9]+)\_([0-9]+)/);
   if (!match) {
-    // Если не нашли, возвращаем исходную ссылку или подставляем fallback
     return url;
   }
-  // match[1] = -224743475, match[2] = 456239218
   const oid = match[1];
   const id = match[2];
-  // Собираем формат, который нужен для iframe
   return `https://vkvideo.ru/video_ext.php?oid=-${oid}&id=${id}&hd=1`;
 }
 
@@ -702,11 +670,9 @@ function applyEditorImageMeta(img, meta) {
 function transformAllImagesInHtml(html) {
   if (!html) return '';
 
-  // 1. Парсим HTML-строку в DOM
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
 
-  // 2. Находим все <img> и подменяем src
   doc.querySelectorAll('img').forEach((img) => {
     const rawSrc = img.getAttribute('src') || img.src || '';
     const { cleanSrc, meta } = parseEditorImageMeta(rawSrc);
@@ -714,7 +680,6 @@ function transformAllImagesInHtml(html) {
     applyEditorImageMeta(img, meta);
   });
 
-  // Проверка на .columns с двумя .column
   doc.querySelectorAll('.columns').forEach((columns) => {
     const columnChildren = columns.querySelectorAll(':scope > .column');
     if (columnChildren.length === 2) {
@@ -722,7 +687,6 @@ function transformAllImagesInHtml(html) {
     }
   });
 
-  // 3. Возвращаем обновлённую HTML-строку
   return doc.body.innerHTML;
 }
 function copyLink() {
@@ -731,8 +695,8 @@ function copyLink() {
   Toastify({
     text: "Ссылка скопирована!",
     duration: 3000,
-    gravity: "top", // Позиция: "top" или "bottom"
-    position: "right", // Позиция: "left", "center" или "right"
+    gravity: "top",
+    position: "right",
     backgroundColor: "#28a745",
     stopOnFocus: true,
   }).showToast();
@@ -742,7 +706,6 @@ const promosNotArchived = computed(() => {
   return (product.value?.promos || []).filter(promo => !promo.is_archived);
 });
 
-// Показывать / скрывать диалог «Перед скачиванием PDF»
 const visibleDialogDownload = ref(false)
 
 function openDialogDownload() {
@@ -754,12 +717,9 @@ function closeDialogDownload() {
 }
 
 function handleDownloadPdf() {
-  // 1) Закрываем диалог
   closeDialogDownload();
 
-  // 2) Ждём, пока модалка исчезнет из DOM
   setTimeout(() => {
-    // 3) Вызываем PDF-генерацию (где html2canvas)
     downloadAsPdf();
   }, 300);
 }
@@ -768,11 +728,9 @@ async function downloadAsPdf() {
   const element = document.querySelector('.card')
   if (!element) return
 
-  // Настраиваем поля PDF (например, 30pt)
   const marginTopBottom = 30
   const marginLeftRight = 20
 
-  // Показываем тост "идёт генерация" (duration=0 => бесконечный)
   const loadingToast = Toastify({
     text: "Генерация PDF, пожалуйста, подождите...",
     duration: 0,
@@ -793,38 +751,29 @@ async function downloadAsPdf() {
       scale: 2,
     })
 
-    const pdf = new jsPDF('p', 'pt', 'a4') // портрет, pt, формат A4
-    const pageWidth = pdf.internal.pageSize.getWidth()   // ~595pt
-    const pageHeight = pdf.internal.pageSize.getHeight() // ~842pt
+    const pdf = new jsPDF('p', 'pt', 'a4')
+    const pageWidth = pdf.internal.pageSize.getWidth()
+    const pageHeight = pdf.internal.pageSize.getHeight()
 
-    // Получаем размеры Canvas
     const canvasWidth = canvas.width
     const canvasHeight = canvas.height
 
-    // Ширина доступной области (с учётом отступов слева/справа)
     const usablePageWidth = pageWidth - marginLeftRight * 2
-    // Высота доступной области (с учётом отступов сверху/снизу)
     const usablePageHeight = pageHeight - marginTopBottom * 2
 
-    // В пикселях Canvas: сколько пикселей занимает usablePageHeight?
-    // Мы вписываем Canvas во всю ширину usablePageWidth => «фактор масштаба»:
     const scaleFactor = usablePageWidth / canvasWidth
-    // Значит, на одной странице поместится:
     const pageHeightInCanvasPx = usablePageHeight / scaleFactor
 
     let renderedHeight = 0
 
     while (renderedHeight < canvasHeight) {
-      // Сколько осталось от Canvas снизу
       const remainingHeight = canvasHeight - renderedHeight
       const sliceHeight = Math.min(pageHeightInCanvasPx, remainingHeight)
 
-      // Создаём новый фрагмент Canvas
       const canvasFragment = document.createElement('canvas')
       canvasFragment.width = canvasWidth
       canvasFragment.height = sliceHeight
 
-      // Рисуем часть оригинала в canvasFragment
       const ctx = canvasFragment.getContext('2d')
       ctx.drawImage(
           canvas,
@@ -838,11 +787,8 @@ async function downloadAsPdf() {
           sliceHeight
       )
 
-      // Превращаем фрагмент в base64
       const imgData = canvasFragment.toDataURL('image/jpeg', 1.0)
 
-      // В PDF рисуем на странице, начиная с (marginLeftRight, marginTopBottom)
-      // по ширине usablePageWidth. Высота:
       const fragmentHeightInPdf = sliceHeight * scaleFactor
 
       pdf.addImage(
@@ -856,7 +802,6 @@ async function downloadAsPdf() {
 
       renderedHeight += sliceHeight
 
-      // Если ещё не дошли до конца, добавляем страницу
       if (renderedHeight < canvasHeight) {
         pdf.addPage()
       }
@@ -969,19 +914,11 @@ const findImage = (photos) => {
                       @click="selectSlide(slide, index)"
                       :class="{ active: slide.id === selectedSlide.id }"
                   >
-                    <!-- Если это изображение -->
                     <template v-if="slide.type === 'image' || slide.type === null">
-<!--                      <div-->
-<!--                          class="swiper__slide-img"-->
-<!--                          :style="{ backgroundImage: `url(${slide.photo})` }"-->
-<!--                      ></div>-->
                       <img :src='transformStorageUrl(slide.photo)' alt="" class="swiper__slide-img-print">
                     </template>
 
-                    <!-- Если это видео -->
                     <template v-else-if="slide.type === 'video'">
-                      <!-- Тут ставьте превью, которое хотите:
-                           либо своя картинка, либо первый кадр, если есть ссылка -->
                       <img src="/play.png" alt="Video preview" class="swiper__slide-video" />
                     </template>
                   </div>
@@ -993,7 +930,6 @@ const findImage = (photos) => {
             </div>
           </div>
           <div class="card__main_img" v-if="selectedSlide">
-            <!-- Если тип = image, оставляем как раньше -->
             <template v-if="selectedSlide.type === 'image' || selectedSlide.type === null">
               <img
                   class="card__main_img-pict"
@@ -1004,15 +940,8 @@ const findImage = (photos) => {
               <p class="card__main_img_top" v-if='product?.is_top'>Хит продаж</p>
             </template>
 
-            <!-- Если тип = video, выводим iframe ВК-плеера -->
             <template v-else-if="selectedSlide.type === 'video'">
               <div class="card__main_img-pict">
-                <!-- Тут нужно корректно получить embed-ссылку.
-                     Для демонстрации просто ставлю :src="selectedSlide.photo".
-                     Но на практике, возможно, придётся подменить 'video-' на 'video_embed-'
-                     или вообще использовать https://vk.com/video_ext.php?...
-                     Всё зависит от реальной схемы встраивания.
-                -->
                 <iframe
                     width="100%"
                     height="100%"

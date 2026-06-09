@@ -17,7 +17,7 @@ const isLoading = ref(false);
 const errors = ref({
   nameCategory: false,
   photoCategory: false,
-  servicesExists: false, // ⚠️ "Услуги" уже существует
+  servicesExists: false,
 });
 
 const categories = ref([]);
@@ -33,14 +33,12 @@ const previewImageCategory = ref(null);
 const isEditingCat = ref(false);
 const currentCategoryId = ref(null);
 
-// ---- helpers ----
 const normalizeName = (v) => String(v ?? "").trim().toLowerCase();
 const isServicesName = (name) => normalizeName(name) === normalizeName(SERVICES_NAME);
 
 const categoryIsServices = (cat) => isServicesName(cat?.name);
 
 const hasServicesCategory = computed(() => {
-  // проверяем во всей иерархии
   const walk = (list) => {
     for (const c of list || []) {
       if (categoryIsServices(c)) return true;
@@ -64,7 +62,6 @@ const destroyPreviewIfBlob = (url) => {
   }
 };
 
-// ---- flatten (оставил как было, вдруг пригодится) ----
 const flattenCategories = (categoriesTree) => {
   const result = [];
   const traverse = (categoryList, parentId = null) => {
@@ -86,7 +83,6 @@ const flattenCategories = (categoriesTree) => {
   return result;
 };
 
-// ---- API ----
 const fetchCategory = async () => {
   try {
     const response = await axios.get("/categories");
@@ -99,7 +95,6 @@ const fetchCategory = async () => {
   }
 };
 
-// ---- ui ----
 const handleFileChangeCategory = (event) => {
   const file = event.target.files?.[0];
   if (file) {
@@ -112,7 +107,6 @@ const handleFileChangeCategory = (event) => {
   }
 };
 
-// ---- create ----
 const createCategory = async () => {
   errors.value.nameCategory = false;
   errors.value.photoCategory = false;
@@ -122,7 +116,6 @@ const createCategory = async () => {
   errors.value.nameCategory = !trimmed;
   errors.value.photoCategory = !photoCategory.value;
 
-  // ✅ "Услуги" можно создать только один раз
   if (isServicesName(trimmed) && hasServicesCategory.value) {
     errors.value.servicesExists = true;
     errors.value.nameCategory = true;
@@ -153,15 +146,12 @@ const createCategory = async () => {
   }
 };
 
-// ---- update ----
 const updateCategory = async () => {
   errors.value.nameCategory = false;
   errors.value.photoCategory = false;
   errors.value.servicesExists = false;
 
-  // ✅ если редактируем "Услуги" — можно менять ТОЛЬКО картинку
   if (editingIsServices.value) {
-    // требуем выбрать файл, иначе нечего менять
     errors.value.photoCategory = !photoCategory.value;
     if (errors.value.photoCategory) return;
 
@@ -169,7 +159,6 @@ const updateCategory = async () => {
     try {
       const formData = new FormData();
 
-      // на всякий случай отправим текущее имя, но оно не меняется
       formData.append("name", SERVICES_NAME);
       formData.append("photo", photoCategory.value);
 
@@ -187,12 +176,10 @@ const updateCategory = async () => {
     return;
   }
 
-  // обычные категории: имя обязательно, фото по желанию
   const trimmed = String(nameCategory.value || "").trim();
   errors.value.nameCategory = !trimmed;
   if (errors.value.nameCategory) return;
 
-  // запрещаем переименовать обычную категорию в "Услуги", если она уже есть
   if (isServicesName(trimmed) && hasServicesCategory.value) {
     errors.value.servicesExists = true;
     errors.value.nameCategory = true;
@@ -259,13 +246,10 @@ const resetCategory = () => {
   errors.value.servicesExists = false;
 };
 
-// ---- delete ----
 const deleteCategory = async (category) => {
-  // category может прийти id или объект — сделаем универсально
   const id = typeof category === "object" ? category?.id : category;
   const name = typeof category === "object" ? category?.name : null;
 
-  // ✅ "Услуги" нельзя удалять
   if (name && isServicesName(name)) return;
 
   isLoading.value = true;
@@ -288,7 +272,6 @@ onBeforeUnmount(() => {
   <div class="admin-panel__content">
     <h2>Управление категориями</h2>
 
-    <!-- CREATE -->
     <form class="admin-panel__content_form" v-if="!isEditingCat" @submit.prevent="createCategory">
       <input
           type="text"
@@ -345,7 +328,6 @@ onBeforeUnmount(() => {
       </button>
     </form>
 
-    <!-- EDIT -->
     <form class="admin-panel__content_form" v-if="isEditingCat" @submit.prevent="updateCategory">
       <input
           type="text"
@@ -404,7 +386,6 @@ onBeforeUnmount(() => {
       </button>
     </form>
 
-    <!-- TABLE -->
     <table v-for="category in categories" :key="category.id">
       <thead>
       <tr>
