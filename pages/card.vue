@@ -7,8 +7,6 @@ import 'swiper/css';
 import axios from "axios";
 import {useBasketStore} from '@/stores/basket';
 import {useAsyncData} from '#app';
-import html2canvas from 'html2canvas'
-import jsPDF from 'jspdf'
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 
@@ -130,7 +128,7 @@ const fetchProducts = async () => {
     products.value = response.data.data;
 
     for (const product of products.value) {
-      recommendation.value = product.properties.find(
+      recommendation.value = product.properties?.find(
           (property) => property.title === "recommendation"
       );
       if (recommendation.value) {
@@ -138,7 +136,7 @@ const fetchProducts = async () => {
       }
     }
     for (const product of products.value) {
-      property.value = product.properties.find(
+      property.value = product.properties?.find(
           (property) => property.title === "property"
       );
       if (property.value) {
@@ -745,9 +743,14 @@ async function downloadAsPdf() {
   loadingToast.showToast()
 
   try {
+    const [{ default: html2canvas }, { default: jsPDF }] = await Promise.all([
+      import('html2canvas'),
+      import('jspdf'),
+    ])
+
     const canvas = await html2canvas(element, {
       useCORS: true,
-      allowTaint: true,
+      allowTaint: false,
       scale: 2,
     })
 
@@ -834,7 +837,7 @@ async function downloadAsPdf() {
 }
 function transformStorageUrl(url) {
   if (!url) return '';
-  return url.replace('/storage/', '/api/my-storage/');
+  return url;
 }
 const visibleDialog = ref(false);
 const openDialog = () => {
@@ -915,7 +918,7 @@ const findImage = (photos) => {
                       :class="{ active: slide.id === selectedSlide.id }"
                   >
                     <template v-if="slide.type === 'image' || slide.type === null">
-                      <img :src='transformStorageUrl(slide.photo)' alt="" class="swiper__slide-img-print">
+                      <img crossorigin="anonymous" :src='transformStorageUrl(slide.photo)' alt="" class="swiper__slide-img-print">
                     </template>
 
                     <template v-else-if="slide.type === 'video'">
@@ -933,6 +936,7 @@ const findImage = (photos) => {
             <template v-if="selectedSlide.type === 'image' || selectedSlide.type === null">
               <img
                   class="card__main_img-pict"
+                  crossorigin="anonymous"
                   :src="transformStorageUrl(selectedSlide?.photo)"
                   alt="Selected Image"
                   @click="() => showImg(indexRef.value)"
@@ -1008,6 +1012,7 @@ const findImage = (photos) => {
                   <div class="card__main_select-name">
                     <img
                         v-if="getSelectedValue(select)?.image"
+                        crossorigin="anonymous"
                         :src="transformStorageUrl(getSelectedValue(select)?.image)"
                         alt=""
                     />
@@ -1073,8 +1078,8 @@ const findImage = (photos) => {
                   :key="index"
                   :to="market.url"
               >
-                <img v-if="market.is_attached" :src='transformStorageUrl(market.image_active)' alt="">
-                <img v-else :src='transformStorageUrl(market.image_disable)' alt="">
+                <img v-if="market.is_attached" crossorigin="anonymous" :src='transformStorageUrl(market.image_active)' alt="">
+                <img v-else crossorigin="anonymous" :src='transformStorageUrl(market.image_disable)' alt="">
               </NuxtLink>
             </div>
             <NuxtLink v-if="!existingItem" class="main_btn" @click="addToBasket">Добавить в корзину</NuxtLink>
@@ -1158,6 +1163,7 @@ const findImage = (photos) => {
                 v-if="product?.photo"
             >
               <img class="best-product__item_img"
+                       crossorigin="anonymous"
                        :src="transformStorageUrl(product?.photo)"
                        alt=""/>
             </a>

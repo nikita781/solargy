@@ -127,27 +127,34 @@ function generateSlug(name) {
       .trim();
 }
 
-const { data: banners } = await useAsyncData("banners", async () => {
-  const response = await axios.get(`/main-banners`);
-  return response.data;
-});
-const { data: topProduct } = await useAsyncData("topProduct", async () => {
-  const response = await axios.get(`/products?top=1`);
-  return response.data;
-});
-
-const { data: news } = await useAsyncData("news", async () => {
-  const response = await axios.get(`/news?last_month=true`);
-  return response.data.data;
-});
-const { data: types } = await useAsyncData("types", async () => {
-  const response = await axios.get(`/sub-banners`);
-  return response.data;
-});
-const { data: categories } = await useAsyncData("categories", async () => {
-  const response = await axios.get(`/categories`);
-  return response.data;
-});
+const [
+  { data: banners },
+  { data: topProduct },
+  { data: news },
+  { data: types },
+  { data: categories },
+] = await Promise.all([
+  useAsyncData("banners", async () => {
+    const response = await axios.get(`/main-banners`);
+    return response.data;
+  }),
+  useAsyncData("topProduct", async () => {
+    const response = await axios.get(`/products?top=1`);
+    return response.data;
+  }),
+  useAsyncData("news", async () => {
+    const response = await axios.get(`/news?last_month=true`);
+    return response.data.data;
+  }),
+  useAsyncData("types", async () => {
+    const response = await axios.get(`/sub-banners`);
+    return response.data;
+  }),
+  useAsyncData("categories", async () => {
+    const response = await axios.get(`/categories`);
+    return response.data;
+  }),
+]);
 
 const currentSlideIndex = ref(0);
 
