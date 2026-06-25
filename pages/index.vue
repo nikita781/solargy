@@ -156,6 +156,12 @@ const [
   }),
 ]);
 
+useHead(() => ({
+  link: banners.value?.[0]?.image
+    ? [{ rel: 'preload', as: 'image', href: banners.value[0].image, fetchpriority: 'high' }]
+    : [],
+}));
+
 const currentSlideIndex = ref(0);
 
 const changeSlide = () => {

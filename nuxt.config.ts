@@ -17,6 +17,10 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/main_logo.png' },
+        { rel: 'preconnect', href: 'https://api.solargy.shop' },
+        { rel: 'preconnect', href: 'https://api.solargy.shop', crossorigin: 'anonymous' },
+        { rel: 'dns-prefetch', href: 'https://api.solargy.shop' },
+        { rel: 'dns-prefetch', href: 'https://mc.yandex.ru' },
       ],
       htmlAttrs: {
         lang: 'ru',

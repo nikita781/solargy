@@ -1,5 +1,7 @@
 export default defineNuxtPlugin(() => {
-    if (process.client) {
+    if (!process.client) return;
+
+    const load = () => {
         // @ts-ignore
         (function(m, e, t, r, i, k, a) {
             m[i] = m[i] || function() {
@@ -26,5 +28,20 @@ export default defineNuxtPlugin(() => {
             webvisor: true,
             ecommerce: 'dataLayer'
         });
+    };
+
+    const schedule = () => {
+        if ('requestIdleCallback' in window) {
+            // @ts-ignore
+            requestIdleCallback(load, { timeout: 4000 });
+        } else {
+            setTimeout(load, 2500);
+        }
+    };
+
+    if (document.readyState === 'complete') {
+        schedule();
+    } else {
+        window.addEventListener('load', schedule, { once: true });
     }
 });
